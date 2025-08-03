@@ -1,0 +1,133 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 管理员状态枚举
+enum AdminStatus {
+  enable
+  disable
+}
+
+// 规则类型枚举
+enum RuleType {
+  menu_dir
+  menu
+  button
+}
+
+// 菜单类型枚举
+enum MenuType {
+  tab
+  link
+  iframe
+}
+
+// 扩展属性枚举
+enum ExtendType {
+  none
+  add_rules_only
+  add_menu_only
+}
+model BaAdmin {
+  id                Int         @id @default(autoincrement())
+  username          String      @unique @db.VarChar(20)
+  nickname          String      @default("") @db.VarChar(50)
+  avatar            String      @default("") @db.VarChar(255)
+  email             String      @default("") @db.VarChar(50)
+  mobile            String      @default("") @db.VarChar(11)
+  login_failure     Int         @default(0)
+  last_login_time   BigInt?    
+  last_login_ip     String      @default("") @db.VarChar(50)
+  password          String      @default("") @db.VarChar(255)
+  salt              String      @default("") @db.VarChar(30)
+  motto             String      @default("") @db.VarChar(255)
+  status            AdminStatus @default(enable)
+  update_time       BigInt?    
+  create_time       BigInt?    
+  
+  groups BaAdminGroupAccess[]
+  logs   BaAdminLog[]
+  
+  @@map("ba_admin")
+}
+
+model BaAdminGroup {
+  id           Int        @id @default(autoincrement())
+  pid          Int        @default(0)
+  name         String     @default("") @db.VarChar(100)
+  rules        String?    
+  status       Int        @default(1)
+  update_time  BigInt?    
+  create_time  BigInt?    
+  
+  members BaAdminGroupAccess[]
+  
+  @@map("ba_admin_group")
+}
+
+model BaAdminGroupAccess {
+  uid       Int 
+  group_id  Int 
+  
+  admin BaAdmin   @relation(fields: [uid], references: [id])
+  group BaAdminGroup @relation(fields: [group_id], references: [id])
+  
+  @@id([uid, group_id])
+  @@index([uid])
+  @@index([group_id])
+  @@map("ba_admin_group_access")
+}
+
+model BaAdminLog {
+  id           Int        @id @default(autoincrement())
+  admin_id     Int        @default(0)
+  username     String     @default("") @db.VarChar(20)
+  url          String     @default("") @db.VarChar(1500)
+  title        String     @default("") @db.VarChar(100)
+  data         String?    
+  ip           String     @default("") @db.VarChar(50)
+  useragent    String     @default("") @db.VarChar(255)
+  create_time  BigInt?    
+  
+  admin BaAdmin? @relation(fields: [admin_id], references: [id])
+  
+  @@map("ba_admin_log")
+}
+
+model BaAdminRule {
+  id           Int          @id @default(autoincrement())
+  pid          Int          @default(0)
+  type         RuleType     @default(menu)
+  title        String       @default("") @db.VarChar(50)
+  name         String       @default("") @db.VarChar(50)
+  path         String       @default("") @db.VarChar(100)
+  icon         String       @default("") @db.VarChar(50)
+  menu_type    MenuType?    
+  url          String       @default("") @db.VarChar(255)
+  component    String       @default("") @db.VarChar(100)
+  keepalive    Int          @default(0)
+  extend       ExtendType   @default(none)
+  remark       String       @default("") @db.VarChar(255)
+  weigh        Int          @default(0)
+  status       Int          @default(1)
+  update_time  BigInt?      
+  create_time  BigInt?      
+  
+  // parent   BaAdminRule? @relation("RuleParent", fields: [pid], references: [id])
+  // children BaAdminRule[] @relation("RuleParent")
+  
+  @@index([pid])
+  @@map("ba_admin_rule")
+}
