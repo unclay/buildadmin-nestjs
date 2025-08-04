@@ -1,7 +1,8 @@
-import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { NestFactory, Reflector } from '@nestjs/core';
+import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { ResponseInterceptor } from './core/interceptors/response.interceptor';
+import { SerializerInterceptor } from './core/interceptors/serializer.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -14,8 +15,10 @@ async function bootstrap() {
   // 全局校验
   app.useGlobalPipes(new ValidationPipe());
   // 全局拦截器
-  app.useGlobalInterceptors(new ResponseInterceptor());
-  // 全局异常过滤器
-  await app.listen(process.env.PORT ?? 8000);
+  app.useGlobalInterceptors(
+    new SerializerInterceptor(),
+    new ResponseInterceptor(),
+  );
+  await app.listen(process.env.PORT ?? 18000);
 }
 bootstrap();

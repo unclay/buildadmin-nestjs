@@ -1,9 +1,11 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { LoginDto } from './login.dto';
+import { AuthService } from 'src/core/services/auth.service';
 
 @Controller('admin/index')
 export class LoginController {
-    constructor(private readonly configService: ConfigService) {}
+    constructor(private readonly configService: ConfigService, private readonly authService: AuthService) {}
     /**
      * [GET] /admin/index/login
      */
@@ -18,38 +20,8 @@ export class LoginController {
      * [POST] /admin/index/login
      */
     @Post('login')
-    postLogin(@Body() body: any) {
-        const { username, password, keep } = body;
-
-        // 定义验证规则
-        // const rules = {
-        //     username: {
-        //         required: true,
-        //         length: { min: 3, max: 30 }
-        //     },
-        //     password: {
-        //         required: true,
-        //         pattern: /^(?!.*[&<>"\'\n\r]).{6,32}$/
-        //     }
-        // };
-
-        // // 构建验证数据
-        // const validationData = {
-        //     username,
-        //     password
-        // };
-
-        // // 如果开启验证码
-        // if (this.configService.get('buildadmin.admin_login_captcha')) {
-        //     rules['captchaId'] = { required: true };
-        //     rules['captchaInfo'] = { required: true };
-
-        //     validationData['captchaId'] = body.captchaId;
-        //     validationData['captchaInfo'] = body.captchaInfo;
-        // }
-
-        // // 验证数据
-        // await this.validateData(validationData, rules);
+    async postLogin(@Body() loginDto: LoginDto) {
+        const { username, password, keep } = loginDto;
 
         // // 验证码校验
         // if (this.configService.get('buildadmin.admin_login_captcha')) {
@@ -67,19 +39,21 @@ export class LoginController {
         //     title: '登录'
         // });
 
-        // // 执行登录
-        // try {
-        //     const loginResult = await this.authService.login(username, password, keep);
-        //     if (loginResult) {
-        //         const userInfo = await this.authService.getUserInfo();
-        //         return {
-        //             message: '登录成功',
-        //             data: { userInfo }
-        //         };
-        //     }
-        // } catch (error) {
-        //     throw new UnauthorizedException(error.message || '用户名或密码错误');
-        // }
+        // 执行登录
+        try {
+            const res = await this.authService.login(username, password, keep);
+            if (res === true) {
+                const userInfo = await this.authService.getInfo();
+                return {
+                    msg: '登录成功',
+                    data: {
+                        userInfo
+                    }
+                };
+            }
+        } catch (error) {
+            throw new UnauthorizedException(error.message || '用户名或密码错误');
+        }
         return {
             "userInfo": {
                 "id": 1,

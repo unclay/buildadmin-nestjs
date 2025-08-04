@@ -8,4 +8,6 @@
 - 0803: 创建admin*相关数据表（prisma、postgresql）
 - 0804: 新增参数校验（class-validator class-transformer）
 - 0804: 新增core/services/prisma.service.ts
+- 0804: 新增token model
+- 0804: 新增完善login接口的token相关
 - ...
