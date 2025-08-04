@@ -131,3 +131,13 @@ model BaAdminRule {
   @@index([pid])
   @@map("ba_admin_rule")
 }
+
+model BaToken {
+  token       String     @id @default("") @db.VarChar(50)
+  type        String     @default("") @db.VarChar(15)
+  user_id     Int        @default(0)
+  create_time BigInt?    
+  expire_time BigInt?    
+  
+  @@map("ba_token")
+}
