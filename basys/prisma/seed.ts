@@ -15,7 +15,7 @@ async function main() {
       login_failure: 0,
       last_login_time: 1754219052, // Unix 秒转毫秒
       last_login_ip: '127.0.0.1',
-      password: '$2y$12$wRCCVrDT27T6DhR2pdGlP.ln5SoyGeyZO4TCTYTVA/tdYC78my.Ia', // 替换实际密码
+      password: '$2b$12$3Rh6f1URfIz8qiIPBqzuGuXsPFj4NnGQ2/eyLiuI07SiPMACf6qme', // 替换实际密码
       salt: '',
       motto: '',
       status: 'enable',

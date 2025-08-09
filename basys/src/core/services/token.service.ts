@@ -23,4 +23,22 @@ export class TokenService {
             },  
         });
     }
+    async get(type: string, token: string) {
+        return this.prisma.baToken.findFirst({
+            where: {
+                type,
+                token,
+            },
+        });
+    }
+    async check(type: string, token: string) {
+        const tokenInfo = await this.get(type, token);
+        if (!tokenInfo) {
+            return false;
+        }
+        if (tokenInfo.expire_time && tokenInfo.expire_time < Math.floor(Date.now() / 1000)) {
+            return false;
+        }
+        return true;
+    }
 }

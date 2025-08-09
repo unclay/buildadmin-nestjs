@@ -5,10 +5,12 @@ import { NestConfigModule } from './config/config.module';
 import { AdminModule } from './admin/admin.module';
 import { ApiModule } from './api/api.module';
 import { CoreModule } from './core/core.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
-  imports: [NestConfigModule, CoreModule, AdminModule, ApiModule],
+  imports: [NestConfigModule, CoreModule, AdminModule, ApiModule, AuthModule],
   controllers: [AppController],
   providers: [AppService],
+  exports: [AuthModule],
 })
 export class AppModule {}

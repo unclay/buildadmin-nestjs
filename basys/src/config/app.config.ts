@@ -34,4 +34,8 @@ export default registerAs('app', () => ({
     
     // 显示错误信息
     show_error_msg: false,
+
+    // nestjs app config
+    jwt_secret: 'sX^%yipxuoCaWReMb',
+    jwt_expires_in: '6000s',
 }));

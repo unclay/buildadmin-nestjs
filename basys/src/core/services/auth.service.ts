@@ -1,13 +1,17 @@
 import { randomUUID } from 'crypto';
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { Injectable, OnModuleInit, UnauthorizedException } from "@nestjs/common";
 import { PrismaService } from "./prisma.service";
 import { ConfigService } from "@nestjs/config";
 import { TokenService } from "./token.service";
 import { RequestContext } from './request-context.service';
-import * as _ from 'lodash';
+import { BaAuth } from 'src/extend/ba/Auth';
+import * as bcrypt from 'bcrypt';
+import { pick } from 'lodash';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
-export class AuthService {
+export class AuthService extends BaAuth implements OnModuleInit {
+    
     // 登录 token 类型
     TOKEN_TYPE = 'admin';
     // 登录 token
@@ -17,18 +21,27 @@ export class AuthService {
     // 刷新 token 过期时间
     refreshTokenKeepTime = 2592000;
     // 登录用户信息
-    admin = null;
+    model = null;
     // 允许输出的字段
     allowFields = ['id', 'username', 'nickname', 'avatar', 'last_login_time'];
     // 登录状态
     loginEd = false;
 
     constructor(
-        private prisma: PrismaService,
+        public prisma: PrismaService,
         private configService: ConfigService,
         private tokenService: TokenService,
         private requestContext: RequestContext,
-    ) {}
+        private jwtService: JwtService,
+    ) {
+        super(prisma);
+    }
+    async onModuleInit() {
+        this.init();
+    }
+    async init() {
+        // const token = this.tokenService.get(this.TOKEN_TYPE);
+    }
     getToken() {
         return this.token;
     }
@@ -42,18 +55,18 @@ export class AuthService {
             },
         });
         return {
-            ..._.pick(admin, this.allowFields),
+            ...pick(admin, this.allowFields),
             token: this.getToken(),
             refresh_token: this.getRefreshToken(),
         };
     }
     async login(username: string, password: string, keep: boolean) {
-        this.admin = await this.prisma.baAdmin.findUnique({
+        this.model = await this.prisma.baAdmin.findUnique({
             where: {
                 username,
             },
         });
-        const admin = this.admin;
+        const admin = this.model;
         if (!admin) {
             throw new UnauthorizedException('用户名或密码错误');
         }
@@ -105,10 +118,10 @@ export class AuthService {
         this.loginEd = true;
         if (!this.token) {
             this.token = randomUUID();
-            this.tokenService.set(this.token, this.TOKEN_TYPE, this.admin.id, this.refreshTokenKeepTime);
+            this.tokenService.set(this.token, this.TOKEN_TYPE, this.model.id, this.refreshTokenKeepTime);
         }
         await this.prisma.baAdmin.update({
-            where: { id: this.admin.id },
+            where: { id: this.model.id },
             data: {
                 login_failure: 0,          // 重置登录失败次数
                 last_login_time: Math.floor(Date.now() / 1000),
@@ -123,6 +136,50 @@ export class AuthService {
      */
     setRefreshToken(keepTime: number = 0): void {
         this.refreshToken = randomUUID();
-        this.tokenService.set(this.refreshToken, this.TOKEN_TYPE + '-refresh', this.admin.id, keepTime);
+        this.tokenService.set(this.refreshToken, this.TOKEN_TYPE + '-refresh', this.model.id, keepTime);
+    }
+
+    /**
+     * 是否是超级管理员
+     * @throws Throwable
+     */
+    async isSuperAdmin(): Promise<boolean> {
+        const ruleIds = await this.getRuleIds();
+        return ruleIds.includes('*');
+    }
+
+    async getRuleIds(uid?: number): Promise<string[]> {
+        return await super.getRuleIds(uid || this.model.id);
+    }
+    async getMenus(uid?: number): Promise<string[]> {
+        return await super.getMenus(uid || this.model.id);
+    }
+
+
+    /**
+     * 校验用户
+     */
+    // 校验用户，并返回用户信息
+    async validateUser(username: string, password: string) {
+        const user = await this.prisma.baAdmin.findUnique({
+            where: {
+                username,
+            },
+        });
+        if (!user) return null;
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) return null;
+        delete user.password;
+        return pick(user, this.allowFields);
+    }
+    // 生成 token
+    sign(user: any) {
+        // 签名字段只要几个关键字段，太多字段会导致token长度过长，浪费网络资源
+        // 这里只用了uid、username
+        const payload = { id: user.id, username: user.username };
+        return {
+            refresh_token: '',
+            token: this.jwtService.sign(payload),
+        };
     }
 }
