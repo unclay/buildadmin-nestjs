@@ -1,11 +1,11 @@
 import { Controller, Get, Query } from "@nestjs/common";
-import { AdminAuthAdminService } from "./admin.service";
+import { AuthAdminService } from "./admin.service";
 
 @Controller('admin/auth.admin')
-export class AdminAuthAdminController {
-    constructor(private adminAuthAdminService: AdminAuthAdminService) {}
+export class AuthAdminController {
+    constructor(private authAdminService: AuthAdminService) {}
     @Get('index')
     async getIndex(@Query('page') page: number = 1, @Query('limit') limit: number = 10) {
-        return this.adminAuthAdminService.getList(page, limit);
+        return this.authAdminService.getList(page, limit);
     }
 }

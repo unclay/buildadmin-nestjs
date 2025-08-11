@@ -3,7 +3,7 @@ import { Injectable, Get } from "@nestjs/common";
 import { PrismaService } from "../../../core/services/prisma.service";
 
 @Injectable()
-export class AdminAuthAdminService {
+export class AuthAdminService {
     constructor(private prisma: PrismaService) {}
     async getList(page: number, limit: number) {
         const list = await this.prisma.baAdmin.findMany({
