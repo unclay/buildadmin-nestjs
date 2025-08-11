@@ -133,7 +133,7 @@ model BaAdminRule {
 }
 
 model BaToken {
-  token       String     @id @default("") @db.VarChar(50)
+  token       String     @id @default("") @db.VarChar(255)
   type        String     @default("") @db.VarChar(15)
   user_id     Int        @default(0)
   create_time BigInt?    

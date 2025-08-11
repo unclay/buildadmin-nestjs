@@ -25,7 +25,6 @@ export class LoginController {
     @UseGuards(AuthGuard('auth-local'))
     @Post('login')
     async postLogin(@Request() req) {
-        console.log(req.ip);
         return {
             msg: '登录成功',
             data: {

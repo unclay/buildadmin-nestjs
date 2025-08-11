@@ -107,7 +107,6 @@ export class AuthService extends BaAuth implements OnModuleInit {
             this.tokenService.clear(this.TOKEN_TYPE, admin.id);
             this.tokenService.clear(this.TOKEN_TYPE + '-refresh', admin.id);
         }
-        console.log(1111);
         if (keep) {
             this.setRefreshToken(this.refreshTokenKeepTime);
         }

@@ -1,18 +1,20 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Request } from '@nestjs/common';
 // import { AuthService } from 'src/core/services/auth.service';
 import { ConfigService } from '@nestjs/config';
+import { Public } from '../../modules/auth/auth.decorator';
+import { AuthService } from '../../modules/auth/auth.service';
 
 @Controller('admin/index')
 export class IndexController {
     constructor(
         private readonly configService: ConfigService,
-        // private readonly authService: AuthService,
+        private authService: AuthService,
     ) {}
     /**
      * [GET] /admin/index/index
      */
     @Get('index')
-    async index() {
+    async index(@Request() req) {
         // const adminInfo = await this.authService.getInfo();
         // const isSuperAdmin = await this.authService.isSuperAdmin();
         // delete adminInfo['token'];
@@ -23,7 +25,7 @@ export class IndexController {
         //     throw new Error('没有后台菜单，请联系超级管理员！');
         // }
         return {
-            adminInfo: {},
+            adminInfo: req.user,
             menus: [],
             siteConfig: {
                 siteName: this.configService.get('site.siteName'),

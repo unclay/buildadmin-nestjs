@@ -37,5 +37,5 @@ export default registerAs('app', () => ({
 
     // nestjs app config
     jwt_secret: 'sX^%yipxuoCaWReMb',
-    jwt_expires_in: '6000s',
+    jwt_expires_in: '3600000', // 毫秒
 }));

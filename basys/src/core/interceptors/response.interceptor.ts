@@ -9,6 +9,7 @@ export class ResponseInterceptor implements NestInterceptor {
     // buildadmin headers
     response.setHeader('access-control-allow-headers', 'think-lang, server, ba_user_token, ba-user-token, ba_token, ba-token, batoken, Authorization, Content-Type, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since, X-CSRF-TOKEN, X-Requested-With');
     response.setHeader('access-control-allow-methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    // return next.handle();
     return next.handle().pipe(
       map(data => {
         return {
