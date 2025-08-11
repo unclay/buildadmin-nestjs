@@ -13,8 +13,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'auth-jwt') {
     super({
       passReqToCallback: true,
       jwtFromRequest: (req: Request) => {
-        const batoken = req.headers['batoken'] as string;
-        return batoken;
+        return extractTokenFromRequest(req);
       },
       ignoreExpiration: false,
       secretOrKey: configService.get('app.jwt_secret'), // 这是解密的密钥，要和加密的密钥一致（加密在login.module.ts）
