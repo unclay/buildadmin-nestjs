@@ -12,7 +12,10 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'auth-jwt') {
   constructor(private readonly configService: ConfigService, private authService: AuthService, private tokenService: TokenService) {
     super({
       passReqToCallback: true,
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: (req: Request) => {
+        const batoken = req.headers['batoken'] as string;
+        return batoken;
+      },
       ignoreExpiration: false,
       secretOrKey: configService.get('app.jwt_secret'), // 这是解密的密钥，要和加密的密钥一致（加密在login.module.ts）
     });

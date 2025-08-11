@@ -158,4 +158,8 @@ export class AuthService extends BaAuth {
             },
         });
     }
+
+    getMenus(uid: number) {
+        return super.getMenus(uid);
+    }
 }

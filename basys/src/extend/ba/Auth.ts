@@ -1,4 +1,4 @@
-import _ from "lodash";
+import * as _ from "lodash";
 import { PrismaService } from "src/core/services/prisma.service";
 
 export class BaAuth {
@@ -8,9 +8,9 @@ export class BaAuth {
      * @var array|string[]
      */
     protected config = {
-        'auth_group': 'BaAdminGroup', // 用户组数据表名
-        'auth_group_access': 'BaAdminGroupAccess', // 用户-用户组关系表
-        'auth_rule': 'BaAdminRule', // 权限规则表
+        'auth_group': 'baAdminGroup', // 用户组数据表名
+        'auth_group_access': 'baAdminGroupAccess', // 用户-用户组关系表
+        'auth_rule': 'baAdminRule', // 权限规则表
     };
     /**
      * 子菜单规则数组
@@ -26,14 +26,15 @@ export class BaAuth {
     async getRuleIds(uid: number): Promise<string[]> {
         // 用户的组别和规则ID
         const groups = await this.getGroups(uid);
+        console.log(groups);
         let ids: string[] = [];
         
         for (const group of groups) {
             if (group.rules) {
-                const ruleIds = group.rules.split(',')
+                const ruleIds = group.rules === '*' ? ['*'] : group.rules.split(',')
                     .map(id => id.trim())
                     .filter(id => id !== '')
-                    .map(id => parseInt(id));
+                    .map(id => id === '*' ? '*' : parseInt(id));
                 ids = [...ids, ...ruleIds];
             }
         }
@@ -68,7 +69,7 @@ export class BaAuth {
                 where: {
                     uid: uid,
                     group: {
-                        status: '1'
+                        status: 1
                     }
                 }
             });
@@ -144,7 +145,7 @@ export class BaAuth {
 
         const prismaName = this.config['auth_rule'];
         const where: any = {
-            status: '1'
+            status: 1
         };
 
         // 如果没有 * 则只获取用户拥有的规则
@@ -158,17 +159,15 @@ export class BaAuth {
             select: {
                 id: true,
                 pid: true,
-                name: true,
+                type: true,
                 title: true,
-                icon: true,
+                name: true,
                 path: true,
+                icon: true,
+                menu_type: true,
                 component: true,
                 keepalive: true,
-                type: true,
-                menu_type: true,
                 extend: true,
-                redirect: true,
-                permission: true,
             },
             where: where,
             orderBy: [

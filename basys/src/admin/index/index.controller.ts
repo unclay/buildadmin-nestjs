@@ -20,13 +20,13 @@ export class IndexController {
         // delete adminInfo['token'];
         // delete adminInfo['refresh_token'];
 
-        // const menus = await this.authService.getMenus(adminInfo.id);
-        // if (!menus) {
-        //     throw new Error('没有后台菜单，请联系超级管理员！');
-        // }
+        const menus = await this.authService.getMenus(req.user.id);
+        if (!menus) {
+            throw new Error('没有后台菜单，请联系超级管理员！');
+        }
         return {
             adminInfo: req.user,
-            menus: [],
+            menus,
             siteConfig: {
                 siteName: this.configService.get('site.siteName'),
                 version: this.configService.get('site.version'),

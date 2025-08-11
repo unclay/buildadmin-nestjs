@@ -1,6 +1,10 @@
 import { Request } from 'express';
 
 export function extractTokenFromRequest(req: Request): string | null {
+  // 从 Header 提取 Batoken
+  if (req.headers['batoken']) {
+    return req.headers['batoken'] as string;
+  }
   // 从 Header 提取（Bearer Token）
   if (req.headers.authorization?.startsWith('Bearer ')) {
     return req.headers.authorization.split(' ')[1];
