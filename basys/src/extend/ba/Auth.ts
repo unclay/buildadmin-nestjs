@@ -26,7 +26,6 @@ export class BaAuth {
     async getRuleIds(uid: number): Promise<string[]> {
         // 用户的组别和规则ID
         const groups = await this.getGroups(uid);
-        console.log(groups);
         let ids: string[] = [];
         
         for (const group of groups) {

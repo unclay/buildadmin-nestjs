@@ -38,8 +38,6 @@ export class AuthGroupService {
         let data = await this.getGroups(query, {
             status: 1
         });
-        console.log(data);
-        console.log(this.getAssembleTree(query), 123);
         if (this.getAssembleTree(query)) {
             data = BaTree.assembleTree(BaTree.getTreeArray(data));
         }

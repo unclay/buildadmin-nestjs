@@ -38,10 +38,8 @@ export class BaTree {
         level++;
         let num = 1;
         const total = arr.length;
-        console.log(arr);
         arr.forEach((item, index) => {
             const prefix = (num === total) ? BaTree.icon[2] : BaTree.icon[1];
-            console.log(prefix);
             if (level === 2) {
                 arr[index][field] = ' '.repeat(4) + prefix + item[field];
             } else if (level >= 3) {
@@ -53,7 +51,6 @@ export class BaTree {
             }
             num++;
         });
-        console.log(arr);
         return arr;
     }
 
@@ -81,7 +78,6 @@ export class BaTree {
      */
     public assembleChild(data: any[], pid: string = 'pid', pk: string = 'id'): any[] {
         if (!data.length) return [];
-        console.log(data);
         const pks: any[] = [];
         const topLevelData: any[] = [];
         this.children = [];
