@@ -159,6 +159,66 @@ export class AuthService extends BaAuth {
         });
     }
 
+
+
+
+    /**
+     * 获取拥有 `所有权限` 的分组
+     * @param string $dataLimit       数据权限
+     * @param array  $groupQueryWhere 分组查询条件（默认查询启用的分组：[['status','=',1]]）
+     * @return array 分组数组
+     * @throws Throwable
+     */
+    async getAllAuthGroups(id: number, dataLimit: string, groupQueryWhere: any[] = [['status', '=', 1]]): Promise<number[]> {
+        // 当前管理员拥有的权限
+        const rules = await this.getRuleIds(id);
+        const allAuthGroups: number[] = [];
+
+        const groups = await this.prisma[this.config.auth_group].findMany({
+            where: {
+                AND: groupQueryWhere.map(([field, operator, value]) => ({
+                    [field]: operator === '=' ? value : { [operator]: value }
+                }))
+            }
+        });
+
+        for (const group of groups) {
+            if (group.rules === '*') {
+                continue;
+            }
+            const groupRules = group.rules.split(',');
+
+            // 及时break, array_diff 等没有 in_array 快
+            let all = true;
+            for (const groupRule of groupRules) {
+                if (!rules.includes(groupRule)) {
+                    all = false;
+                    break;
+                }
+            }
+
+            if (all) {
+                if (dataLimit === 'allAuth' || 
+                    (dataLimit === 'allAuthAndOthers' && 
+                     rules.filter(rule => !groupRules.includes(rule)).length > 0)) {
+                    allAuthGroups.push(group.id);
+                }
+            }
+        }
+
+        return allAuthGroups;
+    }
+
+    /**
+     * 是否是超级管理员
+     * @throws Throwable
+     */
+    async isSuperAdmin(uid: number) {
+        const rules = await this.getRuleIds(uid);
+        return rules.includes('*');
+    }
+
+
     getMenus(uid: number) {
         return super.getMenus(uid);
     }
