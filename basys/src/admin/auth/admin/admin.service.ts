@@ -107,6 +107,7 @@ export class AuthAdminService extends BaBackend {
                     data: admin,
                 };
             } catch (error) {
+                console.log(error.message);
                 // 事务会自动回滚
                 if (error instanceof Prisma.PrismaClientKnownRequestError) {
                     throw new ApiException(

@@ -1,4 +1,4 @@
-import { Controller, Get, Request } from '@nestjs/common';
+import { Controller, Get, Post, Request } from '@nestjs/common';
 // import { AuthService } from 'src/core/services/auth.service';
 import { ConfigService } from '@nestjs/config';
 import { Public } from '../../modules/auth/auth.decorator';
@@ -45,5 +45,10 @@ export class IndexController {
                 npmPackageManager: process.env.NPM_PACKAGE_MANAGER || 'npm'
             }
         };
+    }
+
+    @Post('logout')
+    async logout() {
+        
     }
 }
