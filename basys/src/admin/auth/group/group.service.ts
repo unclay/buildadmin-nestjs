@@ -127,4 +127,73 @@ export class AuthGroupService {
         
         return tree
     }
+
+    // async create(body: any) {
+    //     if (!body || Object.keys(body).length === 0) {
+    //         throw new ApiException('Parameters cannot be empty', HttpStatus.BAD_REQUEST);
+    //     }
+    //     body = this.excludeFields(body);
+    //     body = await this.handleRules(body);
+    //     return this.prisma.baAdmin.create(body);
+    // }
+
+    // private excludeFields(data: any): any {
+    //     const excludedFields = ['create_time', 'update_time']; // 示例
+    //     return Object.fromEntries(
+    //         Object.entries(data).filter(([key]) => !excludedFields.includes(key)),
+    //     );
+    // }
+
+    // arrayDiff(array1, array2) {
+    //     const set2 = new Set(array2);
+    //     return array1.filter(item => !set2.has(item));
+    // }
+    // /**
+    //  * 权限节点入库前处理
+    //  * @throws Throwable
+    //  */
+    // async handleRules(data: any) {
+    //     if (data.rules && data.rules.length) {
+    //         let superAdmin = true;
+    //         const checkedRules = [];
+    //         const allRules = await this.prisma.baAdminRule.findMany({
+    //             select: {
+    //                 id: true
+    //             }
+    //         });
+    //         const allRuleIds = allRules.map(item => item.id);
+    //         // 遍历检查权限ID是否存在（以免传递了可预测的未来权限ID号）
+    //         for (const postRuleId of data.rules) {
+    //             if (allRuleIds.includes(postRuleId)) {
+    //                 checkedRules.push(postRuleId);
+    //             }
+    //         }
+    //         // 正在建立超管级分组？
+    //         for (const ruleId of allRuleIds) {
+    //             if (checkedRules.includes(ruleId)) {
+    //                 superAdmin = false;
+    //             }
+    //         }
+    //         const uid = (this.req as any).user?.id;
+    //         if (superAdmin && this.authService.isSuperAdmin(uid)) {
+    //             // 允许超管建立超管级分组
+    //             data.rules = '*';
+    //         } else {
+    //             // 当前管理员所拥有的权限节点
+    //             const ownedRuleIds = this.authService.getRuleIds(uid);
+    //             // 禁止添加`拥有自己全部权限`的分组
+    //             if (!this.arrayDiff(ownedRuleIds, checkedRules)) {
+    //                 throw new ApiException('Role group has all your rights, please contact the upper administrator to add or do not need to add!')
+    //             }
+    //             // 检查分组权限是否超出了自己的权限（超管的 $ownedRuleIds 为 ['*']，不便且可以不做此项检查）
+    //             if (this.arrayDiff(checkedRules, ownedRuleIds) && !this.authService.isSuperAdmin(uid)) {
+    //                 throw new ApiException('The group permission node exceeds the range that can be allocated');
+    //             }
+    //             data.rules = checkedRules.join(',');
+    //         }
+    //     } else {
+    //         delete data.rules;
+    //     }
+    //     return data;
+    // }
 }

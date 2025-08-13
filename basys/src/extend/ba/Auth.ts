@@ -1,4 +1,5 @@
 import * as _ from "lodash";
+import * as bcrypt from 'bcrypt';
 import { PrismaService } from "src/core/services/prisma.service";
 
 export class BaAuth {
@@ -198,5 +199,9 @@ export class BaAuth {
             }
         });
         return rules;
+    }
+
+    hashPassword(password, saltOrRounds = 12) {
+        return bcrypt.hashSync(password, saltOrRounds);
     }
 }
