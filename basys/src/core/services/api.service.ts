@@ -49,14 +49,14 @@ export class CoreApiService extends BaApi {
         } else if ((typeof this.dataLimit === 'number') && this.dataLimit as number > 0) {
             // 在组内，可查看所有，不在组内，可查看自己的
             adminIds = await this.coreAuthService.getGroupAdmins([this.dataLimit as number]);
-            return adminIds.includes(this.coreAuthService.getUser('uid')) ? [] : [this.coreAuthService.getUser('uid')];
+            return adminIds.includes(this.coreAuthService.getUser('id')) ? [] : [this.coreAuthService.getUser('id')];
         } else if (this.dataLimit === 'allAuth' || this.dataLimit === 'allAuthAndOthers') {
             // 取得拥有他所有权限的分组
             const allAuthGroups = await this.coreAuthService.getAllAuthGroups(this.dataLimit);
             // 取得分组内的所有管理员
             adminIds = await this.coreAuthService.getGroupAdmins(allAuthGroups);
         }
-        adminIds.push(this.coreAuthService.getUser('uid'));
+        adminIds.push(this.coreAuthService.getUser('id'));
         return array_unique(adminIds);
     }
 }
