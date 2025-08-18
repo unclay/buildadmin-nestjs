@@ -1,4 +1,3 @@
-import { randomUUID } from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -221,23 +220,5 @@ export class AuthService extends BaAuth {
         return super.getMenus(uid);
     }
 
-    /**
-     * 重置管理员id
-     * @param adminId 管理员id
-     * @param password 未加密的密码
-     * @param prisma 事务context，默认使用全局prisma实例，也可传外部事务的prisma实例（context）
-     * @returns 
-     */
-    resetPassword(adminId: number, password: string, prisma?: Prisma.TransactionClient) {
-        const ctx = prisma || this.prisma;
-        return ctx.baAdmin.update({
-            where: {
-                id: adminId,
-            },
-            data: {
-                password: this.hashPassword(password),
-                update_time: BigInt(Date.now()),
-            },
-        });
-    }
+    
 }

@@ -3,6 +3,7 @@ import { REQUEST } from '@nestjs/core';
 import { PrismaService } from "./prisma.service";
 import { BaAuth } from '../../extend/ba/Auth';
 import { array_diff } from "src/common";
+import { Prisma } from "@prisma/client";
 
 @Injectable()
 export class CoreAuthService extends BaAuth {
@@ -17,8 +18,8 @@ export class CoreAuthService extends BaAuth {
     /**
      * 从 request 读取用户的属性值
      */
-    getUser(key: string) {
-        return (this.req as any).user[key];
+    getUser(userField: string) {
+        return (this.req as any).user[userField];
     }
     /**
      * 从 request 设置用户的属性值
@@ -40,6 +41,26 @@ export class CoreAuthService extends BaAuth {
         isSuperAdmin = rules.includes('*');
         this.setUser('isSuperAdmin', isSuperAdmin);
         return isSuperAdmin;
+    }
+
+    /**
+     * 重置管理员id
+     * @param adminId 管理员id
+     * @param password 未加密的密码
+     * @param prisma 事务context，默认使用全局prisma实例，也可传外部事务的prisma实例（context）
+     * @returns 
+     */
+    resetPassword(adminId: number, password: string, prisma?: Prisma.TransactionClient) {
+        const ctx = prisma || this.prisma;
+        return ctx.baAdmin.update({
+            where: {
+                id: adminId,
+            },
+            data: {
+                password: this.hashPassword(password),
+                update_time: BigInt(Date.now()),
+            },
+        });
     }
 
     /**
