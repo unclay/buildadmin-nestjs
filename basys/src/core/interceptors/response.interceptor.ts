@@ -12,11 +12,12 @@ export class ResponseInterceptor implements NestInterceptor {
     // return next.handle();
     return next.handle().pipe(
       map(data => {
+        const xdata = (data?.code || data?.msg) ? data?.data : undefined;
         return {
           code: data?.code ?? 1,
           msg: data?.msg ?? '',
           time: Math.floor(Date.now() / 1000),
-          data: data?.data ?? data ?? null
+          data: data?.data ?? xdata ?? null
         };
       })
     );
