@@ -14,7 +14,7 @@ async function bootstrap() {
     credentials: true,
   });
   // 全局校验
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
   // 全局拦截器
   app.useGlobalInterceptors(
     new SerializerInterceptor(),
