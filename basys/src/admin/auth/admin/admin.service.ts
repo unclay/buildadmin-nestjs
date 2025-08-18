@@ -171,7 +171,7 @@ export class AuthAdminService extends CoreApiService {
             throw new ApiException('You have no permission');
         }
         const loginAdminId = this.coreAuthService.getUser('id');
-        if (loginAdminId === body.id && body.status === 'disabled') {
+        if (loginAdminId === body.id && body.status === 'disable') {
             throw new ApiException('Please use another administrator account to disable the current account!');
         }
         if (body.password) {
@@ -186,7 +186,7 @@ export class AuthAdminService extends CoreApiService {
                     checkGroups.push(groupId);
                 }
                 groupAccess.push({
-                    uid: loginAdminId,
+                    uid: body.id,
                     group_id: groupId
                 });
             }
@@ -194,11 +194,11 @@ export class AuthAdminService extends CoreApiService {
         }
         await this.prisma.baAdminGroupAccess.deleteMany({
             where: {
-                uid: loginAdminId,
+                uid: body.id,
             }
         });
         try {
-            const newBody = this.excludeFields(body); 
+            const newBody = this.excludeFields(body);
             await this.prisma.$transaction(async (ctx) => {
                 // 更新管理员信息
                 await ctx.baAdmin.update({

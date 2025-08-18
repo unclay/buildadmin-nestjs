@@ -7,12 +7,12 @@ export class EditAdminDto extends CreateAdminDto {
 
     @IsOptional()
     @IsString()
-    @Matches(/^(?!.*[&<>"'\n\r]).{6,32}$/, {
+    @Matches(/^$|^(?!.*[&<>"'\n\r]).{6,32}$/, {
         message: '密码不能包含特殊字符 &<>"\'\\n\\r，长度6-32',
     })
     password: string;
 
     @IsOptional()
-    @IsEnum(['disabled', 'enabled'], { message: 'status必须为disabled或enabled' })
-    status: 'disabled' | 'enabled'
+    @IsEnum(['disable', 'enable'], { message: 'status必须为disable或enable' })
+    status: 'disable' | 'enable'
 }
