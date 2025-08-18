@@ -2,6 +2,7 @@ import { Body, Controller, DefaultValuePipe, Get, ParseIntPipe, Post, Query } fr
 import { AuthAdminService } from "./admin.service";
 import { CreateAdminDto } from "./dto/create-admin.dto";
 import { ApiException } from "src/core/exceptions/api.exception";
+import { EditAdminDto } from "./dto/edit-admin.dto";
 
 @Controller('admin/auth.admin')
 export class AuthAdminController {
@@ -29,8 +30,13 @@ export class AuthAdminController {
         return this.authAdminService.createAdmin(createAdminDto);
     }
 
+    /**
+     * 获取单个管理员信息
+     * @param id 
+     * @returns 
+     */
     @Get('edit')
-    async getItem(@Query('id', ParseIntPipe) id: number) {
+    async getEdit(@Query('id', ParseIntPipe) id: number) {
         const record = await this.authAdminService.getItem(id);
         if (!record) {
             throw new ApiException('Record not found')
@@ -38,5 +44,15 @@ export class AuthAdminController {
         return {
             row: record
         };
+    }
+
+    /**
+     * 更新单个管理员信息
+     * @param id
+     * @returns 
+     */
+    @Post('edit')
+    async postEdit(@Body() body: EditAdminDto) {
+        return await this.authAdminService.postEdit(body);
     }
 }

@@ -8,9 +8,11 @@ import { CoreAuthService } from "../../../core/services/auth.service";
 import { PrismaService } from "../../../core/services/prisma.service";
 import { AuthService } from "../../../modules/auth/auth.service";
 import { CreateAdminDto } from "./dto/create-admin.dto";
+import { EditAdminDto } from "./dto/edit-admin.dto";
 
 @Injectable()
 export class AuthAdminService extends CoreApiService {
+    protected dataLimitField = 'id';
     protected preExcludeFields: string | string[] = ['create_time', 'update_time', 'password', 'salt', 'login_failure', 'last_login_time', 'last_login_ip'];
     constructor(
         private prisma: PrismaService,
@@ -85,12 +87,6 @@ export class AuthAdminService extends CoreApiService {
 
                 // 处理分组关联
                 if (data.group_arr) {
-                    console.log({
-                        data: (data.group_arr.map(groupId => ({
-                            uid: admin.id,
-                            group_id: parseInt(groupId),
-                        }))) as any
-                    });
                     await ctx.baAdminGroupAccess.createMany({
                         data: (data.group_arr.map(groupId => ({
                             uid: admin.id,
@@ -101,7 +97,7 @@ export class AuthAdminService extends CoreApiService {
 
                 // 处理密码
                 if (password) {
-                    await this.authService.resetPassword(admin.id, password, ctx);
+                    await this.coreAuthService.resetPassword(admin.id, password, ctx);
                 }
 
                 return {
@@ -163,5 +159,73 @@ export class AuthAdminService extends CoreApiService {
             }
         });
         return this.transformAdminData(item);
+    }
+
+    async postEdit(body: EditAdminDto) {
+        let record = await this.getItem(body.id);
+        if (!record) {
+            throw new ApiException('Record not found')
+        }
+        const dataLimitAdminIds = await this.getDataLimitAdminIds();
+        if (dataLimitAdminIds?.length > 0 && !dataLimitAdminIds.includes(record[this.dataLimitField])) {
+            throw new ApiException('You have no permission');
+        }
+        const loginAdminId = this.coreAuthService.getUser('id');
+        if (loginAdminId === body.id && body.status === 'disabled') {
+            throw new ApiException('Please use another administrator account to disable the current account!');
+        }
+        if (body.password) {
+            await this.coreAuthService.resetPassword(body.id, body.password);
+        }
+
+        const groupAccess = [];
+        if (body.group_arr) {
+            const checkGroups = [];
+            for (const groupId of body.group_arr) {
+                if (record.group_arr.includes(groupId)) {
+                    checkGroups.push(groupId);
+                }
+                groupAccess.push({
+                    uid: loginAdminId,
+                    group_id: groupId
+                });
+            }
+            this.checkGroupAuth(checkGroups);
+        }
+        await this.prisma.baAdminGroupAccess.deleteMany({
+            where: {
+                uid: loginAdminId,
+            }
+        });
+        try {
+            const newBody = this.excludeFields(body); 
+            await this.prisma.$transaction(async (ctx) => {
+                // 更新管理员信息
+                await ctx.baAdmin.update({
+                    where: { id: body.id },
+                    data: {
+                        ...newBody,
+                        id: undefined,
+                        group_arr: undefined,
+                        group_name_arr: undefined,
+                    } as any
+                });
+
+                // 如果有分组信息，更新管理员分组
+                if (groupAccess.length > 0) {
+                    await ctx.baAdminGroupAccess.createMany({
+                        data: groupAccess
+                    });
+                }
+                return true;
+            });
+            return {
+                msg: 'Update successful'
+            };
+        } catch(e) {
+            console.error(e);
+            // throw new ApiException(String(e));
+            throw new ApiException('No rows updated');
+        }
     }
 }
