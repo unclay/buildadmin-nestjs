@@ -1,8 +1,9 @@
-import { Body, Controller, DefaultValuePipe, Get, ParseIntPipe, Post, Query } from "@nestjs/common";
+import { Body, Controller, DefaultValuePipe, Delete, Get, ParseIntPipe, Post, Query } from "@nestjs/common";
 import { AuthAdminService } from "./admin.service";
 import { CreateAdminDto } from "./dto/create-admin.dto";
 import { ApiException } from "src/core/exceptions/api.exception";
 import { EditAdminDto } from "./dto/edit-admin.dto";
+import { DelAdminDto } from "./dto/del-admin.dto";
 
 @Controller('admin/auth.admin')
 export class AuthAdminController {
@@ -54,5 +55,13 @@ export class AuthAdminController {
     @Post('edit')
     async postEdit(@Body() body: EditAdminDto) {
         return await this.authAdminService.postEdit(body);
+    }
+
+    /**
+     * 删除单个管理员
+     */
+    @Delete('del')
+    async deleteDel(@Query() query: DelAdminDto) {
+        return this.authAdminService.del(query);
     }
 }

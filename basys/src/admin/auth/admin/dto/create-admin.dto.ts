@@ -41,5 +41,5 @@ export class CreateAdminDto {
   @IsArray({ message: '分组必须是一个数组' })
   @IsNotEmpty({ message: '分组不能为空' })
   @Transform(({ value }) => value.map(str => parseInt(str, 10)))
-  group_arr: string[];
+  group_arr: number[];
 }

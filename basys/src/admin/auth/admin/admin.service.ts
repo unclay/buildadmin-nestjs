@@ -9,9 +9,11 @@ import { PrismaService } from "../../../core/services/prisma.service";
 import { AuthService } from "../../../modules/auth/auth.service";
 import { CreateAdminDto } from "./dto/create-admin.dto";
 import { EditAdminDto } from "./dto/edit-admin.dto";
+import { DelAdminDto } from "./dto/del-admin.dto";
 
 @Injectable()
 export class AuthAdminService extends CoreApiService {
+    protected dataLimit = 'allAuthAndOthers';
     protected dataLimitField = 'id';
     protected preExcludeFields: string | string[] = ['create_time', 'update_time', 'password', 'salt', 'login_failure', 'last_login_time', 'last_login_ip'];
     constructor(
@@ -90,7 +92,7 @@ export class AuthAdminService extends CoreApiService {
                     await ctx.baAdminGroupAccess.createMany({
                         data: (data.group_arr.map(groupId => ({
                             uid: admin.id,
-                            group_id: parseInt(groupId)
+                            group_id: groupId
                         }))) as any
                     });
                 }
@@ -226,6 +228,45 @@ export class AuthAdminService extends CoreApiService {
             console.error(e);
             // throw new ApiException(String(e));
             throw new ApiException('No rows updated');
+        }
+    }
+
+    async del(body: DelAdminDto) {
+        const loginAdminId = this.coreAuthService.getUser('id');
+        const dataLimitAdminIds = await this.getDataLimitAdminIds();
+        const whereAnd = [];
+        if (dataLimitAdminIds.length) {
+            whereAnd.push({
+                [this.dataLimitField]: { in: dataLimitAdminIds }
+            });
+        }
+        whereAnd.push({
+            id: { in: body.ids }
+        });
+        const data = await this.prisma.baAdmin.findMany({
+            where: {
+                AND: whereAnd,
+            }
+        });
+        let count = 0;
+        await this.prisma.$transaction(async (ctx) => {
+            for (const v of data) {
+                if (v.id !== loginAdminId) {
+                    await ctx.baAdminGroupAccess.deleteMany({
+                        where: { uid: v.id }
+                    });
+                    await ctx.baAdmin.delete({
+                        where: { id: v.id }
+                    });
+                    count += 1;
+                }
+            }
+        });
+        if (count === 0) {
+            throw new ApiException('No rows were deleted');
+        }
+        return {
+            msg: 'Deleted successfully'
         }
     }
 }
