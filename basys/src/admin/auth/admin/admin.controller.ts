@@ -1,6 +1,7 @@
 import { Body, Controller, DefaultValuePipe, Get, ParseIntPipe, Post, Query } from "@nestjs/common";
 import { AuthAdminService } from "./admin.service";
 import { CreateAdminDto } from "./dto/create-admin.dto";
+import { ApiException } from "src/core/exceptions/api.exception";
 
 @Controller('admin/auth.admin')
 export class AuthAdminController {
@@ -26,5 +27,16 @@ export class AuthAdminController {
     @Post('add')
     async postAdd(@Body() createAdminDto: CreateAdminDto) {
         return this.authAdminService.createAdmin(createAdminDto);
+    }
+
+    @Get('edit')
+    async getItem(@Query('id', ParseIntPipe) id: number) {
+        const record = await this.authAdminService.getItem(id);
+        if (!record) {
+            throw new ApiException('Record not found')
+        }
+        return {
+            row: record
+        };
     }
 }

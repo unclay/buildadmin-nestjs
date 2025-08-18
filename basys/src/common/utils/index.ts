@@ -1,2 +1,3 @@
 export const test = 'test';
-export { extractTokenFromRequest } from './request.util';
+export * from './request.util';
+export * from './array.util';

@@ -3,20 +3,22 @@ import { REQUEST } from "@nestjs/core";
 import { Prisma } from "@prisma/client";
 // core
 import { ApiException } from "../../../core/exceptions/api.exception";
+import { CoreApiService } from "../../../core/services/api.service";
+import { CoreAuthService } from "../../../core/services/auth.service";
 import { PrismaService } from "../../../core/services/prisma.service";
 import { AuthService } from "../../../modules/auth/auth.service";
-import { BaBackend } from "../../../extend/ba/Backend";
 import { CreateAdminDto } from "./dto/create-admin.dto";
 
 @Injectable()
-export class AuthAdminService extends BaBackend {
+export class AuthAdminService extends CoreApiService {
     protected preExcludeFields: string | string[] = ['create_time', 'update_time', 'password', 'salt', 'login_failure', 'last_login_time', 'last_login_ip'];
     constructor(
         private prisma: PrismaService,
         private authService: AuthService,
-        @Inject(REQUEST) private readonly req: Request
+        public coreAuthService: CoreAuthService,
+        @Inject(REQUEST) public readonly req: Request
     ) {
-        super();
+        super(req, coreAuthService);
     }
     async getList(page: number, limit: number) {
         const list = await this.prisma.baAdmin.findMany({
@@ -140,5 +142,26 @@ export class AuthAdminService extends BaBackend {
                 throw new ApiException('You have no permission to add an administrator to this group!')
             }
         }
+    }
+
+    /**
+     * 获取某个管理员
+     * @param id 
+     * @returns 
+     */
+    async getItem(id: number) {
+        let item = await this.prisma.baAdmin.findUnique({
+            where: {
+                id,
+            },
+            include: {
+                groups: {
+                    include: {
+                        group: true
+                    }
+                },
+            }
+        });
+        return this.transformAdminData(item);
     }
 }
