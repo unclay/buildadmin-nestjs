@@ -4,14 +4,15 @@ import { PrismaService } from "./prisma.service";
 import { BaAuth } from '../../extend/ba/Auth';
 import { array_diff } from "src/common";
 import { Prisma } from "@prisma/client";
+import { RequestDto } from "../dto/request.dto";
 
 @Injectable()
 export class CoreAuthService extends BaAuth {
     protected dataLimit: boolean | number | string = false;
     protected dataLimitField: string = 'admin_id';
     constructor(
-        @Inject(REQUEST) private readonly req: Request,
-        public prismaService: PrismaService
+        @Inject(REQUEST) private readonly req: RequestDto,
+        public prismaService: PrismaService,
     ) {
         super(prismaService);
     }
@@ -124,7 +125,7 @@ export class CoreAuthService extends BaAuth {
      * @return array 分组数组
      * @throws Throwable
      */
-    async getAllAuthGroups(dataLimit: string, groupQueryWhere = { status: 1 }) {
+    async getAllAuthGroups(dataLimit: string | number, groupQueryWhere: { [key:string]: any } = { status: 1 }) {
         // 当前管理员拥有的权限
         const rules = await this.getRuleIds(this.getUser('id'));
         const allAuthGroups = [];
@@ -153,5 +154,38 @@ export class CoreAuthService extends BaAuth {
         }
             
         return allAuthGroups;
+    }
+
+    async getAdminGroupIds() {
+        const adminGroups = await this.prisma.baAdminGroupAccess.findMany({
+            where: {
+                uid: this.getUser('id')
+            },
+            select: {
+                group_id: true,
+            }
+        });
+        return adminGroups.map(item => item.group_id);
+    }
+
+
+    /**
+     * 获取权限规则的 remark
+     * @returns 
+     */
+    async getRouteRemark() {
+        const adminRule = await this.prisma.baAdminRule.findFirst({
+            where: {
+                OR: [
+                    { name: this.req.routeInfo.controller_name },
+                    { name: this.req.routeInfo.action_name }
+                ]
+            },
+            select: {
+                remark: true
+            }
+        });
+
+        return adminRule?.remark || '';
     }
 }

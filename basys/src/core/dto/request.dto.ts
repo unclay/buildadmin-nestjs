@@ -9,4 +9,7 @@ export interface RequestDto extends Request {
         controller_name: string
         action_name: string
     }
+    user?: {
+        id: number
+    }
 }

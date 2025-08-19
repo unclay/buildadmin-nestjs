@@ -4,13 +4,23 @@ import { AuthGroupIndexQueryDto } from './group.dto';
 import { AuthService } from '../../../modules/auth/auth.service';
 import { REQUEST } from '@nestjs/core';
 import { BaTree } from '../../../extend/ba/Tree';
+import { CoreAuthService } from 'src/core/services/auth.service';
+import { ApiException } from 'src/core/exceptions/api.exception';
+import { RequestDto } from 'src/core/dto/request.dto';
 
 @Injectable()
 export class AuthGroupService {
+    /**
+     * 修改、删除分组时对操作管理员进行鉴权
+     * 本管理功能部分场景对数据权限有要求，修改此值请额外确定以下的 absoluteAuth 实现的功能
+     * allAuthAndOthers=管理员拥有该分组所有权限并拥有额外权限时允许
+     */
+    protected authMethod: string = 'allAuthAndOthers';
     constructor(
         private prisma: PrismaService,
         private authService: AuthService,
-        @Inject(REQUEST) private readonly req: Request
+        private coreAuthService: CoreAuthService,
+        @Inject(REQUEST) private readonly req: RequestDto
     ) {}
     getAssembleTree(query: AuthGroupIndexQueryDto) {
         const {
@@ -18,6 +28,66 @@ export class AuthGroupService {
             isTree = true,
         } = query;
         return isTree && initValue.length === 0;
+    }
+    /**
+     * 编辑角色组
+     */
+    async edit(id: number) {
+        const row = await this.prisma.baAdminGroup.findFirst({ where: { id } });
+        if (!row) {
+            throw new ApiException('Record not found');
+        }
+        this.checkAuth(row.id);
+
+        // 读取所有pid，全部从节点数组移除，父级选择状态由子级决定
+        // 获取所有唯一的pid
+        const pidArr = await this.prisma.baAdminRule.findMany({
+            where: {
+                id: {
+                    in: row.rules.split(',').map(Number)
+                }
+            },
+            select: {
+                pid: true
+            },
+            distinct: ['pid']
+        });
+
+        // 处理规则数组
+        let rules = row.rules ? row.rules.split(',') : [];
+        
+        // 移除父级规则
+        pidArr.forEach(item => {
+            const ruKey = rules.indexOf(item.pid.toString());
+            if (ruKey !== -1) {
+                rules.splice(ruKey, 1);
+            }
+        });
+
+        // 更新规则
+        (row as any).rules = rules;
+        
+        return {
+            row: row
+        };
+    }
+
+    /**
+     * 检查权限
+     * @param $groupId
+     * @return void
+     * @throws Throwable
+     */
+    private async checkAuth(groupId: number): Promise<void> {
+        const authGroups = await this.coreAuthService.getAllAuthGroups(this.req.user.id, {});
+        const isSuperAdmin = await this.coreAuthService.isSuperAdmin();
+        if (!isSuperAdmin && !authGroups.includes(groupId)) {
+            throw new ApiException(
+                this.authMethod === 'allAuth' 
+                    ? 'You need to have all permissions of this group to operate this group~'
+                    : 'You need to have all the permissions of the group and have additional permissions before you can operate the group~'
+            );
+        }
     }
     async getOptions(query: AuthGroupIndexQueryDto) {
         // /admin/auth.Group/index?select=true&quickSearch=&isTree=true&absoluteAuth=1&uuid=_226043698171754924747730&page=1&initKey=id
@@ -52,7 +122,8 @@ export class AuthGroupService {
         const quickSearchField = 'name';
         const authMethod = 'allAuthAndOthers';
         const adminGroups = [];
-        const isSuperAdmin = await this.authService.isSuperAdmin(admin.id);
+        const isSuperAdmin = await this.coreAuthService.isSuperAdmin();
+        
         const {
             initKey = 'id',
             absoluteAuth = false,
@@ -135,18 +206,6 @@ export class AuthGroupService {
     //     body = this.excludeFields(body);
     //     body = await this.handleRules(body);
     //     return this.prisma.baAdmin.create(body);
-    // }
-
-    // private excludeFields(data: any): any {
-    //     const excludedFields = ['create_time', 'update_time']; // 示例
-    //     return Object.fromEntries(
-    //         Object.entries(data).filter(([key]) => !excludedFields.includes(key)),
-    //     );
-    // }
-
-    // arrayDiff(array1, array2) {
-    //     const set2 = new Set(array2);
-    //     return array1.filter(item => !set2.has(item));
     // }
     // /**
     //  * 权限节点入库前处理
