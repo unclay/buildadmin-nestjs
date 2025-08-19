@@ -6,7 +6,7 @@ import { CoreAuthService } from "../../../core/services/auth.service";
 import { CoreApiService } from "../../../core/services/api.service";
 import { PrismaService } from "../../../core/services/prisma.service";
 // local
-import { RuleQueryDto } from "./dto/query.dto";
+import { AuthRuleIndexQueryDto } from "./dto/query.dto";
 import { BaTree } from "src/extend/ba/Tree";
 
 @Injectable()
@@ -21,27 +21,25 @@ export class AuthRuleService extends CoreApiService {
     ) {
         super(req, coreAuthService);
     }
-    index() {
-        return '123d';
-    }
-
 
     /**
      * 重写select方法
      * @throws Error
      */
     async select(): Promise<any> {
-        const data = await this.getMenus([
-            ['type', 'in', ['menu_dir', 'menu']], 
-            ['status', '=', 1]
-        ]);
+        const data = await this.getMenus({
+            type: {
+                in: ['menu_dir', 'menu']
+            },
+            status: 1
+        });
 
-        // if (this.assembleTree) {
-        //     const treeData = await this.tree.getTreeArray(data, 'title');
-        //     return {
-        //         options: await this.tree.assembleTree(treeData)
-        //     };
-        // }
+        if (this.req.assembleTree) {
+            const treeData = await BaTree.getTreeArray(data, 'title');
+            return {
+                options: await BaTree.assembleTree(treeData)
+            };
+        }
 
         return {
             options: data
@@ -53,7 +51,7 @@ export class AuthRuleService extends CoreApiService {
      * @throws Error
      */
     async getMenus(where: { [key: string]: any } = {}) {
-        const query = this.req.query as RuleQueryDto;
+        const query = this.req.query as AuthRuleIndexQueryDto;
         const {
             initKey = this.pk,
             quickSearch: keyword = '',
@@ -82,7 +80,6 @@ export class AuthRuleService extends CoreApiService {
             where[initKey] = { in: initValue };
         }
 
-        console.log(this.queryOrderBuilder());
         // 读取用户组所有权限规则
         const rules = await this.prisma.baAdminRule.findMany({
             where,

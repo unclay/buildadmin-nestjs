@@ -1,7 +1,7 @@
 import { Transform } from "class-transformer";
 import { IsArray, IsOptional } from "class-validator";
 
-export class RuleQueryDto {
+export class AuthRuleIndexQueryDto {
     @IsOptional()
     @Transform(({ value }) => {
         return value === 'true';
