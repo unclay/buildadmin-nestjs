@@ -38,7 +38,7 @@ export class CoreAuthService extends BaAuth {
         let isSuperAdmin = this.getUser('isSuperAdmin');
         if (typeof isSuperAdmin === 'boolean') return isSuperAdmin;
         // 读取数据库
-        const rules = await this.getRuleIds(this.getUser('id'));
+        const rules = await this.getRuleIds();
         isSuperAdmin = rules.includes('*');
         this.setUser('isSuperAdmin', isSuperAdmin);
         return isSuperAdmin;
@@ -127,7 +127,7 @@ export class CoreAuthService extends BaAuth {
      */
     async getAllAuthGroups(dataLimit: string | number, groupQueryWhere: { [key:string]: any } = { status: 1 }) {
         // 当前管理员拥有的权限
-        const rules = await this.getRuleIds(this.getUser('id'));
+        const rules = await this.getRuleIds();
         const allAuthGroups = [];
         const groups = await this.prisma.baAdminGroup.findMany({
             where: groupQueryWhere
@@ -187,5 +187,12 @@ export class CoreAuthService extends BaAuth {
         });
 
         return adminRule?.remark || '';
+    }
+
+    getRuleIds() {
+        return super.getRuleIds(this.req.user?.id);
+    }
+    getMenus() {
+        return super.getMenus(this.req.user?.id);
     }
 }

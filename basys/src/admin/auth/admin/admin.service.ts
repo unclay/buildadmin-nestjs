@@ -10,6 +10,7 @@ import { AuthService } from "../../../modules/auth/auth.service";
 import { CreateAdminDto } from "./dto/create-admin.dto";
 import { EditAdminDto } from "./dto/edit-admin.dto";
 import { DelAdminDto } from "./dto/del-admin.dto";
+import { RequestDto } from "src/core/dto/request.dto";
 
 @Injectable()
 export class AuthAdminService extends CoreApiService {
@@ -20,7 +21,7 @@ export class AuthAdminService extends CoreApiService {
         private prisma: PrismaService,
         private authService: AuthService,
         public coreAuthService: CoreAuthService,
-        @Inject(REQUEST) public readonly req: Request
+        @Inject(REQUEST) public readonly req: RequestDto
     ) {
         super(req, coreAuthService);
     }
