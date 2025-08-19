@@ -1,19 +1,22 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
+import { PrismaClient } from "@prisma/client";
 // core
 import { RequestDto } from "../../../core/dto/request.dto";
 import { CoreAuthService } from "../../../core/services/auth.service";
 import { CoreApiService } from "../../../core/services/api.service";
 import { PrismaService } from "../../../core/services/prisma.service";
+import { ApiException } from "../../../core/exceptions/api.exception";
+// extend ba
+import { BaTree } from "../../../extend/ba/Tree";
 // local
-import { AuthRuleIndexQueryDto } from "./dto/query.dto";
-import { BaTree } from "src/extend/ba/Tree";
+import { AuthRuleEditDto, AuthRuleIndexQueryDto } from "./dto";
 
 @Injectable()
 export class AuthRuleService extends CoreApiService {
     // baAdminRule 主键
-    protected pk: string = 'id';
     protected quickSearchField: string = 'title';
+    protected preExcludeFields = ['create_time', 'update_time'];
     constructor(
         @Inject(REQUEST) public readonly req: RequestDto,
         public coreAuthService: CoreAuthService,
@@ -46,6 +49,43 @@ export class AuthRuleService extends CoreApiService {
         };
     }
 
+    async edit(body: AuthRuleEditDto) {
+        const row = await this.prisma.baAdminGroup.findFirst({ where: { id: body.id } });
+        if (!row) {
+            throw new ApiException('Record not found');
+        }
+
+        const dataLimitAdminIds = await this.getDataLimitAdminIds();
+        if (dataLimitAdminIds?.length > 0 && !dataLimitAdminIds.includes(row[this.dataLimitField])) {
+            throw new ApiException('You have no permission');
+        }
+
+        const newBody = this.excludeFields(body);
+        try {
+            await this.prisma.$transaction(async (ctx: PrismaService) => {
+                if (newBody.pid > 0) {
+                    // 满足意图并消除副作用
+                    const parent = await ctx.baAdminGroup.findFirst({
+                        where: {
+                            id: newBody.pid
+                        }
+                    });
+                    if (parent?.pid === row.id) {
+                        await ctx.baAdminGroup.update({
+                            where: { id: parent.id },
+                            data: { pid: 0 }
+                        });
+                    }
+                }
+            });
+            return 'Update successful';
+        } catch(e) {
+            console.error(e);
+            throw new ApiException('No rows updated');
+        }
+        
+    }
+
     /**
      * 获取菜单列表
      * @throws Error
@@ -53,7 +93,7 @@ export class AuthRuleService extends CoreApiService {
     async getMenus(where: { [key: string]: any } = {}) {
         const query = this.req.query as AuthRuleIndexQueryDto;
         const {
-            initKey = this.pk,
+            initKey = 'id',
             quickSearch: keyword = '',
         } = query;
         const initValue = (query.initValue || []).filter(Boolean);

@@ -22,6 +22,6 @@ export class AuthRuleController {
 
     @Post('edit')
     async edit(@Body() body: AuthRuleEditDto) {
-        return body;
+        return await this.ruleService.edit(body);
     }
 }

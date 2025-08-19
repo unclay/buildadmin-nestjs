@@ -1,10 +1,11 @@
-import { Injectable } from "@nestjs/common"
+import { HttpException, HttpStatus, Injectable } from "@nestjs/common"
 import { CoreAuthService } from "./auth.service";
 // core
 import { array_unique } from '../../common';
 // extend
 import { BaApi } from "../../extend/ba/BaApi";
 import { RequestDto } from "../dto/request.dto";
+import { ApiException } from "../exceptions/api.exception";
 
 @Injectable()
 export class CoreApiService extends BaApi {
@@ -29,6 +30,28 @@ export class CoreApiService extends BaApi {
         public readonly coreAuthService: CoreAuthService,
     ) {
         super()
+    }
+    /**
+     * 返回 API 数据
+     * @param string      $msg     提示消息
+     * @param mixed       $data    返回数据
+     * @param int         $code    错误码
+     * @param string|null $type    输出类型
+     * @param array       $header  发送的 header 信息
+     * @param array       $options Response 输出参数
+     */
+    result(msg: string, data: any = null, code: number = 0, type?: string, header: Record<string, any> = {}, options: Record<string, any> = {}) {
+        const result = {
+            code: code,
+            msg: msg,
+            time: Math.floor(Date.now() / 1000),
+            data: data,
+        };
+
+        const statusCode = header?.statusCode ?? HttpStatus.OK;
+        delete header.statusCode;
+
+        throw new HttpException(result, statusCode, options);
     }
     /**
      * 从 request 读取用户的属性值

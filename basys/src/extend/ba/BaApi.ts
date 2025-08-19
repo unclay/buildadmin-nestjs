@@ -1,6 +1,3 @@
-export interface PostBody {
-    [key: string]: any
-}
 export class BaApi {
     protected preExcludeFields: string | string[];
     /**
@@ -8,7 +5,7 @@ export class BaApi {
      * @param data 
      * @returns 
      */
-    protected excludeFields(data: PostBody): PostBody {
+    protected excludeFields(data: Record<string, any>): Record<string, any> {
         if (typeof this.preExcludeFields === 'string') {
             this.preExcludeFields = this.preExcludeFields.split(',');
         }
