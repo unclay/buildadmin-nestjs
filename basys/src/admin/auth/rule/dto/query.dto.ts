@@ -1,5 +1,7 @@
 import { Transform } from "class-transformer";
-import { IsArray, IsOptional } from "class-validator";
+import { IsArray, IsNumber, IsOptional } from "class-validator";
+// core
+import { TransformToNumber } from "../../../../core/dto/dto.decorator";
 
 export class AuthRuleIndexQueryDto {
     @IsOptional()
@@ -21,12 +23,8 @@ export class AuthRuleIndexQueryDto {
     isTree?: boolean;
 
     @IsOptional()
-    @IsArray()
-    @Transform(({ value }) => {
-        if (Array.isArray(value)) {
-            return value.map((str) => parseInt(str, 10));
-        }
-        return value ? [parseInt(value, 10)] : [];
-    })
+    @IsNumber({}, { message: 'ids必须是一个数字数组', each: true })
+    @IsArray({ message: 'ids必须是一个数字数组' })
+    @TransformToNumber()
     initValue?: number[];
 }
