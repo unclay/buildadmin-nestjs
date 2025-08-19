@@ -5,6 +5,7 @@ import { PrismaService } from "./services/prisma.service";
 import { RequestContext } from './services/request-context.service';
 import { RequestTimeMiddleware } from "./middlewares/request-time.middleware";
 import { RouteInfoMiddleware } from "./middlewares/route-info.middleware";
+import { AssembleTreeMiddleware } from "./middlewares/assemble-tree.middleware";
 import { CoreAuthService } from "./services/auth.service";
 // import { ApiExceptionFilter } from "./filters/api-exception.filter";
 
@@ -24,7 +25,7 @@ import { CoreAuthService } from "./services/auth.service";
 export class CoreModule {
     configure(consumer: MiddlewareConsumer) {
         consumer
-            .apply(RequestTimeMiddleware, RouteInfoMiddleware)
+            .apply(RequestTimeMiddleware, RouteInfoMiddleware, AssembleTreeMiddleware)
             .forRoutes('*'); // 应用到所有路由
     }
 }
