@@ -23,8 +23,8 @@ export class AuthRuleIndexQueryDto {
     isTree?: boolean;
 
     @IsOptional()
-    @IsNumber({}, { message: 'ids必须是一个数字数组', each: true })
-    @IsArray({ message: 'ids必须是一个数字数组' })
-    @TransformToNumber()
+    @IsNumber({}, { message: 'initValue必须是一个数字数组', each: true })
+    @IsArray({ message: 'initValue必须是一个数字数组' })
+    @TransformToNumber({ array: true })
     initValue?: number[];
 }

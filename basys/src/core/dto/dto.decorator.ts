@@ -28,21 +28,29 @@ export function IsNumberOrString(validationOptions?: ValidationOptions) {
 /**
  * 将字符串数字转换为数字，保持其他值不变
  */
-export function TransformToNumber() {
+export function TransformToNumber(options?: { array: boolean }) {
+  // 转成数组
+  const needArray = options?.array ?? false;
   const stringToNumber = (value: string) => (isNaN(Number(value)) ? value : Number(value));
   return Transform(({ value }) => {
-    if (typeof value === 'string') {
-      return stringToNumber(value);
+    let data = value;
+    if (typeof data === 'string') {
+      data = stringToNumber(data);
+      if (!needArray) {
+        return data;
+      } else {
+        data = String(data).split(',');
+      }
     }
     // 字符数组
-    if (Array.isArray(value)) {
-      return value.map((item) => {
+    if (Array.isArray(data)) {
+      return data.map((item) => {
         if (typeof item === 'string') {
           return stringToNumber(item);
         }
         return item;
       });
     }
-    return value;
+    return data;
   });
 }

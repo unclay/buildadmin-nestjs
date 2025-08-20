@@ -12,10 +12,10 @@ export class AuthRuleController {
     @Get('index')
     async index(@Query() query: AuthRuleIndexQueryDto) {
         if (query.select) {
-            return await this.ruleService.select();
+            return await this.ruleService.select(query);
         }
         return {
-            list: await this.ruleService.getMenus(),
+            list: await this.ruleService.getMenus(query),
             remark: await this.coreAuthService.getRouteRemark(),
         }
     }

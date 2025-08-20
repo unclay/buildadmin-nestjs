@@ -29,8 +29,8 @@ export class AuthRuleService extends CoreApiService {
      * 重写select方法
      * @throws Error
      */
-    async select(): Promise<any> {
-        const data = await this.getMenus({
+    async select(query: AuthRuleIndexQueryDto): Promise<any> {
+        const data = await this.getMenus(query, {
             type: {
                 in: ['menu_dir', 'menu']
             },
@@ -90,8 +90,7 @@ export class AuthRuleService extends CoreApiService {
      * 获取菜单列表
      * @throws Error
      */
-    async getMenus(where: { [key: string]: any } = {}) {
-        const query = this.req.query as AuthRuleIndexQueryDto;
+    async getMenus(query: AuthRuleIndexQueryDto, where: { [key: string]: any } = {}) {
         const {
             initKey = 'id',
             quickSearch: keyword = '',
