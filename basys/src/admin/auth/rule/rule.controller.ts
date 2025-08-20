@@ -5,10 +5,16 @@ import { AuthRuleService } from "./rule.service";
 /// local
 import { AuthRuleIndexQueryDto } from "./dto/query.dto";
 import { AuthRuleEditDto } from "./dto/edit-rule.dto";
+import { AuthRuleAddDto } from "./dto";
 
 @Controller('admin/auth.rule')
 export class AuthRuleController {
     constructor(private ruleService: AuthRuleService, private coreAuthService: CoreAuthService) {}
+    @Post('add')
+    async add(@Body() body: AuthRuleAddDto) {
+        return await this.ruleService.add(body);
+    }
+
     @Get('index')
     async index(@Query() query: AuthRuleIndexQueryDto) {
         if (query.select) {

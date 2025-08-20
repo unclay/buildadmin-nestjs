@@ -10,8 +10,28 @@ import { ApiException } from "../exceptions/api.exception";
 @Injectable()
 export class CoreApiService extends BaApi {
     protected pk = 'id';
+    /**
+     * 开启数据限制
+     * false=关闭
+     * personal=仅限个人
+     * allAuth=拥有某管理员所有的权限时
+     * allAuthAndOthers=拥有某管理员所有的权限并且还有其他权限时
+     * parent=上级分组中的管理员可查
+     * 指定分组中的管理员可查，比如 $dataLimit = 2;
+     * 启用请确保数据表内存在 admin_id 字段，可以查询/编辑数据的管理员为admin_id对应的管理员+数据限制所表示的管理员们
+     * @var bool|string|int
+     */
     protected dataLimit: boolean | number | string = false;
+    /**
+     * 数据限制字段
+     * @var string
+     */
     protected dataLimitField: string = 'admin_id';
+    /**
+     * 数据限制开启时自动填充字段值为当前管理员id
+     * @var bool
+     */
+    protected dataLimitFieldAutoFill = true;
     /**
      * 有序保证
      * 查询数据时总是需要指定 ORDER BY 子句，否则 MySQL 不保证排序，即先查到哪行就输出哪行且不保证多次查询中的输出顺序

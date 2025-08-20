@@ -1,6 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
-import { PrismaClient } from "@prisma/client";
 // core
 import { RequestDto } from "../../../core/dto/request.dto";
 import { CoreAuthService } from "../../../core/services/auth.service";
@@ -10,7 +9,7 @@ import { ApiException } from "../../../core/exceptions/api.exception";
 // extend ba
 import { BaTree } from "../../../extend/ba/Tree";
 // local
-import { AuthRuleEditDto, AuthRuleIndexQueryDto } from "./dto";
+import { AuthRuleAddDto, AuthRuleEditDto, AuthRuleIndexQueryDto } from "./dto";
 
 @Injectable()
 export class AuthRuleService extends CoreApiService {
@@ -23,6 +22,44 @@ export class AuthRuleService extends CoreApiService {
         private prisma: PrismaService,
     ) {
         super(req, coreAuthService);
+    }
+
+    async add(body: AuthRuleAddDto) {
+        const data = this.excludeFields(body);
+        if (this.dataLimit && this.dataLimitFieldAutoFill) {
+            data[this.dataLimitField] = this.req.user.id;
+        }
+        let result = null;
+        await this.prisma.$transaction(async (ctx) => {
+            result = this.prisma.baAdminRule.create({
+                data,
+            });
+
+            // 检查所有非超管的分组是否应该拥有此权限
+            if (data.pid) {
+                // 查找所有非通配符权限的用户组
+                const groups = await ctx.baAdminGroup.findMany({
+                    where: {
+                        rules: {
+                            not: '*'
+                        }
+                    }
+                });
+
+                // 遍历用户组检查权限
+                for (const group of groups) {
+                    const rules = group.rules.split(',');
+                    if (rules.includes(data.pid.toString()) && !rules.includes(result.id.toString())) {
+                        rules.push(result.id.toString());
+                        await ctx.baAdminGroup.update({
+                            where: { id: group.id },
+                            data: { rules: rules.join(',') }
+                        });
+                    }
+                }
+            }
+        });
+        return 'Added successfully';
     }
 
     /**
