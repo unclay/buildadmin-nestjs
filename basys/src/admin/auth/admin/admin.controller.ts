@@ -1,34 +1,30 @@
 import { Body, Controller, DefaultValuePipe, Delete, Get, ParseIntPipe, Post, Query } from "@nestjs/common";
+// core
+import { ApiException } from "../../../core/exceptions/api.exception";
+// local
+import { AuthAdminAddDto, AuthAdminDelDto, AuthAdminEditDto } from "./dto";
 import { AuthAdminService } from "./admin.service";
-import { CreateAdminDto } from "./dto/create-admin.dto";
-import { ApiException } from "src/core/exceptions/api.exception";
-import { EditAdminDto } from "./dto/edit-admin.dto";
-import { DelAdminDto } from "./dto/del-admin.dto";
 
 @Controller('admin/auth.admin')
 export class AuthAdminController {
     constructor(private authAdminService: AuthAdminService) {}
-    /**
-     * 获取管理员列表
-     * @param page 
-     * @param limit 
-     * @returns 
-     */
-    @Get('index')
-    async getIndex(
-        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-        @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
-    ) {
-        return this.authAdminService.getList(page, limit);
-    }
+    // 增删改查
 
     /**
      * 新增管理员
      * @returns 
      */
     @Post('add')
-    async postAdd(@Body() createAdminDto: CreateAdminDto) {
-        return this.authAdminService.createAdmin(createAdminDto);
+    async add(@Body() body: AuthAdminAddDto) {
+        return this.authAdminService.add(body);
+    }
+
+    /**
+     * 删除单个管理员
+     */
+    @Delete('del')
+    async del(@Query() query: AuthAdminDelDto) {
+        return this.authAdminService.del(query);
     }
 
     /**
@@ -38,7 +34,7 @@ export class AuthAdminController {
      */
     @Get('edit')
     async getEdit(@Query('id', ParseIntPipe) id: number) {
-        const record = await this.authAdminService.getItem(id);
+        const record = await this.authAdminService.getEdit(id);
         if (!record) {
             throw new ApiException('Record not found')
         }
@@ -53,15 +49,21 @@ export class AuthAdminController {
      * @returns 
      */
     @Post('edit')
-    async postEdit(@Body() body: EditAdminDto) {
+    async postEdit(@Body() body: AuthAdminEditDto) {
         return await this.authAdminService.postEdit(body);
     }
 
     /**
-     * 删除单个管理员
+     * 获取管理员列表
+     * @param page 
+     * @param limit 
+     * @returns 
      */
-    @Delete('del')
-    async deleteDel(@Query() query: DelAdminDto) {
-        return this.authAdminService.del(query);
+    @Get('index')
+    async getIndex(
+        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+        @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    ) {
+        return this.authAdminService.getList(page, limit);
     }
 }

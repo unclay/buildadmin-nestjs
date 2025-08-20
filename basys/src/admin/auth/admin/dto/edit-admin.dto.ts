@@ -1,7 +1,7 @@
 import { IsEnum, IsNumber, IsOptional, IsString, Matches } from "class-validator";
-import { CreateAdminDto } from "./create-admin.dto";
+import { AuthAdminAddDto } from "./";
 
-export class EditAdminDto extends CreateAdminDto {
+export class AuthAdminEditDto extends AuthAdminAddDto {
     @IsNumber({}, { message: 'ID必须为数字' })
     id: number
 

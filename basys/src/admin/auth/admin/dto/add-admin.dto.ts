@@ -9,7 +9,7 @@ import {
   IsOptional,
 } from 'class-validator';
 
-export class CreateAdminDto {
+export class AuthAdminAddDto {
   @IsString()
   @IsNotEmpty({ message: '用户名不能为空' })
   @Matches(/^[a-zA-Z][a-zA-Z0-9_]{2,15}$/, {

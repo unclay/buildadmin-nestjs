@@ -1,7 +1,7 @@
 import { Transform } from "class-transformer";
 import { IsArray, IsNotEmpty } from "class-validator";
 
-export class DelAdminDto {
+export class AuthAdminDelDto {
     @IsArray({ message: 'ids必须是一个数组' })
     @IsNotEmpty({ message: 'ids不能为空' })
     @Transform(({ value }) => {
