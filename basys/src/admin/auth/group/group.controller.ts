@@ -1,7 +1,9 @@
-import { Controller, ExecutionContext, Get, ParseIntPipe, Query } from '@nestjs/common';
-import { AuthGroupService } from './group.service';
-import { AuthGroupIndexQueryDto } from './group.dto';
+import { Body, Controller, Get, ParseIntPipe, Post, Query } from '@nestjs/common';
+// core
 import { CoreAuthService } from '../../../core/services/auth.service';
+// local
+import { AuthGroupEditDto, AuthGroupIndexQueryDto } from './dto';
+import { AuthGroupService } from './group.service';
 
 @Controller('admin/auth.group')
 export class AuthGroupController {
@@ -20,7 +22,12 @@ export class AuthGroupController {
     }
 
     @Get('edit')
-    async edit(@Query('id', ParseIntPipe) id: number) {
-        return await this.authGroupService.edit(id);
+    async getEdit(@Query('id', ParseIntPipe) id: number) {
+        return await this.authGroupService.getEdit(id);
+    }
+
+    @Post('edit')
+    async postEdit(@Body() body: AuthGroupEditDto) {
+        return await this.authGroupService.postEdit(body);
     }
 }
