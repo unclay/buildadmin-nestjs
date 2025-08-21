@@ -1,9 +1,8 @@
 import { HttpStatus, Inject, Injectable, Scope } from "@nestjs/common";
 import { PrismaService } from "../../core/services/prisma.service";
-import { ApiException, TokenExpirationException } from "../../core/exceptions/api.exception";
 import { JwtService } from "@nestjs/jwt";
-import { Request } from 'express';
 import { ConfigService } from "@nestjs/config";
+import { ApiResponse } from "src/common";
 
 @Injectable()
 export class TokenService  {
@@ -42,7 +41,7 @@ export class TokenService  {
 
     private tokenExpirationCheck(expireTime: number) {
         if (expireTime && expireTime <= Math.floor(Date.now() / 1000)) {
-            throw new TokenExpirationException();
+            throw ApiResponse.error('Token expiration');
         }
     }
 

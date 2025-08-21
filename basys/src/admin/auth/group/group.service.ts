@@ -1,11 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 // common
-import { array_diff } from '../../../common';
+import { ApiResponse, array_diff } from '../../../common';
 // core
 import { RequestDto } from '../../../core/dto/request.dto';
 import { CoreApiService, CoreAuthService, PrismaService } from '../../../core/services';
-import { ApiException } from '../../../core/exceptions/api.exception';
 // extend ba
 import { BaTree } from '../../../extend/ba';
 // local
@@ -42,9 +41,9 @@ export class AuthGroupService extends CoreApiService {
             });
         });
         if (result) {
-            return 'Added successfully';
+            return ApiResponse.success('Added successfully');
         }
-        throw new ApiException('No rows were added');
+        throw ApiResponse.error('No rows were added');
     }
 
     async del(body: AuthGroupDelDto) {
@@ -68,7 +67,7 @@ export class AuthGroupService extends CoreApiService {
         });
         for (const subDatum of subData) {
             if (!ids.includes(subDatum.id)) {
-                throw new ApiException('Please delete the child element first, or use batch deletion');
+                throw ApiResponse.error('Please delete the child element first, or use batch deletion');
             }
         }
 
@@ -92,16 +91,16 @@ export class AuthGroupService extends CoreApiService {
             }
         }
         if (count) {
-            return 'Deleted successfully';
+            return ApiResponse.success('Deleted successfully');
         } else {
-            throw new ApiException('No rows were deleted');
+            throw ApiResponse.error('No rows were deleted');
         }
     }
     
     private async initEdit(id: number) {
         const row = await this.prisma.baAdminGroup.findFirst({ where: { id } });
         if (!row) {
-            throw new ApiException('Record not found');
+            throw ApiResponse.error('Record not found');
         }
         this.checkAuth(row.id);
         return row;
@@ -150,7 +149,7 @@ export class AuthGroupService extends CoreApiService {
         });
         const adminGroupIds = adminGroups.map(item => item.group_id);
         if (adminGroupIds.includes(body.id)) {
-            throw new ApiException('You cannot modify your own management group!');
+            throw ApiResponse.error('You cannot modify your own management group!');
         }
         let data = this.excludeFields(body);
         data = await this.handleRules(data);
@@ -166,9 +165,9 @@ export class AuthGroupService extends CoreApiService {
             });
         });
         if (result) {
-            return 'Update successful';
+            return ApiResponse.success('Update successful');
         }
-        throw new ApiException('No rows updated');
+        throw ApiResponse.error('No rows updated');
     }
 
     /**
@@ -275,7 +274,7 @@ export class AuthGroupService extends CoreApiService {
         const authGroups = await this.coreAuthService.getAllAuthGroups(this.req.user.id, {});
         const isSuperAdmin = await this.coreAuthService.isSuperAdmin();
         if (!isSuperAdmin && !authGroups.includes(groupId)) {
-            throw new ApiException(
+            throw ApiResponse.error(
                 this.authMethod === 'allAuth' 
                     ? 'You need to have all permissions of this group to operate this group~'
                     : 'You need to have all the permissions of the group and have additional permissions before you can operate the group~'
@@ -346,11 +345,11 @@ export class AuthGroupService extends CoreApiService {
                 const ownedRuleIds = await this.coreAuthService.getRuleIds();
                 // 禁止添加`拥有自己全部权限`的分组
                 if (!array_diff(ownedRuleIds, checkedRules)) {
-                    throw new ApiException('Role group has all your rights, please contact the upper administrator to add or do not need to add!')
+                    throw ApiResponse.error('Role group has all your rights, please contact the upper administrator to add or do not need to add!')
                 }
                 // 检查分组权限是否超出了自己的权限（超管的 $ownedRuleIds 为 ['*']，不便且可以不做此项检查）
                 if (array_diff(checkedRules, ownedRuleIds) && !isSuperAdmin) {
-                    throw new ApiException('The group permission node exceeds the range that can be allocated');
+                    throw ApiResponse.error('The group permission node exceeds the range that can be allocated');
                 }
                 (data as any).rules = checkedRules.join(',');
             }

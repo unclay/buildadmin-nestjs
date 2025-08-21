@@ -5,7 +5,6 @@ import { array_unique } from '../../common';
 // extend
 import { BaApi } from "../../extend/ba/BaApi";
 import { RequestDto } from "../dto/request.dto";
-import { ApiException } from "../exceptions/api.exception";
 
 @Injectable()
 export class CoreApiService extends BaApi {

@@ -2,11 +2,11 @@ import { Injectable, HttpStatus, Inject } from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
 import { Prisma } from "@prisma/client";
 // core
-import { ApiException } from "../../../core/exceptions/api.exception";
 import { CoreApiService, CoreAuthService, PrismaService } from "../../../core/services";
 import { RequestDto } from "../../../core/dto/request.dto";
 // local
 import { AuthAdminAddDto, AuthAdminDelDto, AuthAdminEditDto } from "./dto";
+import { ApiResponse } from "src/common";
 
 @Injectable()
 export class AuthAdminService extends CoreApiService {
@@ -64,7 +64,7 @@ export class AuthAdminService extends CoreApiService {
                 data: result,
             };
         }
-        throw new ApiException('No rows were added');
+        throw ApiResponse.error('No rows were added');
     }
 
     async del(body: AuthAdminDelDto) {
@@ -99,7 +99,7 @@ export class AuthAdminService extends CoreApiService {
             }
         });
         if (count === 0) {
-            throw new ApiException('No rows were deleted');
+            throw ApiResponse.error('No rows were deleted');
         }
         return {
             msg: 'Deleted successfully'
@@ -112,7 +112,7 @@ export class AuthAdminService extends CoreApiService {
      * @returns 
      */
     async getEdit(id: number) {
-        let item = await this.prisma.baAdmin.findUnique({
+        let record = await this.prisma.baAdmin.findUnique({
             where: {
                 id,
             },
@@ -124,21 +124,24 @@ export class AuthAdminService extends CoreApiService {
                 },
             }
         });
-        return this.transformAdminData(item);
+        if (!record) {
+            return;
+        }
+        return this.transformAdminData(record);
     }
 
     async postEdit(body: AuthAdminEditDto) {
         let record = await this.getEdit(body.id);
         if (!record) {
-            throw new ApiException('Record not found')
+            throw ApiResponse.error('Record not found')
         }
         const dataLimitAdminIds = await this.getDataLimitAdminIds();
         if (dataLimitAdminIds?.length > 0 && !dataLimitAdminIds.includes(record[this.dataLimitField])) {
-            throw new ApiException('You have no permission');
+            throw ApiResponse.error('You have no permission');
         }
         const loginAdminId = this.coreAuthService.getUser('id');
         if (loginAdminId === body.id && body.status === 'disable') {
-            throw new ApiException('Please use another administrator account to disable the current account!');
+            throw ApiResponse.error('Please use another administrator account to disable the current account!');
         }
         if (body.password) {
             await this.coreAuthService.resetPassword(body.id, body.password);
@@ -177,6 +180,7 @@ export class AuthAdminService extends CoreApiService {
                     group_name_arr: undefined,
                 } as any
             });
+            console.log(result);
 
             // 如果有分组信息，更新管理员分组
             if (groupAccess.length > 0) {
@@ -185,8 +189,8 @@ export class AuthAdminService extends CoreApiService {
                 });
             }
         });
-        if (result) 'Update successful';
-        throw new ApiException('No rows updated');
+        if (result) return ApiResponse.success('Update successful');
+        throw ApiResponse.error('No rows updated');
     }
 
     async getList(page: number, limit: number) {
@@ -237,7 +241,6 @@ export class AuthAdminService extends CoreApiService {
      * @throws Throwable
      */
     async checkGroupAuth(groups) {
-        const uid = (this.req as any).user?.id;
         const isSuperAdmin = await this.coreAuthService.isSuperAdmin(); 
         if (isSuperAdmin) {
             return;
@@ -245,7 +248,7 @@ export class AuthAdminService extends CoreApiService {
         const authGroups = await this.coreAuthService.getAllAuthGroups('allAuthAndOthers');
         for (const group of groups) {
             if (!authGroups.includes(group)) {
-                throw new ApiException('You have no permission to add an administrator to this group!')
+                throw ApiResponse.error('You have no permission to add an administrator to this group!')
             }
         }
     }

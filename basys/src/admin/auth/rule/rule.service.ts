@@ -1,11 +1,12 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
+// common
+import { ApiResponse } from "../../../common";
 // core
 import { RequestDto } from "../../../core/dto/request.dto";
 import { CoreAuthService } from "../../../core/services/auth.service";
 import { CoreApiService } from "../../../core/services/api.service";
 import { PrismaService } from "../../../core/services/prisma.service";
-import { ApiException } from "../../../core/exceptions/api.exception";
 // extend ba
 import { BaTree } from "../../../extend/ba/Tree";
 // local
@@ -59,7 +60,7 @@ export class AuthRuleService extends CoreApiService {
                 }
             }
         });
-        return 'Added successfully';
+        return ApiResponse.success('Added successfully');
     }
 
     /**
@@ -89,38 +90,36 @@ export class AuthRuleService extends CoreApiService {
     async edit(body: AuthRuleEditDto) {
         const row = await this.prisma.baAdminGroup.findFirst({ where: { id: body.id } });
         if (!row) {
-            throw new ApiException('Record not found');
+            throw ApiResponse.error('Record not found');
         }
 
         const dataLimitAdminIds = await this.getDataLimitAdminIds();
         if (dataLimitAdminIds?.length > 0 && !dataLimitAdminIds.includes(row[this.dataLimitField])) {
-            throw new ApiException('You have no permission');
+            throw ApiResponse.error('You have no permission');
         }
 
         const newBody = this.excludeFields(body);
-        try {
-            await this.prisma.$transaction(async (ctx: PrismaService) => {
-                if (newBody.pid > 0) {
-                    // 满足意图并消除副作用
-                    const parent = await ctx.baAdminGroup.findFirst({
-                        where: {
-                            id: newBody.pid
-                        }
-                    });
-                    if (parent?.pid === row.id) {
-                        await ctx.baAdminGroup.update({
-                            where: { id: parent.id },
-                            data: { pid: 0 }
-                        });
+        let result;
+        await this.prisma.$transaction(async (ctx: PrismaService) => {
+            if (newBody.pid > 0) {
+                // 满足意图并消除副作用
+                const parent = await ctx.baAdminGroup.findFirst({
+                    where: {
+                        id: newBody.pid
                     }
+                });
+                if (parent?.pid === row.id) {
+                    result = await ctx.baAdminGroup.update({
+                        where: { id: parent.id },
+                        data: { pid: 0 }
+                    });
                 }
-            });
-            return 'Update successful';
-        } catch(e) {
-            console.error(e);
-            throw new ApiException('No rows updated');
+            }
+        });
+        if (result) {
+            return ApiResponse.success('Update successful');
         }
-        
+        throw ApiResponse.error('No rows updated');
     }
 
     /**

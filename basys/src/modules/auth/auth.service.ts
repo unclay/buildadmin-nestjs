@@ -7,8 +7,8 @@ import { pick } from 'lodash';
 import { BaAuth } from '../../extend/ba/Auth';
 import { TokenService } from './token.service';
 import { PrismaService } from '../../core/services/prisma.service';
-import { ApiException } from '../../core/exceptions/api.exception';
 import { Prisma } from '@prisma/client';
+import { ApiResponse } from 'src/common';
 
 @Injectable()
 export class AuthService extends BaAuth {
@@ -48,11 +48,11 @@ export class AuthService extends BaAuth {
     
     public async checkToken(token: string) {
         if (!token) {
-            throw new ApiException('Token Not Found', null, HttpStatus.UNAUTHORIZED);
+            throw ApiResponse.error('Token Not Found', null, HttpStatus.UNAUTHORIZED);
         }
         const tokenDB = await this.tokenService.getTokenWithDB(token);
         if (!tokenDB) {
-            throw new ApiException('Token Record Not Found', null, HttpStatus.UNAUTHORIZED);
+            throw ApiResponse.error('Token Record Not Found', null, HttpStatus.UNAUTHORIZED);
         }
     }
 
@@ -68,10 +68,10 @@ export class AuthService extends BaAuth {
             },
         });
         if (!admin) {
-            throw new ApiException('Username is incorrect');
+            throw ApiResponse.error('Username is incorrect');
         }
         if (admin.status == 'disable') {
-            throw new ApiException('Account disabled');
+            throw ApiResponse.error('Account disabled');
         }
         const lastLoginTime = admin.last_login_time;
         const adminLoginRetry = this.configService.get('buildadmin.admin_login_retry');
@@ -90,7 +90,7 @@ export class AuthService extends BaAuth {
             }
 
             if (admin.login_failure >= adminLoginRetry) {
-                throw new ApiException('Please try again after 1 day');
+                throw ApiResponse.error('Please try again after 1 day');
             }
         }
 
@@ -98,7 +98,7 @@ export class AuthService extends BaAuth {
         const isPasswordValid = await bcrypt.compare(password, admin.password);
         if (!isPasswordValid) {
             this.loginFailed(admin, ip);
-            throw new ApiException('Password is incorrect');
+            throw ApiResponse.error('Password is incorrect');
         }
 
         // 清理 token

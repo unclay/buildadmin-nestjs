@@ -1,6 +1,6 @@
 import { Body, Controller, DefaultValuePipe, Delete, Get, ParseIntPipe, Post, Query } from "@nestjs/common";
-// core
-import { ApiException } from "../../../core/exceptions/api.exception";
+// common
+import { ApiResponse } from "../../../common";
 // local
 import { AuthAdminAddDto, AuthAdminDelDto, AuthAdminEditDto } from "./dto";
 import { AuthAdminService } from "./admin.service";
@@ -36,11 +36,11 @@ export class AuthAdminController {
     async getEdit(@Query('id', ParseIntPipe) id: number) {
         const record = await this.authAdminService.getEdit(id);
         if (!record) {
-            throw new ApiException('Record not found')
+            throw ApiResponse.error('Record not found')
         }
         return {
             row: record
-        };
+        }
     }
 
     /**

@@ -4,8 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { Strategy } from 'passport-local';
-import { extractTokenFromRequest } from '../../common';
-import { ApiException } from '../../core/exceptions/api.exception';
+import { extractTokenFromRequest, ApiResponse } from '../../common';
 import { PrismaService } from '../../core/services/prisma.service';
 import { AuthService } from './auth.service';
 import { TokenService } from './token.service';
@@ -42,7 +41,7 @@ export class AuthLocalStrategy extends PassportStrategy(Strategy, 'auth-local') 
             // console.log(error, 'token 异常');
         }
         if (isLogin) {
-            throw new ApiException('You have already logged in. There is no need to log in again~', {
+            throw ApiResponse.error('You have already logged in. There is no need to log in again~', {
                 type: this.authService.LOGGED_IN
             }, this.authService.LOGIN_RESPONSE_CODE);
         }
