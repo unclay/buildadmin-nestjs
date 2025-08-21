@@ -1,6 +1,7 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { ApiResponse } from 'src/common';
 
 @Injectable()
 export class SerializerInterceptor implements NestInterceptor {
@@ -33,7 +34,10 @@ export class SerializerInterceptor implements NestInterceptor {
 
           return obj;
         };
-
+        if (data instanceof ApiResponse) {
+          data.responseData = serializeBigInt(data.responseData);
+          return data;
+        }
         return serializeBigInt(data);
       })
     );

@@ -1,39 +1,60 @@
-import { HttpStatus } from "@nestjs/common";
+import { HttpException, HttpStatus } from "@nestjs/common";
 
-export class ApiResponse {
-    // response data
+type ApiResponseType = 'json' | 'jsonp'
+export interface ApiResponseMetadata {
+    header: Record<string, any>
+    type: ApiResponseType
+}
+export interface ApiResponseData {
     code: number;
     msg: string;
     data: any;
     time: number;
-    // response type
-    type = 'json';
-    // header
-    header: Record<string, any> = {};
-    // status
-    statusCode: HttpStatus;
-    constructor(msg: string, data = null, code = 0, type?: string, header: Record<string, any> = {}) {
-        this.code = code;
-        this.msg = msg;
-        this.data = data;
-        this.time = Math.floor(Date.now() / 1000);
-        // other
-        // header
-        this.statusCode = header.statusCode ?? HttpStatus.BAD_REQUEST;
+    metadata: ApiResponseMetadata
+}
+
+export class ApiResponse {
+    static defaultType: ApiResponseType = 'json';
+    static defaultStatusCode = HttpStatus.OK;
+    constructor(
+        public responseData: ApiResponseData,
+        public statusCode: HttpStatus
+    ) {
+    }
+    /**
+     * return ApiResponse.success()
+     */
+    static success(msg = '', data = null, code = 1, type: ApiResponseType = null, header: Record<string, any> = {}) {
+        const responseType = type ?? ApiResponse.defaultType;
+        const statusCode = header.statusCode ?? ApiResponse.defaultStatusCode;
         delete header.statusCode;
-        this.type = type;
-        this.header = header;
+        return new ApiResponse({
+            code,
+            msg,
+            time: Math.floor(Date.now() * 0.001),
+            data,
+            metadata: {
+                type: responseType,
+                header,
+            }
+        }, statusCode);
     }
-    static success(msg = '', data = null, code = 1, type: string = null, header: Record<string, any> = {}) {
-        return new ApiResponse(msg, data, code, type, {
-            ...header,
-            statusCode: header.statusCode ?? HttpStatus.OK
-        });
-    }
-    static error(msg = '', data = null, code = 0, type: string = null, header: Record<string, any> = {}) {
-        throw new ApiResponse(msg, data, code, type, {
-            ...header,
-            statusCode: header.statusCode ?? HttpStatus.BAD_REQUEST
-        });
+    /**
+     * 用法：throw ApiResponse.error()
+     */
+    static error(msg = '', data = null, code = 0, type: ApiResponseType = null, header: Record<string, any> = {}) {
+        const responseType = type ?? ApiResponse.defaultType;
+        const statusCode = header.statusCode ?? ApiResponse.defaultStatusCode;
+        delete header.statusCode;
+        return new HttpException({
+            code,
+            msg,
+            time: Math.floor(Date.now() * 0.001),
+            data,
+            metadata: {
+                type: responseType,
+                header,
+            }
+        }, statusCode);
     }
 }
