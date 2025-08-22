@@ -1,8 +1,8 @@
 import { Injectable, HttpStatus, Inject } from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
-import { Prisma } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 // core
-import { CoreApiService, CoreAuthService, PrismaService } from "../../../core/services";
+import { CoreApiService, CoreAuthService, PK, PrismaService } from "../../../core/services";
 import { RequestDto } from "../../../core/dto/request.dto";
 // local
 import { AuthAdminAddDto, AuthAdminDelDto, AuthAdminEditDto } from "./dto";
@@ -10,15 +10,19 @@ import { ApiResponse } from "src/common";
 
 @Injectable()
 export class AuthAdminService extends CoreApiService {
+    protected pk: PK = 'id';
+    protected get model() {
+        return this.prisma.baAdmin;
+    }
     protected dataLimit = 'allAuthAndOthers';
     protected dataLimitField = 'id';
     protected preExcludeFields: string | string[] = ['create_time', 'update_time', 'password', 'salt', 'login_failure', 'last_login_time', 'last_login_ip'];
     constructor(
-        private prisma: PrismaService,
+        public prisma: PrismaService,
         public coreAuthService: CoreAuthService,
         @Inject(REQUEST) public readonly req: RequestDto
     ) {
-        super(req, coreAuthService);
+        super(req, prisma, coreAuthService);
     }
 
     async add(data: AuthAdminAddDto) {
@@ -79,7 +83,7 @@ export class AuthAdminService extends CoreApiService {
         whereAnd.push({
             id: { in: body.ids }
         });
-        const data = await this.prisma.baAdmin.findMany({
+        const data = await this.model.findMany({
             where: {
                 AND: whereAnd,
             }
@@ -112,7 +116,7 @@ export class AuthAdminService extends CoreApiService {
      * @returns 
      */
     async getEdit(id: number) {
-        let record = await this.prisma.baAdmin.findUnique({
+        let record = await this.model.findUnique({
             where: {
                 id,
             },
@@ -194,7 +198,7 @@ export class AuthAdminService extends CoreApiService {
     }
 
     async getList(page: number, limit: number) {
-        const list = await this.prisma.baAdmin.findMany({
+        const list = await this.model.findMany({
             skip: (page - 1) * limit,
             take: limit,
             select: {
@@ -222,7 +226,7 @@ export class AuthAdminService extends CoreApiService {
                 },
             }
         });
-        const total = await this.prisma.baAdmin.count();
+        const total = await this.model.count();
         return {
             // 同步buildadmin
             list: list.map(item => {

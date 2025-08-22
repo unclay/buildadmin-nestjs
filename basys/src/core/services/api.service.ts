@@ -1,14 +1,18 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common"
 import { CoreAuthService } from "./auth.service";
 // core
-import { array_unique } from '../../common';
+import { ApiResponse, array_unique } from '../../common';
 // extend
 import { BaApi } from "../../extend/ba/BaApi";
 import { RequestDto } from "../dto/request.dto";
+import { Prisma, PrismaClient } from "@prisma/client";
 
+export type PK = 'id';
 @Injectable()
-export class CoreApiService extends BaApi {
-    protected pk = 'id';
+export abstract class CoreApiService extends BaApi {
+    // protected abstract modelName: keyof PrismaClient;
+    protected abstract pk: PK;
+    protected abstract get model();
     /**
      * 开启数据限制
      * false=关闭
@@ -46,50 +50,51 @@ export class CoreApiService extends BaApi {
 
     constructor(
         public readonly req: RequestDto,
+        public readonly prisma: PrismaClient,
         public readonly coreAuthService: CoreAuthService,
     ) {
         super()
     }
-    /**
-     * 返回 API 数据
-     * @param string      $msg     提示消息
-     * @param mixed       $data    返回数据
-     * @param int         $code    错误码
-     * @param string|null $type    输出类型
-     * @param array       $header  发送的 header 信息
-     * @param array       $options Response 输出参数
-     */
-    result(msg: string, data: any = null, code: number = 0, type?: string, header: Record<string, any> = {}, options: Record<string, any> = {}) {
-        const result = {
-            code: code,
-            msg: msg,
-            time: Math.floor(Date.now() / 1000),
-            data: data,
-        };
+    // get model() {
+    //     return this.prisma[this.modelName];
+    // }
 
-        const statusCode = header?.statusCode ?? HttpStatus.OK;
-        delete header.statusCode;
-
-        throw new HttpException(result, statusCode, options);
+    async initEdit(id: any) {
+        const row = await this.model.findUnique({
+            where: {
+                [this.pk]: id,
+            }
+        });
+        if (!row) {
+            throw ApiResponse.error('Record not found');
+        }
+        return row;
     }
     /**
      * 从 request 读取用户的属性值
      */
     getUser(key: string) {
-        return (this.req as any).user[key];
+        return this.req.user[key];
     }
     /**
      * 从 request 设置用户的属性值
      */
     setUser(key: string, value: any) {
-        (this.req as any).user[key] = value;
+        this.req.user[key] = value;
+    }
+
+    protected async checkAuth(adminId: number) {
+        const dataLimitAdminIds = await this.getDataLimitAdminIds();
+        if (dataLimitAdminIds?.length > 0 && !dataLimitAdminIds.includes(adminId)) {
+            throw ApiResponse.error('You have no permission');
+        }
     }
 
     /**
      * 数据权限控制-获取有权限访问的管理员Ids
      * @throws Throwable
      */
-    async getDataLimitAdminIds(): Promise<number[]>
+    protected async getDataLimitAdminIds(): Promise<number[]>
     {
         const isSuperAdmin = await this.coreAuthService.isSuperAdmin();
         if (!this.dataLimit || isSuperAdmin) {

@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsNumber, IsUrl, ValidateIf } from "class-validator"
+import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsUrl, ValidateIf } from "class-validator"
 // core
 import { TransformToNumber } from "../../../../core/dto/dto.decorator"
 
@@ -47,8 +47,7 @@ export class AuthRuleAddDto {
     @IsNotEmpty({ message: 'path 不能为空' })
     path: string
 
-    
-
+    @IsOptional()
     @IsNumber({}, { message: 'weigh 必须是数字' })
     @TransformToNumber()
     weigh: number

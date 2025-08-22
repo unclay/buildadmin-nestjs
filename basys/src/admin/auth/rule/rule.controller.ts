@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query } from "@nestjs/common";
+import { Body, Controller, Get, ParseIntPipe, Post, Query } from "@nestjs/common";
 // core
 import { CoreAuthService } from "../../../core/services/auth.service";
 import { AuthRuleService } from "./rule.service";
@@ -15,6 +15,16 @@ export class AuthRuleController {
         return await this.ruleService.add(body);
     }
 
+    @Get('edit')
+    async getEdit(@Query('id', ParseIntPipe) id: number) {
+        return await this.ruleService.getEdit(id);
+    }
+
+    @Post('edit')
+    async postEdit(@Body() body: AuthRuleEditDto) {
+        return await this.ruleService.postEdit(body);
+    }
+
     @Get('index')
     async index(@Query() query: AuthRuleIndexQueryDto) {
         if (query.select) {
@@ -26,8 +36,5 @@ export class AuthRuleController {
         }
     }
 
-    @Post('edit')
-    async edit(@Body() body: AuthRuleEditDto) {
-        return await this.ruleService.edit(body);
-    }
+    
 }

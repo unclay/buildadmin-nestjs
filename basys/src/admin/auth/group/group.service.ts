@@ -4,14 +4,19 @@ import { REQUEST } from '@nestjs/core';
 import { ApiResponse, array_diff } from '../../../common';
 // core
 import { RequestDto } from '../../../core/dto/request.dto';
-import { CoreApiService, CoreAuthService, PrismaService } from '../../../core/services';
+import { CoreApiService, CoreAuthService, PK, PrismaService } from '../../../core/services';
 // extend ba
 import { BaTree } from '../../../extend/ba';
 // local
 import { AuthGroupAddDto, AuthGroupDelDto, AuthGroupEditDto, AuthGroupIndexQueryDto } from './dto';
+import { PrismaClient } from '@prisma/client';
 
 @Injectable()
 export class AuthGroupService extends CoreApiService {
+    protected pk: PK = 'id';
+    protected get model() {
+        return this.prisma.baAdminGroup;
+    }
     /**
      * 修改、删除分组时对操作管理员进行鉴权
      * 本管理功能部分场景对数据权限有要求，修改此值请额外确定以下的 absoluteAuth 实现的功能
@@ -20,11 +25,11 @@ export class AuthGroupService extends CoreApiService {
     protected authMethod: string = 'allAuthAndOthers';
     protected preExcludeFields = ['create_time', 'update_time'];
     constructor(
-        private prisma: PrismaService,
+        public prisma: PrismaService,
         public coreAuthService: CoreAuthService,
         @Inject(REQUEST) public readonly req: RequestDto
     ) {
-        super(req, coreAuthService);
+        super(req, prisma, coreAuthService);
     }
     // 增删改查
 
@@ -48,7 +53,7 @@ export class AuthGroupService extends CoreApiService {
 
     async del(body: AuthGroupDelDto) {
         const ids = body.ids;
-        const data = await this.prisma.baAdminGroup.findMany({
+        const data = await this.model.findMany({
             where: {
                 id: { in: ids }
             }
@@ -56,7 +61,7 @@ export class AuthGroupService extends CoreApiService {
         for (const v of data) {
             this.checkAuth(v.id);
         }
-        let subData = await this.prisma.baAdminGroup.findMany({
+        let subData = await this.model.findMany({
             where: {
                 pid: { in: ids }
             },
@@ -84,7 +89,7 @@ export class AuthGroupService extends CoreApiService {
         let count = 0;
         for (const item of data) {
             if (!adminGroupIds.includes(item.id)) {
-                await this.prisma.baAdminGroup.delete({
+                await this.model.delete({
                     where: { id: item.id }
                 });
                 count++;
@@ -96,17 +101,10 @@ export class AuthGroupService extends CoreApiService {
             throw ApiResponse.error('No rows were deleted');
         }
     }
-    
-    private async initEdit(id: number) {
-        const row = await this.prisma.baAdminGroup.findFirst({ where: { id } });
-        if (!row) {
-            throw ApiResponse.error('Record not found');
-        }
-        this.checkAuth(row.id);
-        return row;
-    }
+
     async getEdit(id: number) {
         const row = await this.initEdit(id);
+        this.checkGroupAuth(row.id);
 
         // 读取所有pid，全部从节点数组移除，父级选择状态由子级决定
         // 获取所有唯一的pid
@@ -142,6 +140,7 @@ export class AuthGroupService extends CoreApiService {
     }
     async postEdit(body: AuthGroupEditDto) {
         const row = await this.initEdit(body.id);
+        this.checkGroupAuth(row.id);
         const adminGroups = await this.prisma.baAdminGroupAccess.findMany({
             where: { uid: this.req.user.id },
             select: { group_id: true },
@@ -233,7 +232,7 @@ export class AuthGroupService extends CoreApiService {
         }
 
         // 查询数据
-        const data = await this.prisma.baAdminGroup.findMany({ where })
+        const data = await this.model.findMany({ where })
 
         // 处理权限显示
         for (const item of data) {
@@ -270,7 +269,7 @@ export class AuthGroupService extends CoreApiService {
      * @return void
      * @throws Throwable
      */
-    private async checkAuth(groupId: number): Promise<void> {
+    private async checkGroupAuth(groupId: number): Promise<void> {
         const authGroups = await this.coreAuthService.getAllAuthGroups(this.req.user.id, {});
         const isSuperAdmin = await this.coreAuthService.isSuperAdmin();
         if (!isSuperAdmin && !authGroups.includes(groupId)) {
@@ -283,7 +282,7 @@ export class AuthGroupService extends CoreApiService {
     }
     async getOptions(query: AuthGroupIndexQueryDto) {
         // /admin/auth.Group/index?select=true&quickSearch=&isTree=true&absoluteAuth=1&uuid=_226043698171754924747730&page=1&initKey=id
-        // const list = await this.prisma.baAdminGroup.findMany();
+        // const list = await this.model.findMany();
         const list = await this.getGroups((this.req as any).user, query);
         return {
             options: list,

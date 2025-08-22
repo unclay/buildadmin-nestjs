@@ -41,7 +41,7 @@ export class TokenService  {
 
     private tokenExpirationCheck(expireTime: number) {
         if (expireTime && expireTime <= Math.floor(Date.now() / 1000)) {
-            throw ApiResponse.error('Token expiration');
+            throw ApiResponse.error('Token expiration', null, HttpStatus.CONFLICT);
         }
     }
 

@@ -8,6 +8,32 @@
 
 ## 开发引导
 
+### 目录说明
+
+- core
+    - 被继承的类，显式访问修饰符：public protected private
+    - 依赖 nestjs 模块，如 controller service
+    - 数据库操作
+- common
+    - 不依赖 nestjs 模块
+    - 非业务逻辑处理
+    - 纯数据逻辑处理
+    - 接口返回值格式化
+
+### 模块说明
+
+#### CoreApiService 与 BaApi
+
+- CoreApiService
+    - 依赖 nestjs 模块
+    - 依赖 prisma 模块，数据库操作
+    - 依赖 request 对象，网络请求
+    - 例如：获取登录用户信息、操作权限判断
+- BaApi
+    - 可依赖 lodash、dayjs 等非业务模块
+    - 不依赖任何业务模块（如 request 对象、数据库操作等）
+    - 纯逻辑处理
+
 ### 接口规范
 
 #### `controller` 和 `service` 尽量保持 `增删改查` 顺序

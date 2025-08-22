@@ -4,25 +4,27 @@ import { REQUEST } from "@nestjs/core";
 import { ApiResponse } from "../../../common";
 // core
 import { RequestDto } from "../../../core/dto/request.dto";
-import { CoreAuthService } from "../../../core/services/auth.service";
-import { CoreApiService } from "../../../core/services/api.service";
-import { PrismaService } from "../../../core/services/prisma.service";
+import { PrismaService, CoreApiService, PK, CoreAuthService } from "../../../core/services";
 // extend ba
-import { BaTree } from "../../../extend/ba/Tree";
+import { BaTree } from "../../../extend/ba";
 // local
 import { AuthRuleAddDto, AuthRuleEditDto, AuthRuleIndexQueryDto } from "./dto";
 
 @Injectable()
 export class AuthRuleService extends CoreApiService {
+    protected pk: PK = 'id';
+    protected get model() {
+        return this.prisma.baAdminRule;
+    }
     // baAdminRule 主键
     protected quickSearchField: string = 'title';
     protected preExcludeFields = ['create_time', 'update_time'];
     constructor(
         @Inject(REQUEST) public readonly req: RequestDto,
         public coreAuthService: CoreAuthService,
-        private prisma: PrismaService,
+        public prisma: PrismaService,
     ) {
-        super(req, coreAuthService);
+        super(req, prisma, coreAuthService);
     }
 
     async add(body: AuthRuleAddDto) {
@@ -32,7 +34,7 @@ export class AuthRuleService extends CoreApiService {
         }
         let result = null;
         await this.prisma.$transaction(async (ctx) => {
-            result = this.prisma.baAdminRule.create({
+            result = await this.model.create({
                 data,
             });
 
@@ -63,6 +65,44 @@ export class AuthRuleService extends CoreApiService {
         return ApiResponse.success('Added successfully');
     }
 
+    
+    async getEdit(id: number) {
+        const row = await this.initEdit(id);
+        this.checkAuth(row[this.dataLimitField]);
+        return {
+            row,
+        }
+    }
+
+    async postEdit(body: AuthRuleEditDto) {
+        const row = await this.initEdit(body.id);
+        const newBody = this.excludeFields(body);
+        let result;
+        await this.prisma.$transaction(async (ctx: PrismaService) => {
+            if (newBody.pid > 0) {
+                // 满足意图并消除副作用
+                const parent = await ctx.baAdminGroup.findFirst({
+                    where: { id: newBody.pid }
+                });
+                if (parent?.pid === row.id) {
+                    result = await ctx.baAdminGroup.update({
+                        where: { id: parent.id },
+                        data: { pid: 0 }
+                    });
+                }
+            }
+            result = await ctx.baAdminRule.update({
+                where: { id: newBody.id },
+                data: newBody,
+            });
+        });
+        if (result) {
+            return ApiResponse.success('Update successful');
+        }
+        throw ApiResponse.error('No rows updated');
+    }
+
+
     /**
      * 重写select方法
      * @throws Error
@@ -85,41 +125,6 @@ export class AuthRuleService extends CoreApiService {
         return {
             options: data
         };
-    }
-
-    async edit(body: AuthRuleEditDto) {
-        const row = await this.prisma.baAdminGroup.findFirst({ where: { id: body.id } });
-        if (!row) {
-            throw ApiResponse.error('Record not found');
-        }
-
-        const dataLimitAdminIds = await this.getDataLimitAdminIds();
-        if (dataLimitAdminIds?.length > 0 && !dataLimitAdminIds.includes(row[this.dataLimitField])) {
-            throw ApiResponse.error('You have no permission');
-        }
-
-        const newBody = this.excludeFields(body);
-        let result;
-        await this.prisma.$transaction(async (ctx: PrismaService) => {
-            if (newBody.pid > 0) {
-                // 满足意图并消除副作用
-                const parent = await ctx.baAdminGroup.findFirst({
-                    where: {
-                        id: newBody.pid
-                    }
-                });
-                if (parent?.pid === row.id) {
-                    result = await ctx.baAdminGroup.update({
-                        where: { id: parent.id },
-                        data: { pid: 0 }
-                    });
-                }
-            }
-        });
-        if (result) {
-            return ApiResponse.success('Update successful');
-        }
-        throw ApiResponse.error('No rows updated');
     }
 
     /**
@@ -156,7 +161,7 @@ export class AuthRuleService extends CoreApiService {
         }
 
         // 读取用户组所有权限规则
-        const rules = await this.prisma.baAdminRule.findMany({
+        const rules = await this.model.findMany({
             where,
             orderBy: this.queryOrderBuilder(),
         })
