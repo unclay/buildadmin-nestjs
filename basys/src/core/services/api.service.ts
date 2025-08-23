@@ -1,13 +1,19 @@
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common"
-import { CoreAuthService } from "./auth.service";
-// core
-import { ApiResponse, array_unique } from '../../common';
+import { Injectable } from "@nestjs/common"
+import { PrismaClient } from "@prisma/client";
+// shared
+import { ApiResponse } from '../../shared/api';
+// common
+import { array_unique } from '../../shared';
 // extend
 import { BaApi } from "../../extend/ba/BaApi";
-import { RequestDto } from "../dto/request.dto";
-import { Prisma, PrismaClient } from "@prisma/client";
+// core - service
+import { CoreAuthService } from "./auth.service";
+import { BaseCrudService } from "./crud.service";
+// core - other
+import { RequestDto } from "../dtos/request.dto";
 
 export type PK = 'id';
+
 @Injectable()
 export abstract class CoreApiService extends BaApi {
     // protected abstract modelName: keyof PrismaClient;
@@ -51,6 +57,7 @@ export abstract class CoreApiService extends BaApi {
     constructor(
         public readonly req: RequestDto,
         public readonly prisma: PrismaClient,
+        public readonly crudService: BaseCrudService,
         public readonly coreAuthService: CoreAuthService,
     ) {
         super()

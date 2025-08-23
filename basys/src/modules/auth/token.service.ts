@@ -1,8 +1,8 @@
 import { HttpStatus, Inject, Injectable, Scope } from "@nestjs/common";
-import { PrismaService } from "../../core/services/prisma.service";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
-import { ApiResponse } from "src/common";
+import { ApiResponse } from "../../shared/api";
+import { PrismaService } from "../../core/database";
 
 @Injectable()
 export class TokenService  {

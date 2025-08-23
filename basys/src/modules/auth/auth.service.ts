@@ -1,14 +1,13 @@
 import * as bcrypt from 'bcrypt';
-import { HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
 import { pick } from 'lodash';
 import { BaAuth } from '../../extend/ba/Auth';
 import { TokenService } from './token.service';
-import { PrismaService } from '../../core/services/prisma.service';
-import { Prisma } from '@prisma/client';
-import { ApiResponse } from 'src/common';
+import { PrismaService } from '../../core/database';
+import { ApiResponse } from '../../shared/api';
 
 @Injectable()
 export class AuthService extends BaAuth {

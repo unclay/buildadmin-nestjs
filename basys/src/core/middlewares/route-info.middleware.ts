@@ -1,6 +1,6 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Response, NextFunction } from 'express';
-import { RequestDto } from '../dto/request.dto';
+import { RequestDto } from '../dtos/request.dto';
 
 @Injectable()
 export class RouteInfoMiddleware implements NestMiddleware {

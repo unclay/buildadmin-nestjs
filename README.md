@@ -72,3 +72,41 @@ graph LR
     Controller -->|return| Interceptor
     Controller -->|throw| ExceptionFilter
 ```
+
+## 目录结构划分计划
+
+```
+src/
+├── app.module.ts              # 根模块，导入CoreModule和特性模块
+├── main.ts                    # 入口文件
+│
+├── core/                      # 【核心】应用基础设施，全局单例
+│   ├── core.module.ts         # 注册所有全局核心提供者，并被AppModule导入
+│   ├── filters/               # 全局异常过滤器
+│   ├── interceptors/          # 全局拦截器（如日志、超时、响应转换）
+│   ├── guards/                # 全局守卫（如RBAC权限守卫）
+│   ├── decorators/            # 全局通用的装饰器（如@CurrentUser）
+│   ├── middleware/            # 全局中间件
+│   ├── services/              # 全局单例服务（如ConfigService, AppLogger）
+│   └── database/              # 数据库连接（TypeORM/Prisma连接池）
+│
+├── shared/                    # 【共享】可重用的功能模块库（按需导入）
+│   ├── database/              # 数据库抽象模块（提供Repository等）
+│   │   ├── database.module.ts
+│   │   └── ...
+│   ├── cache/                 # 缓存模块
+│   ├── mail/                  # 邮件发送模块
+│   ├── upload/                # 文件上传模块
+│   └── utils/                 # 纯工具函数
+│
+├── modules/                   # 业务特性模块
+│   ├── auth/
+│   ├── user/
+│   ├── order/
+│   └── product/
+│
+└── common/                    # （可选）真正的通用类型、常量、DTO基类
+    ├── dtos/
+    ├── constants/
+    └── types/
+```

@@ -30,27 +30,33 @@ export function IsNumberOrString(validationOptions?: ValidationOptions) {
  */
 export function TransformToNumber(options?: { array: boolean }) {
   // 转成数组
-  const needArray = options?.array ?? false;
   const stringToNumber = (value: string) => (isNaN(Number(value)) ? value : Number(value));
   return Transform(({ value }) => {
-    let data = value;
-    if (typeof data === 'string') {
-      data = stringToNumber(data);
-      if (!needArray) {
-        return data;
-      } else {
-        data = String(data).split(',');
+    const needArray = options?.array ?? false;
+    // 数字数组（ids）
+    if (needArray) {
+      if (typeof value === 'string') {
+        return value.split(',').map(stringToNumber);
+      } else if (typeof value === 'number') {
+        return [value];
+      } else if (Array.isArray(value)) {
+        return value.map(stringToNumber);
       }
+      return value;
     }
-    // 字符数组
-    if (Array.isArray(data)) {
-      return data.map((item) => {
+    // 字符转数字
+    if (typeof value === 'string') {
+      return stringToNumber(value);
+    }
+    // 字符数组转数字
+    if (Array.isArray(value)) {
+      return value.map((item) => {
         if (typeof item === 'string') {
           return stringToNumber(item);
         }
         return item;
       });
     }
-    return data;
+    return value;
   });
 }

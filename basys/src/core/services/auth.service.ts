@@ -1,10 +1,13 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { REQUEST } from '@nestjs/core';
-import { PrismaService } from "./prisma.service";
-import { BaAuth } from '../../extend/ba/Auth';
-import { array_diff } from "src/common";
 import { Prisma } from "@prisma/client";
-import { RequestDto } from "../dto/request.dto";
+// common
+import { array_diff } from "../../shared";
+// extend
+import { BaAuth } from '../../extend/ba/Auth';
+// core
+import { PrismaService } from "../database";
+import { RequestDto } from "../dtos/request.dto";
 
 @Injectable()
 export class CoreAuthService extends BaAuth {

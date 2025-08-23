@@ -1,8 +1,7 @@
 import { Global, MiddlewareConsumer, Module, ExecutionContext } from "@nestjs/common";
 // import { TokenService } from './services/token.service';
 // import { AuthService } from './services/auth.service';
-import { PrismaService } from "./services/prisma.service";
-import { RequestContext } from './services/request-context.service';
+import { PrismaService } from "./database/prisma.service";
 import { RequestTimeMiddleware } from "./middlewares/request-time.middleware";
 import { RouteInfoMiddleware } from "./middlewares/route-info.middleware";
 import { AssembleTreeMiddleware } from "./middlewares/assemble-tree.middleware";
@@ -18,9 +17,8 @@ import { CoreAuthService } from "./services/auth.service";
         // },
         PrismaService,
         CoreAuthService,
-        RequestContext,
     ],
-    exports: [PrismaService, CoreAuthService, RequestContext],
+    exports: [PrismaService, CoreAuthService],
 })
 export class CoreModule {
     configure(consumer: MiddlewareConsumer) {

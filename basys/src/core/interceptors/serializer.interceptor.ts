@@ -1,7 +1,7 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { ApiResponse } from 'src/common';
+import { ApiResponse } from '../../shared/api';
 
 @Injectable()
 export class SerializerInterceptor implements NestInterceptor {

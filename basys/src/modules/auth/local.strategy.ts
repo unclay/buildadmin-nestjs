@@ -4,10 +4,11 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { Strategy } from 'passport-local';
-import { extractTokenFromRequest, ApiResponse } from '../../common';
-import { PrismaService } from '../../core/services/prisma.service';
+import { extractTokenFromRequest } from '../../shared';
 import { AuthService } from './auth.service';
 import { TokenService } from './token.service';
+import { ApiResponse } from '../../shared/api';
+import { PrismaService } from '../../core/database';
 
 /**
  * 本地策略
