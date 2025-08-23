@@ -9,10 +9,6 @@ import { AdminCrudService } from "./admin.crud";
 
 @Injectable()
 export class AuthAdminService extends CoreApiService {
-    protected pk: PK = 'id';
-    protected get model() {
-        return this.prisma.baAdmin;
-    }
     protected dataLimit = 'allAuthAndOthers';
     protected dataLimitField = 'id';
     protected preExcludeFields: string | string[] = ['create_time', 'update_time', 'password', 'salt', 'login_failure', 'last_login_time', 'last_login_ip'];
@@ -20,9 +16,9 @@ export class AuthAdminService extends CoreApiService {
         public prisma: PrismaService,
         public coreAuthService: CoreAuthService,
         @Inject(REQUEST) public readonly req: RequestDto,
-        public adminCrudService: AdminCrudService,
+        public crudService: AdminCrudService,
     ) {
-        super(req, prisma, adminCrudService, coreAuthService);
+        super(req, prisma, crudService, coreAuthService);
     }
 
     async add(data: AuthAdminAddDto) {

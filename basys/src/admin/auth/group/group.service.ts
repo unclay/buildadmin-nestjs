@@ -15,10 +15,6 @@ import { AdminGroupCrudService } from './group.crud';
 
 @Injectable()
 export class AuthGroupService extends CoreApiService {
-    protected pk: PK = 'id';
-    protected get model() {
-        return this.prisma.baAdminGroup;
-    }
     /**
      * 修改、删除分组时对操作管理员进行鉴权
      * 本管理功能部分场景对数据权限有要求，修改此值请额外确定以下的 absoluteAuth 实现的功能
@@ -30,9 +26,9 @@ export class AuthGroupService extends CoreApiService {
         public prisma: PrismaService,
         public coreAuthService: CoreAuthService,
         @Inject(REQUEST) public readonly req: RequestDto,
-        public adminGroupCrudService: AdminGroupCrudService,
+        public crudService: AdminGroupCrudService,
     ) {
-        super(req, prisma, adminGroupCrudService, coreAuthService);
+        super(req, prisma, crudService, coreAuthService);
     }
     // 增删改查
 

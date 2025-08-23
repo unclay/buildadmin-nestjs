@@ -12,10 +12,6 @@ import { AdminRuleCrudService } from "./rule.crud";
 
 @Injectable()
 export class AuthRuleService extends CoreApiService {
-    protected pk: PK = 'id';
-    protected get model() {
-        return this.prisma.baAdminRule;
-    }
     // baAdminRule 主键
     protected quickSearchField: string = 'title';
     protected preExcludeFields = ['create_time', 'update_time'];

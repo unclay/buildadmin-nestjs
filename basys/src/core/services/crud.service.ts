@@ -30,24 +30,29 @@ type PrimaryKeyItem = {
 type PrimaryKeys = PrimaryKeyItem[]
 
 export abstract class BaseCrudService {
+    public pk: string = 'id';
     constructor(
         protected readonly prisma: PrismaService,
         private readonly modelName: PrismaModelName
-    ) { }
-    protected get tableName(): PrismaTableName<string> {
+    ) {
+        this.init();
+    }
+    private async init() {
+        this.pk = await this.getPk();
+    }
+    public get tableName(): PrismaTableName<string> {
         return this.modelName.replace(/([A-Z])/g, '_$1').replace(/^_/, '').toLowerCase();
     }
     // getter model
-    protected get model() {
+    public get model() {
         return this.prisma[this.modelName];
     }
-
     // this.prism.$transaction((ctx) => void)
-    protected getModel(ctx: PrismaClient) {
+    public getModel(ctx: PrismaClient) {
         return (ctx ?? this.prisma)[this.modelName];
     }
     // 所有主键（复合主键 + 单一主键）
-    protected async getPks(tableName?: PrismaTableName<string>): Promise<PrimaryKeys> {
+    public async getPks(tableName?: PrismaTableName<string>): Promise<PrimaryKeys> {
         const result = await this.prisma.$queryRaw`
             SELECT a.attname AS column_name
             FROM pg_index i
@@ -58,24 +63,23 @@ export abstract class BaseCrudService {
         return result as PrimaryKeys;
     }
     // 单一主键
-    protected async getPk(): Promise<string> {
+    public async getPk(): Promise<string> {
         const pks = await this.getPks();
         return pks[0].column_name;
     }
 
     /**
      * 删除
-     * @param id 主键id
+     * @param ids 主键ids
      * @returns 
      */
     public async del(ids: number[] = []): Promise<any> {
-        const pk = await this.getPk();
-        const where = { [pk]: { in: ids } };
+        const where = { [this.pk]: { in: ids } };
         const model = this.model as any;
         const data = await model.findMany({ where });
         const { count } = await model.deleteMany({
             where: {
-                [pk]: {
+                [this.pk]: {
                     in: data.map(v => v.id)
                 }
             }
@@ -84,5 +88,23 @@ export abstract class BaseCrudService {
             return ApiResponse.success('Deleted successfully');
         }
         throw ApiResponse.error('No rows were deleted');
+    }
+
+    /**
+     * 查询
+     * @param id 主键id
+     * @returns 
+     */
+    public async find(id: number): Promise<any> {
+        const model = this.model as any;
+        const row = await model.findUnique({
+            where: {
+                [this.pk]: id,
+            }
+        });
+        if (!row) {
+            throw ApiResponse.error('Record not found');
+        }
+        return row;
     }
 }

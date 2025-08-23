@@ -16,9 +16,6 @@ export type PK = 'id';
 
 @Injectable()
 export abstract class CoreApiService extends BaApi {
-    // protected abstract modelName: keyof PrismaClient;
-    protected abstract pk: PK;
-    protected abstract get model();
     /**
      * 开启数据限制
      * false=关闭
@@ -62,20 +59,15 @@ export abstract class CoreApiService extends BaApi {
     ) {
         super()
     }
-    // get model() {
-    //     return this.prisma[this.modelName];
-    // }
+    protected get pk() {
+        return this.crudService.pk;
+    }
+    protected get model(): any {
+        return this.crudService.model;
+    }
 
-    async initEdit(id: any) {
-        const row = await this.model.findUnique({
-            where: {
-                [this.pk]: id,
-            }
-        });
-        if (!row) {
-            throw ApiResponse.error('Record not found');
-        }
-        return row;
+    async initEdit(id: number) {
+        return await this.crudService.find(id);
     }
     /**
      * 从 request 读取用户的属性值
