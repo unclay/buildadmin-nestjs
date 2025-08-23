@@ -1,18 +1,11 @@
 import { Injectable } from "@nestjs/common"
 import { PrismaClient } from "@prisma/client";
 // shared
-import { ApiResponse } from '../../shared/api';
-// common
-import { array_unique } from '../../shared';
+import { array_unique, ApiResponse } from '../../shared';
 // extend
 import { BaApi } from "../../extend/ba/BaApi";
-// core - service
-import { CoreAuthService } from "./auth.service";
-import { BaseCrudService } from "./crud.service";
-// core - other
-import { RequestDto } from "../dtos/request.dto";
-
-export type PK = 'id';
+// core
+import { CoreAuthService, BaseCrudService, RequestDto } from "..";
 
 @Injectable()
 export abstract class CoreApiService extends BaApi {

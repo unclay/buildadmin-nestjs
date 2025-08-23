@@ -2,7 +2,7 @@ import { Injectable, HttpStatus, Inject } from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
 import { ApiResponse } from "../../../shared/api";
 // core
-import { CoreApiService, CoreAuthService, PK, PrismaService, RequestDto } from "../../../core";
+import { CoreApiService, CoreAuthService, PrismaService, RequestDto } from "../../../core";
 // local
 import { AuthAdminAddDto, AuthAdminDelDto, AuthAdminEditDto } from "./dto";
 import { AdminCrudService } from "./admin.crud";

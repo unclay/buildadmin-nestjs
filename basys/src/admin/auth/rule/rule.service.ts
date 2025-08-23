@@ -3,7 +3,7 @@ import { REQUEST } from "@nestjs/core";
 // shared
 import { ApiResponse } from "../../../shared/api";
 // core
-import { PrismaService, RequestDto, CoreApiService, PK, CoreAuthService } from "../../../core";
+import { PrismaService, RequestDto, CoreApiService, CoreAuthService } from "../../../core";
 // extend ba
 import { BaTree } from "../../../extend/ba";
 // local

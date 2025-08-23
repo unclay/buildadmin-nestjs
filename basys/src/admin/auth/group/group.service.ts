@@ -5,7 +5,7 @@ import { ApiResponse } from '../../../shared/api';
 // common
 import { array_diff } from '../../../shared';
 // core
-import { RequestDto, CoreApiService, CoreAuthService, PK, PrismaService } from '../../../core';
+import { RequestDto, CoreApiService, CoreAuthService, PrismaService } from '../../../core';
 // extend ba
 import { BaTree } from '../../../extend/ba';
 // local
