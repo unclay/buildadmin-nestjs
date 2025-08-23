@@ -1,6 +1,6 @@
 import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional } from "class-validator"
 // core
-import { TransformToNumber } from "../../../../core/dto/dto.decorator"
+import { TransformToNumber } from "../../../../core/decorators/dto.decorator"
 
 export class AuthRuleEditDto {
     @IsNumber({}, { message: 'id必须是数字' })

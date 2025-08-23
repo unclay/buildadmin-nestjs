@@ -1,6 +1,5 @@
 import { Body, Controller, DefaultValuePipe, Delete, Get, ParseIntPipe, Post, Query } from "@nestjs/common";
-// common
-import { ApiResponse } from "../../../common";
+import { ApiResponse } from "../../../shared/api";
 // local
 import { AuthAdminAddDto, AuthAdminDelDto, AuthAdminEditDto } from "./dto";
 import { AuthAdminService } from "./admin.service";

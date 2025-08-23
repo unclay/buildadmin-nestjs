@@ -1,18 +1,23 @@
-import { Body, Controller, Get, ParseIntPipe, Post, Query } from "@nestjs/common";
+import { Body, Controller, Delete, Get, ParseIntPipe, Post, Query } from "@nestjs/common";
 // core
 import { CoreAuthService } from "../../../core/services/auth.service";
+// local
+import { AuthRuleAddDto, AuthRuleDelDto, AuthRuleEditDto, AuthRuleIndexQueryDto } from "./dto";
 import { AuthRuleService } from "./rule.service";
-/// local
-import { AuthRuleIndexQueryDto } from "./dto/query.dto";
-import { AuthRuleEditDto } from "./dto/edit-rule.dto";
-import { AuthRuleAddDto } from "./dto";
 
 @Controller('admin/auth.rule')
 export class AuthRuleController {
     constructor(private ruleService: AuthRuleService, private coreAuthService: CoreAuthService) {}
+    // 增删改查
+
     @Post('add')
     async add(@Body() body: AuthRuleAddDto) {
         return await this.ruleService.add(body);
+    }
+
+    @Delete('del')
+    async del(@Query() query: AuthRuleDelDto) {
+        return await this.ruleService.del(query);
     }
 
     @Get('edit')
@@ -36,5 +41,9 @@ export class AuthRuleController {
         }
     }
 
+    @Get('test')
+    async test() {
+        return await this.ruleService.test();
+    }
     
 }

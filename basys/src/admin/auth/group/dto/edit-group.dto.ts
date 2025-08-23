@@ -1,6 +1,6 @@
 import { IsArray, IsEnum, IsNotEmpty, IsNumber } from "class-validator"
 // core
-import { TransformToNumber } from "../../../../core/dto/dto.decorator"
+import { TransformToNumber } from "../../../../core/decorators/dto.decorator"
 // local
 import { AuthGroupAddDto } from "./add-group.dto"
 

@@ -1,6 +1,6 @@
 import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsUrl, ValidateIf } from "class-validator"
 // core
-import { TransformToNumber } from "../../../../core/dto/dto.decorator"
+import { TransformToNumber } from "../../../../core/decorators/dto.decorator"
 
 export class AuthRuleAddDto {
     @IsNotEmpty({ message: 'type 不能为空' })

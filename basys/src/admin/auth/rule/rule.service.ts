@@ -1,14 +1,14 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
-// common
-import { ApiResponse } from "../../../common";
+// shared
+import { ApiResponse } from "../../../shared/api";
 // core
-import { RequestDto } from "../../../core/dto/request.dto";
-import { PrismaService, CoreApiService, PK, CoreAuthService } from "../../../core/services";
+import { PrismaService, RequestDto, CoreApiService, PK, CoreAuthService } from "../../../core";
 // extend ba
 import { BaTree } from "../../../extend/ba";
 // local
-import { AuthRuleAddDto, AuthRuleEditDto, AuthRuleIndexQueryDto } from "./dto";
+import { AuthRuleAddDto, AuthRuleDelDto, AuthRuleEditDto, AuthRuleIndexQueryDto } from "./dto";
+import { AdminRuleCrudService } from "./rule.crud";
 
 @Injectable()
 export class AuthRuleService extends CoreApiService {
@@ -23,8 +23,13 @@ export class AuthRuleService extends CoreApiService {
         @Inject(REQUEST) public readonly req: RequestDto,
         public coreAuthService: CoreAuthService,
         public prisma: PrismaService,
+        public crudService: AdminRuleCrudService,
     ) {
-        super(req, prisma, coreAuthService);
+        super(req, prisma, crudService, coreAuthService);
+    }
+
+    test() {
+        return 'test';
     }
 
     async add(body: AuthRuleAddDto) {
@@ -65,6 +70,30 @@ export class AuthRuleService extends CoreApiService {
         return ApiResponse.success('Added successfully');
     }
 
+    async del(body: AuthRuleDelDto) {
+        const ids = body.ids || [];
+
+        // 检查子级元素
+        const subData = await this.model.findMany({
+            where: {
+                pid: {
+                    in: ids
+                }
+            },
+            select: {
+                id: true,
+                pid: true
+            }
+        });
+
+        for (const item of subData) {
+            if (!ids.includes(item.id)) {
+                throw ApiResponse.error('Please delete the child element first, or use batch deletion');
+            }
+        }
+
+        return this.crudService.del(ids);
+    }
     
     async getEdit(id: number) {
         const row = await this.initEdit(id);

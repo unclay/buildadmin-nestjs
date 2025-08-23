@@ -1,15 +1,17 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
+// shared
+import { ApiResponse } from '../../../shared/api';
 // common
-import { ApiResponse, array_diff } from '../../../common';
+import { array_diff } from '../../../shared';
 // core
-import { RequestDto } from '../../../core/dto/request.dto';
-import { CoreApiService, CoreAuthService, PK, PrismaService } from '../../../core/services';
+import { RequestDto, CoreApiService, CoreAuthService, PK, PrismaService } from '../../../core';
 // extend ba
 import { BaTree } from '../../../extend/ba';
 // local
 import { AuthGroupAddDto, AuthGroupDelDto, AuthGroupEditDto, AuthGroupIndexQueryDto } from './dto';
-import { PrismaClient } from '@prisma/client';
+import { AdminGroupCrudService } from './group.crud';
+
 
 @Injectable()
 export class AuthGroupService extends CoreApiService {
@@ -27,9 +29,10 @@ export class AuthGroupService extends CoreApiService {
     constructor(
         public prisma: PrismaService,
         public coreAuthService: CoreAuthService,
-        @Inject(REQUEST) public readonly req: RequestDto
+        @Inject(REQUEST) public readonly req: RequestDto,
+        public adminGroupCrudService: AdminGroupCrudService,
     ) {
-        super(req, prisma, coreAuthService);
+        super(req, prisma, adminGroupCrudService, coreAuthService);
     }
     // 增删改查
 
