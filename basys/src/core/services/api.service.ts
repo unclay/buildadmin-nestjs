@@ -58,6 +58,9 @@ export abstract class CoreApiService extends BaApi {
     protected get model(): any {
         return this.crudService.model;
     }
+    protected getModel(ctx?) {
+        return this.crudService.getModel(ctx);
+    }
 
     async initEdit(id: number) {
         return await this.crudService.find(id);

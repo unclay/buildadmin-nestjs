@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { InternalServerErrorException } from '@nestjs/common';
 // shared
 import { ApiResponse } from '../../shared/api';
 // core
@@ -14,50 +15,43 @@ export type PrismaModelName = keyof {
     [K in keyof PrismaClient as PrismaClient[K] extends PrismaDelegate ? K : never]: any;
 };
 
-// 定义一个类型，将驼峰命名转换为下划线命名
-type PrismaTableName<T> = 
-  T extends `${infer First}${infer Rest}`
-    ? `${First extends Uppercase<First> ? '_' : ''}${Lowercase<First>}${PrismaTableName<Rest>}`
-    : T;
-
-// 测试
-// type Test1 = PrismaTableName<'baAdmin'>;      // 结果为 'ba_admin'
-// type Test2 = PrismaTableName<'baAdminGroup'>; // 结果为 'ba_admin_group'
-
 type PrimaryKeyItem = {
     column_name: string
 }
 type PrimaryKeys = PrimaryKeyItem[]
 
 export abstract class BaseCrudService {
+    public model;
     public pk: string = 'id';
     constructor(
         protected readonly prisma: PrismaService,
-        private readonly modelName: PrismaModelName
     ) {
         this.init();
     }
-    private async init() {
+    protected async init() {
         this.pk = await this.getPk();
     }
-    public get tableName(): PrismaTableName<string> {
-        return this.modelName.replace(/([A-Z])/g, '_$1').replace(/^_/, '').toLowerCase();
+    private get modelName() {
+        if (!this.model?.name) {
+            throw new InternalServerErrorException('Model is not properly initialized');
+        } 
+        return this.model.name;
     }
-    // getter model
-    public get model() {
-        return this.prisma[this.modelName];
-    }
-    // this.prism.$transaction((ctx) => void)
     public getModel(ctx: PrismaClient) {
         return (ctx ?? this.prisma)[this.modelName];
     }
     // 所有主键（复合主键 + 单一主键）
-    public async getPks(tableName?: PrismaTableName<string>): Promise<PrimaryKeys> {
+    public async getPks(modelName?: PrismaModelName): Promise<PrimaryKeys> {
+        // PrismaModelName 防注入
+        let tableName = modelName ?? this.modelName;
+        if (!tableName) return [];
+        // baAdminRule => ba_admin_rule
+        tableName = tableName.replace(/([A-Z])/g, '_$1').replace(/^_/, '').toLowerCase();
         const result = await this.prisma.$queryRaw`
             SELECT a.attname AS column_name
             FROM pg_index i
             JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey)
-            WHERE i.indrelid = ${tableName ?? this.tableName}::regclass
+            WHERE i.indrelid = ${tableName}::regclass
             AND i.indisprimary;
         `;
         return result as PrimaryKeys;
