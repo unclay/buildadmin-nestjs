@@ -1,12 +1,12 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
-import { ResponseInterceptor } from './core/interceptors/response.interceptor';
-import { SerializerInterceptor } from './core/interceptors/serializer.interceptor';
+import { ResponseInterceptor, AdminLogInterceptor, SerializerInterceptor } from './core';
 import { GlobalAuthGuard } from './modules/auth/global-auth.guard';
 import { HttpExceptionFilter } from './core/filters/response.filter';
 
 async function bootstrap() {
+  // 中间件 → 守卫 → 拦截器 → 控制器
   const app = await NestFactory.create(AppModule);
   // 跨域
   app.enableCors({
@@ -20,6 +20,7 @@ async function bootstrap() {
   app.useGlobalInterceptors(
     new ResponseInterceptor(),
     new SerializerInterceptor(),
+    new AdminLogInterceptor(),
   );
   app.useGlobalFilters(
     new HttpExceptionFilter(),
