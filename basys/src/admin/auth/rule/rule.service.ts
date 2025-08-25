@@ -180,7 +180,6 @@ export class AuthRuleService extends CoreApiService {
             }
         }
 
-
         if (initValue.length) {
             where[initKey] = { in: initValue };
         }
@@ -188,7 +187,7 @@ export class AuthRuleService extends CoreApiService {
         // 读取用户组所有权限规则
         const rules = await this.model.findMany({
             where,
-            orderBy: this.queryOrderBuilder(),
+            orderBy: this.queryBuilderService.queryOrderBuilder(query, this as any),
         })
 
         // 如果要求树状，此处先组装好 children

@@ -6,6 +6,8 @@ import { array_unique, ApiResponse } from '../../shared';
 import { BaApi } from "../../extend/ba/BaApi";
 // core
 import { CoreAuthService, BaseCrudService, RequestDto } from "..";
+import { QueryBuilderService } from "./api/query-builder.service";
+
 
 @Injectable()
 export abstract class CoreApiService extends BaApi {
@@ -37,13 +39,20 @@ export abstract class CoreApiService extends BaApi {
      * 将以下配置作为数据有序保证（用于无排序字段时、默认排序字段相同时继续保持数据有序），不设置将自动使用 pk 字段
      * @var string|array id,desc 或 ['id' => 'desc']（有更方便的格式，此处为了保持和 $defaultSortField 属性的配置格式一致）
      */
-    protected orderGuarantee: null|string|Record<string, any> = {};
+    protected orderGuarantee: null | string | Record<string, any> = {};
     /**
      * 默认排序
      * @var string|array id,desc 或 {'id': 'desc'}
      */
-    protected defaultSortField: null|string|Record<string, any> = {};
+    protected defaultSortField: null | string | Record<string, any> = {};
+    /**
+     * 快速搜索字段
+     * @var string|array
+     */
+    protected quickSearchField: string | string[] = 'id';
 
+    // 单例类
+    protected queryBuilderService: QueryBuilderService;
     constructor(
         public readonly req: RequestDto,
         public readonly prisma: PrismaClient,
@@ -51,6 +60,7 @@ export abstract class CoreApiService extends BaApi {
         public readonly coreAuthService: CoreAuthService,
     ) {
         super()
+        this.queryBuilderService = QueryBuilderService.getInstance();
     }
     protected get pk() {
         return this.crudService.pk;
@@ -89,8 +99,7 @@ export abstract class CoreApiService extends BaApi {
      * 数据权限控制-获取有权限访问的管理员Ids
      * @throws Throwable
      */
-    protected async getDataLimitAdminIds(): Promise<number[]>
-    {
+    protected async getDataLimitAdminIds(): Promise<number[]> {
         const isSuperAdmin = await this.coreAuthService.isSuperAdmin();
         if (!this.dataLimit || isSuperAdmin) {
             return [];
@@ -115,37 +124,5 @@ export abstract class CoreApiService extends BaApi {
         }
         adminIds.push(this.coreAuthService.getUser('id'));
         return array_unique(adminIds);
-    }
-
-
-    /**
-     * 查询的排序参数构建器
-     */
-    public queryOrderBuilder(): Record<string, string> {
-        const order = (this.req.query.order as string) || this.defaultSortField;
-
-        let orderObj: Record<string, string> = {};
-        
-        if (order && typeof order === 'string') {
-            const [field, direction = 'asc'] = order.split(',');
-            orderObj[field] = direction;
-        }
-
-        let orderGuarantee;
-        if (!this.orderGuarantee) {
-            orderGuarantee = { [this.pk]: 'desc' };
-        } else if (typeof this.orderGuarantee === 'string') {
-            const [field, direction = 'asc'] = this.orderGuarantee.split(',');
-            orderGuarantee = { [field]: direction };
-        } else {
-            orderGuarantee = Object.assign({}, this.orderGuarantee);
-        }
-
-        const orderGuaranteeKey = Object.keys(orderGuarantee)[0];
-        if (!(orderGuaranteeKey in orderObj)) {
-            orderObj[orderGuaranteeKey] = orderGuarantee[orderGuaranteeKey];
-        }
-
-        return orderObj;
     }
 }

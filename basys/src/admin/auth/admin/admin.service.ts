@@ -180,7 +180,6 @@ export class AuthAdminService extends CoreApiService {
                     group_name_arr: undefined,
                 } as any
             });
-            console.log(result);
 
             // 如果有分组信息，更新管理员分组
             if (groupAccess.length > 0) {

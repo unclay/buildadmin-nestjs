@@ -28,8 +28,6 @@ export class AuthAdminLogController {
 
     @Get('index')
     async index(@Query() query: AuthAdminLogQueryDto) {
-        return {
-            row: await this.logService.index(query),
-        }
+        return await this.logService.index(query);
     }
 }
