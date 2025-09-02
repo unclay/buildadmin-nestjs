@@ -45,14 +45,16 @@ export class AuthAdminLogService extends CoreApiService {
     }
     async index(query) {
         const dataLimitAdminIds = await this.getDataLimitAdminIds();
-        const data = await this.queryBuilderService .queryBuilder(query, dataLimitAdminIds, this as any);
+        const data = await this.queryBuilderService.queryBuilder(query, dataLimitAdminIds, this as any);
         const isSuperAdmin = await this.coreAuthService.isSuperAdmin();
         if (!isSuperAdmin) {
             data.where.admin_id = this.req.user.id;
         }
         // return data;
         const list = await this.model.findMany(data);
-        const count = await this.model.count(data);
+        const count = await this.model.count({
+            where: data.where
+        });
         return ApiResponse.success('', {
             list,
             total: count,
