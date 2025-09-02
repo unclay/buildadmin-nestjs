@@ -1,12 +1,7 @@
-import { Global, MiddlewareConsumer, Module, ExecutionContext } from "@nestjs/common";
-// import { TokenService } from './services/token.service';
-// import { AuthService } from './services/auth.service';
-import { PrismaService } from "./database/prisma.service";
-import { RequestTimeMiddleware } from "./middlewares/request-time.middleware";
-import { RouteInfoMiddleware } from "./middlewares/route-info.middleware";
-import { AssembleTreeMiddleware } from "./middlewares/assemble-tree.middleware";
-import { CoreAuthService } from "./services/auth.service";
-// import { ApiExceptionFilter } from "./filters/api-exception.filter";
+import { Global, MiddlewareConsumer, Module } from "@nestjs/common";
+import { PrismaService } from "./database";
+import { AssembleTreeMiddleware, RequestTimeMiddleware, RouteInfoMiddleware } from "./middlewares";
+import { CoreAdminLogService, CoreAuthService } from "./services";
 
 @Global()
 @Module({
@@ -17,8 +12,9 @@ import { CoreAuthService } from "./services/auth.service";
         // },
         PrismaService,
         CoreAuthService,
+        CoreAdminLogService,
     ],
-    exports: [PrismaService, CoreAuthService],
+    exports: [PrismaService, CoreAuthService, CoreAdminLogService],
 })
 export class CoreModule {
     configure(consumer: MiddlewareConsumer) {

@@ -1,6 +1,6 @@
 import { RequestDto } from "../../core";
 
-export class RequestHelper {
+export class RequestContext {
     constructor(private readonly req: RequestDto) {
     }
 

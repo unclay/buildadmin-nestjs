@@ -198,4 +198,13 @@ export class CoreAuthService extends BaAuth {
     getMenus() {
         return super.getMenus(this.req.user?.id);
     }
+    isLogin() {
+        return Boolean(this.req.user.id);
+    }
+    get id() {
+        return this.req.user.id;
+    }
+    get username() {
+        return this.req.user.username;
+    }
 }

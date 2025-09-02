@@ -1,7 +1,7 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
-import { ResponseInterceptor, AdminLogInterceptor, SerializerInterceptor } from './core';
+import { ResponseInterceptor, SerializerInterceptor } from './core';
 import { GlobalAuthGuard } from './modules/auth/global-auth.guard';
 import { HttpExceptionFilter } from './core/filters/response.filter';
 
@@ -20,7 +20,7 @@ async function bootstrap() {
   app.useGlobalInterceptors(
     new ResponseInterceptor(),
     new SerializerInterceptor(),
-    new AdminLogInterceptor(),
+    // new AdminLogInterceptor(),
   );
   app.useGlobalFilters(
     new HttpExceptionFilter(),

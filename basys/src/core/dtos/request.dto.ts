@@ -19,6 +19,8 @@ export interface RequestDto extends Request {
     assembleTree: boolean
     // '../../modules/auth/local.strategy';
     user?: {
-        id: number
+        id: number,
+        username: string
     }
+    query: Record<string, any>
 }

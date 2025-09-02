@@ -1,8 +1,8 @@
-import { Body, Controller, Get, Post, UnauthorizedException, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, UseGuards, Request } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { LoginDto } from './login.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { Public } from '../../modules/auth/auth.decorator';
+import { RouteTitle } from '../../core';
 
 @Controller('admin/index')
 export class LoginController {
@@ -22,6 +22,7 @@ export class LoginController {
      * [POST] /admin/index/login
      */
     @Public()
+    @RouteTitle('登录')
     @UseGuards(AuthGuard('auth-local'))
     @Post('login')
     async postLogin(@Request() req) {
