@@ -1,6 +1,7 @@
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { ApiResponse } from 'src/shared';
 
 @Injectable()
 export class DateTimeInterceptor implements NestInterceptor {
@@ -16,16 +17,21 @@ export class DateTimeInterceptor implements NestInterceptor {
       return data;
     }
 
+    if (data instanceof ApiResponse) {
+      data.responseData = this.transformToTimestamp(data.responseData);
+      return data;
+    }
+
     if (Array.isArray(data)) {
       return data.map(item => this.transformToTimestamp(item));
     }
 
-    if (typeof data === 'object') {
-      const transformed = { ...data };
+    if (Object.prototype.toString.call(data) === '[object Object]') {
+      const transformed = Object.assign({}, data);
       for (const key in transformed) {
         if (this.dateFields.includes(key) && transformed[key] instanceof Date) {
           transformed[key] = Math.floor(transformed[key].getTime() / 1000); // 转换为秒级时间戳
-        } else if (typeof transformed[key] === 'object') {
+        } else if (Object.prototype.toString.call(data) === '[object Object]') {
           transformed[key] = this.transformToTimestamp(transformed[key]);
         }
       }

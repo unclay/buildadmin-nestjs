@@ -37,14 +37,14 @@ export abstract class CoreApiService extends BaApi {
      * 有序保证
      * 查询数据时总是需要指定 ORDER BY 子句，否则 MySQL 不保证排序，即先查到哪行就输出哪行且不保证多次查询中的输出顺序
      * 将以下配置作为数据有序保证（用于无排序字段时、默认排序字段相同时继续保持数据有序），不设置将自动使用 pk 字段
-     * @var string|array id,desc 或 ['id' => 'desc']（有更方便的格式，此处为了保持和 $defaultSortField 属性的配置格式一致）
+     * @var string| id,desc 或 {'id': 'desc'}（有更方便的格式，此处为了保持和 $defaultSortField 属性的配置格式一致）
      */
-    protected orderGuarantee: null | string | Record<string, any> = {};
+    protected orderGuarantee: string | Record<string, any> = null;
     /**
      * 默认排序
-     * @var string|array id,desc 或 {'id': 'desc'}
+     * @var string| id,desc 或 {'id': 'desc'}
      */
-    protected defaultSortField: null | string | Record<string, any> = {};
+    protected defaultSortField: string | Record<string, any> = null;
     /**
      * 快速搜索字段
      * @var string|array

@@ -41,6 +41,11 @@ export class QueryBuilderDto {
     @IsOptional()
     @IsNumber()
     @TransformToNumber()
+    page: number = 1;
+
+    @IsOptional()
+    @IsNumber()
+    @TransformToNumber()
     limit: number = 10;
 
     @IsOptional()

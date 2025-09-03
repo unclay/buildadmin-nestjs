@@ -12,6 +12,7 @@ export class QueryBuilderService {
         return QueryBuilderService.instance;
     }
 
+
     /**
      * 查询的排序参数构建器
      */
@@ -20,37 +21,34 @@ export class QueryBuilderService {
         defaultSortField: null | string | Record<string, any>,
         orderGuarantee: null | string | Record<string, any>,
     }): Record<string, string> {
-        const {
+        let {
             pk,
             defaultSortField,
             orderGuarantee,
         } = options;
-        const order = (reqQuery.order as string) || defaultSortField;
+        let order: Record<string, 'asc' | 'desc'> = {};
+        const orderParam = reqQuery.order as string || defaultSortField;
 
-        let orderObj: Record<string, string> = {};
-
-        if (order && typeof order === 'string') {
-            const [field, direction = 'asc'] = order.split(',');
-            orderObj[field] = direction;
+        if (orderParam && typeof orderParam === 'string') {
+            const [field, direction = 'asc'] = orderParam.split(',');
+            order[field] = direction as 'asc' | 'desc';
         }
 
-        let orderGuaranteeData;
         if (!orderGuarantee) {
-            orderGuaranteeData = { [pk]: 'desc' };
+            orderGuarantee = { [pk]: 'desc' };
         } else if (typeof orderGuarantee === 'string') {
             const [field, direction = 'asc'] = orderGuarantee.split(',');
-            orderGuaranteeData = { [field]: direction };
-        } else {
-            orderGuaranteeData = Object.assign({}, orderGuarantee);
+            orderGuarantee = { [field]: direction as 'asc' | 'desc' };
         }
 
         const orderGuaranteeKey = Object.keys(orderGuarantee)[0];
-        if (orderGuaranteeKey && !(orderGuaranteeKey in orderObj)) {
-            orderObj[orderGuaranteeKey] = orderGuarantee[orderGuaranteeKey];
+        if (!order.hasOwnProperty(orderGuaranteeKey)) {
+            order[orderGuaranteeKey] = orderGuarantee[orderGuaranteeKey];
         }
 
-        return orderObj;
+        return order;
     }
+
 
     public async queryBuilder(reqQuery, dataLimitAdminIds, options: {
         pk: string,
@@ -67,6 +65,7 @@ export class QueryBuilderService {
         const queryParams = plainToInstance(QueryBuilderDto, reqQuery);
         let {
             quickSearch,
+            page,
             limit,
             search,
             initKey = pk,
@@ -146,7 +145,8 @@ export class QueryBuilderService {
         // 构建最终查询对象
         const query: any = {
             where,
-            take: limit !== 999999 ? limit : undefined
+            take: limit !== 999999 ? limit : undefined,
+            skip: (page - 1) * limit !== 0 ? (page - 1) * limit : undefined
         };
 
         // 添加 include 如果有关联查询
@@ -156,6 +156,7 @@ export class QueryBuilderService {
 
         // 添加排序
         const order = this.queryOrderBuilder(reqQuery, options);
+        console.log(order, 33);
         if (order && Object.keys(order).length > 0) {
             query.orderBy = this.convertToPrismaOrder(order);
         }
