@@ -32,8 +32,8 @@ export class TokenService  {
                 token,
                 type,
                 user_id,
-                create_time: Math.floor(Date.now() / 1000),
-                expire_time: Math.floor(Date.now() / 1000) + this.configService.get('buildadmin.admin_token_keep_time'),
+                // create_time: Math.floor(Date.now() / 1000),
+                // expire_time: Math.floor(Date.now() / 1000) + this.configService.get('buildadmin.admin_token_keep_time'),
             },
         });
     }

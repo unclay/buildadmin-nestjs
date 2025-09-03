@@ -48,14 +48,14 @@ model BaAdmin {
   email             String      @default("") @db.VarChar(50)
   mobile            String      @default("") @db.VarChar(11)
   login_failure     Int         @default(0)
-  last_login_time   BigInt?    
+  last_login_time   DateTime?
   last_login_ip     String      @default("") @db.VarChar(50)
   password          String      @default("") @db.VarChar(255)
   salt              String      @default("") @db.VarChar(30)
   motto             String      @default("") @db.VarChar(255)
   status            AdminStatus @default(enable)
-  update_time       BigInt?    
-  create_time       BigInt?    
+  update_time       DateTime    @default(now()) @updatedAt
+  create_time       DateTime    @default(now())
   
   groups BaAdminGroupAccess[]
   logs   BaAdminLog[]
@@ -69,8 +69,8 @@ model BaAdminGroup {
   name         String     @default("") @db.VarChar(100)
   rules        String?    
   status       Int        @default(1)
-  update_time  BigInt?    
-  create_time  BigInt?    
+  update_time  DateTime   @default(now()) @updatedAt
+  create_time  DateTime   @default(now())
   
   members BaAdminGroupAccess[]
   
@@ -99,7 +99,7 @@ model BaAdminLog {
   data         String?    
   ip           String     @default("") @db.VarChar(50)
   useragent    String     @default("") @db.VarChar(255)
-  create_time  BigInt?    
+  create_time  DateTime   @default(now())
   
   admin BaAdmin? @relation(fields: [admin_id], references: [id])
   
@@ -122,8 +122,8 @@ model BaAdminRule {
   remark       String       @default("") @db.VarChar(255)
   weigh        Int          @default(0)
   status       Int          @default(1)
-  update_time  BigInt?      
-  create_time  BigInt?      
+  update_time  DateTime     @default(now())
+  create_time  DateTime     @default(now()) @updatedAt()
   
   // parent   BaAdminRule? @relation("RuleParent", fields: [pid], references: [id])
   // children BaAdminRule[] @relation("RuleParent")
@@ -136,8 +136,8 @@ model BaToken {
   token       String     @id @default("") @db.VarChar(255)
   type        String     @default("") @db.VarChar(15)
   user_id     Int        @default(0)
-  create_time BigInt?    
-  expire_time BigInt?    
+  create_time DateTime   @default(now())
+  expire_time DateTime  @default(now())
   
   @@map("ba_token")
 }

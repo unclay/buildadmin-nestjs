@@ -8,6 +8,15 @@
 
 ## 开发引导
 
+### 数据库更新
+
+```bash
+# 迁移数据库
+npx prisma migrate dev --name [operate_name]
+# 生成客户端
+pnpm prisma generate
+```
+
 ### 目录说明
 
 - core

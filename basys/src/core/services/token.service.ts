@@ -10,8 +10,8 @@ export class TokenService {
                 token,
                 type,
                 user_id,
-                create_time: Math.floor(Date.now() / 1000),
-                expire_time: expire ? Math.floor(Date.now() / 1000) + expire : null,
+                create_time: new Date(),
+                expire_time: expire ? new Date(Date.now() + expire * 1000) : null,
             },
         });
     }
@@ -36,7 +36,7 @@ export class TokenService {
         if (!tokenInfo) {
             return false;
         }
-        if (tokenInfo.expire_time && tokenInfo.expire_time < Math.floor(Date.now() / 1000)) {
+        if (tokenInfo.expire_time && tokenInfo.expire_time.getTime() < Date.now()) {
             return false;
         }
         return true;

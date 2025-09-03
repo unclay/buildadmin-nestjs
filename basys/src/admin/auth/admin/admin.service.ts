@@ -36,6 +36,7 @@ export class AuthAdminService extends CoreApiService {
             // 创建管理员
             const json = Object.assign({}, data, {
                 group_arr: undefined,
+                last_login_time: undefined,
             });
             const admin = await ctx.baAdmin.create({
                 data: json

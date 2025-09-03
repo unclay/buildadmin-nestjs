@@ -15,7 +15,7 @@ export class AuthService extends BaAuth {
     refreshTokenKeepTime = 2592000;
     // 允许返回的字段
     allowFields = ['id', 'username', 'nickname', 'avatar', 'last_login_time'];
-    
+
     /**
      * 需要登录时/无需登录时的响应状态代码
      */
@@ -44,7 +44,7 @@ export class AuthService extends BaAuth {
     ) {
         super(prisma);
     }
-    
+
     public async checkToken(token: string) {
         if (!token) {
             throw ApiResponse.error('Token Not Found', null, HttpStatus.UNAUTHORIZED);
@@ -72,7 +72,7 @@ export class AuthService extends BaAuth {
         if (admin.status == 'disable') {
             throw ApiResponse.error('Account disabled');
         }
-        const lastLoginTime = admin.last_login_time;
+        const lastLoginTime = admin.last_login_time?.getTime();
         const adminLoginRetry = this.configService.get('buildadmin.admin_login_retry');
 
         if (adminLoginRetry && lastLoginTime) {
@@ -132,7 +132,7 @@ export class AuthService extends BaAuth {
             where: { id: admin.id },
             data: {
                 login_failure: admin.login_failure + 1,
-                last_login_time: Math.floor(Date.now() / 1000),
+                last_login_time: new Date(),
                 last_login_ip: ip
             },
         });
@@ -140,10 +140,10 @@ export class AuthService extends BaAuth {
 
     async loginSuccessful(admin: any, ip: string, token: string) {
         await this.prisma.baAdmin.update({
-            where: { id:admin.id },
+            where: { id: admin.id },
             data: {
                 login_failure: 0,          // 重置登录失败次数
-                last_login_time: Math.floor(Date.now() / 1000),
+                last_login_time: new Date(),
                 last_login_ip: ip
             },
         });
@@ -152,8 +152,8 @@ export class AuthService extends BaAuth {
                 token,
                 type: this.TOKEN_TYPE,
                 user_id: admin.id,
-                create_time: Math.floor(Date.now() / 1000),
-                expire_time: Math.floor(Date.now() / 1000) + this.configService.get('buildadmin.admin_token_keep_time'),
+                // create_time: Math.floor(Date.now() / 1000),
+                expire_time: new Date(Date.now() + this.configService.get('buildadmin.admin_token_keep_time') * 1000),
             },
         });
     }
@@ -194,9 +194,9 @@ export class AuthService extends BaAuth {
             }
 
             if (all) {
-                if (dataLimit === 'allAuth' || 
-                    (dataLimit === 'allAuthAndOthers' && 
-                     rules.filter(rule => !groupRules.includes(rule)).length > 0)) {
+                if (dataLimit === 'allAuth' ||
+                    (dataLimit === 'allAuthAndOthers' &&
+                        rules.filter(rule => !groupRules.includes(rule)).length > 0)) {
                     allAuthGroups.push(group.id);
                 }
             }
@@ -219,5 +219,5 @@ export class AuthService extends BaAuth {
         return super.getMenus(uid);
     }
 
-    
+
 }

@@ -62,7 +62,6 @@ export class CoreAuthService extends BaAuth {
             },
             data: {
                 password: this.hashPassword(password),
-                update_time: BigInt(Date.now()),
             },
         });
     }
