@@ -2,8 +2,6 @@
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { Response } from 'express';
-import { PrismaService } from '../database/prisma.service'; // 假设你用 Prisma
 import { RequestDto } from '../dtos';
 import { CoreAdminLogService } from '../services';
 
