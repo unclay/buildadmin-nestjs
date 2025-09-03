@@ -1,0 +1,43 @@
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+
+@Injectable()
+export class DateTimeInterceptor implements NestInterceptor {
+  private readonly dateFields = ['create_time', 'update_time', 'last_login_time', 'expire_time'];
+
+  /**
+   * 转换日期字段为时间戳
+   * @param data 
+   * @returns 
+   */
+  private transformToTimestamp(data: any): any {
+    if (data === null || data === undefined) {
+      return data;
+    }
+
+    if (Array.isArray(data)) {
+      return data.map(item => this.transformToTimestamp(item));
+    }
+
+    if (typeof data === 'object') {
+      const transformed = { ...data };
+      for (const key in transformed) {
+        if (this.dateFields.includes(key) && transformed[key] instanceof Date) {
+          transformed[key] = Math.floor(transformed[key].getTime() / 1000); // 转换为秒级时间戳
+        } else if (typeof transformed[key] === 'object') {
+          transformed[key] = this.transformToTimestamp(transformed[key]);
+        }
+      }
+      return transformed;
+    }
+
+    return data;
+  }
+
+  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+    return next.handle().pipe(
+      map(data => this.transformToTimestamp(data))
+    );
+  }
+}

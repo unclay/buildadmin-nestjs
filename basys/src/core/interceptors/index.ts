@@ -1,3 +1,4 @@
 export * from './admin-log.interceptor';
 export * from './response.interceptor';
 export * from './serializer.interceptor';
+export * from './datetime.interceptor';
