@@ -19,7 +19,7 @@ export class ResponseInterceptor implements NestInterceptor {
         if (!(apiData instanceof ApiResponse)) {
           // 未封装的纯数据
           const xdata = (data?.code || data?.msg) ? data?.data : data;
-          apiData = ApiResponse.success(apiData?.msg, data?.data ?? xdata ?? null, apiData.code);
+          apiData = ApiResponse.success(apiData?.msg, data?.data ?? xdata ?? null, apiData?.code);
         }
         // 已封装的统一数据格式
         const { responseData: { metadata, ...responseData }, statusCode } = apiData;
