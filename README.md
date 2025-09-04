@@ -84,7 +84,12 @@ graph LR
 
 ## 目录结构划分计划
 
+```md
+- modules 可以依赖 core，core 不能依赖 modules
+- shared 不能依赖任何，只能被 core、modules 依赖
 ```
+
+```md
 src/
 ├── app.module.ts              # 根模块，导入CoreModule和特性模块
 ├── main.ts                    # 入口文件
