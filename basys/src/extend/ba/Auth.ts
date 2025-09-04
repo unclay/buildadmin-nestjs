@@ -1,6 +1,6 @@
 import * as _ from "lodash";
 import * as bcrypt from 'bcrypt';
-import { PrismaService } from "../../core/database";
+import { PrismaService } from "../../core";
 
 export class BaAuth {
     constructor(public prisma: PrismaService) {}

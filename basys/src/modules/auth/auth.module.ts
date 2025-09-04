@@ -1,15 +1,23 @@
-import { Global, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
-import { AuthService } from './auth.service';
-import { GlobalAuthGuard } from './global-auth.guard';
-import { AuthLocalStrategy } from './local.strategy';
-import { JwtStrategy } from './jwt.strategy';
-import { TokenService } from './token.service';
+// core
+import { DatabaseModule } from '../../core';
+// local
+import { AuthService, LoginService, LoginJwtStrategy, LoginLocalStrategy, TokenService, AuthGuard } from './';
 
-@Global()
+// 外部权限判断模块
+@Module({
+  imports: [DatabaseModule],
+  providers: [AuthService],
+  exports: [AuthService]
+})
+export class AuthModule {}
+
+// 登录专用模块
 @Module({
   imports: [
+    DatabaseModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
@@ -20,7 +28,7 @@ import { TokenService } from './token.service';
       },
     })
   ],
-  providers: [JwtStrategy, AuthLocalStrategy, GlobalAuthGuard, AuthService, TokenService],
-  exports: [GlobalAuthGuard, AuthLocalStrategy, AuthService] 
+  providers: [LoginJwtStrategy, LoginLocalStrategy, AuthGuard, LoginService, TokenService],
+  exports: [AuthGuard, LoginLocalStrategy] 
 })
-export class AuthModule {}
+export class LoginModule {}

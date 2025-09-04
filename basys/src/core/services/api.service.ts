@@ -5,7 +5,10 @@ import { array_unique, ApiResponse } from '../../shared';
 // extend
 import { BaApi } from "../../extend/ba/BaApi";
 // core
-import { CoreAuthService, BaseCrudService, RequestDto } from "..";
+import { BaseCrudService, RequestDto } from "..";
+// modules
+import { AuthService } from "../../modules";
+// local
 import { QueryBuilderService } from "./api/query-builder.service";
 
 
@@ -57,7 +60,7 @@ export abstract class CoreApiService extends BaApi {
         public readonly req: RequestDto,
         public readonly prisma: PrismaClient,
         public readonly crudService: BaseCrudService,
-        public readonly coreAuthService: CoreAuthService,
+        public readonly coreAuthService: AuthService,
     ) {
         super()
         this.queryBuilderService = QueryBuilderService.getInstance();

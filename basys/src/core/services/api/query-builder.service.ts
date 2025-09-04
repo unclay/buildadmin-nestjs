@@ -156,7 +156,6 @@ export class QueryBuilderService {
 
         // 添加排序
         const order = this.queryOrderBuilder(reqQuery, options);
-        console.log(order, 33);
         if (order && Object.keys(order).length > 0) {
             query.orderBy = this.convertToPrismaOrder(order);
         }

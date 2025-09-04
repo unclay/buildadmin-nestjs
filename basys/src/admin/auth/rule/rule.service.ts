@@ -3,8 +3,10 @@ import { REQUEST } from "@nestjs/core";
 // shared
 import { ApiResponse } from "../../../shared/api";
 // core
-import { PrismaService, RequestDto, CoreApiService, CoreAuthService } from "../../../core";
-// extend ba
+import { RequestDto, CoreApiService, PrismaService } from "../../../core";
+// modules
+import { AuthService } from "../../../modules";
+// extend base
 import { BaTree } from "../../../extend/ba";
 // local
 import { AuthRuleAddDto, AuthRuleDelDto, AuthRuleEditDto, AuthRuleIndexQueryDto } from "./dto";
@@ -17,11 +19,11 @@ export class AuthRuleService extends CoreApiService {
     protected preExcludeFields = ['create_time', 'update_time'];
     constructor(
         @Inject(REQUEST) public readonly req: RequestDto,
-        public coreAuthService: CoreAuthService,
+        public authService: AuthService,
         public prisma: PrismaService,
         public crudService: AdminRuleCrudService,
     ) {
-        super(req, prisma, crudService, coreAuthService);
+        super(req, prisma, crudService, authService);
     }
 
     test() {

@@ -4,11 +4,13 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { Strategy } from 'passport-local';
-import { extractTokenFromRequest } from '../../shared';
-import { AuthService } from './auth.service';
+// shared
+import { extractTokenFromRequest, ApiResponse } from '../../shared';
+// core
+import { PrismaService } from '../../core';
+// local
+import { LoginService } from './login.service';
 import { TokenService } from './token.service';
-import { ApiResponse } from '../../shared/api';
-import { PrismaService } from '../../core/database';
 
 /**
  * 本地策略
@@ -19,8 +21,8 @@ import { PrismaService } from '../../core/database';
  * 5. 校验通过后，将用户信息挂载到请求对象上，后续可以在控制器中通过 @Request() 装饰器获取
  */
 @Injectable()
-export class AuthLocalStrategy extends PassportStrategy(Strategy, 'auth-local') {
-    constructor(private authService: AuthService, private jwtService: JwtService, private configService: ConfigService, private tokenService: TokenService, private prisma: PrismaService) {
+export class LoginLocalStrategy extends PassportStrategy(Strategy, 'auth-local') {
+    constructor(private loginService: LoginService, private jwtService: JwtService, private configService: ConfigService, private tokenService: TokenService, private prisma: PrismaService) {
         // 可自定义字段名，默认 username/password
         super({
             passReqToCallback: true, // 关键：允许将请求对象传递给 validate 方法
@@ -34,7 +36,7 @@ export class AuthLocalStrategy extends PassportStrategy(Strategy, 'auth-local') 
             // 获取token
             const token = extractTokenFromRequest(req);
             // token是否有效
-            await this.authService.checkToken(token);
+            await this.loginService.checkToken(token);
             // 没有异常抛出，说明能正常获取用户信息
             isLogin = true;
         } catch (error) {
@@ -43,12 +45,12 @@ export class AuthLocalStrategy extends PassportStrategy(Strategy, 'auth-local') 
         }
         if (isLogin) {
             throw ApiResponse.error('You have already logged in. There is no need to log in again~', {
-                type: this.authService.LOGGED_IN
-            }, this.authService.LOGIN_RESPONSE_CODE);
+                type: this.loginService.LOGGED_IN
+            }, this.loginService.LOGIN_RESPONSE_CODE);
         }
         
         // 校验逻辑交给service处理，返回校验结果
-        const user = await this.authService.loginWithRequest(req, username, password);
+        const user = await this.loginService.loginWithRequest(req, username, password);
         return user;
     }
 }

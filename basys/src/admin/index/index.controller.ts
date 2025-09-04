@@ -1,8 +1,7 @@
 import { Controller, Get, Post, Request } from '@nestjs/common';
-// import { AuthService } from 'src/core/services/auth.service';
 import { ConfigService } from '@nestjs/config';
-import { Public } from '../../modules/auth/auth.decorator';
-import { AuthService } from '../../modules/auth/auth.service';
+// modules
+import { AuthService } from '../../modules';
 
 @Controller('admin/index')
 export class IndexController {
@@ -20,7 +19,7 @@ export class IndexController {
         // delete adminInfo['token'];
         // delete adminInfo['refresh_token'];
 
-        const menus = await this.authService.getMenus(req.user.id);
+        const menus = await this.authService.getMenus();
         if (!menus) {
             throw new Error('没有后台菜单，请联系超级管理员！');
         }

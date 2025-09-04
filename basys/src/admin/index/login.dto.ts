@@ -6,7 +6,6 @@ import {
   Matches,
   IsBoolean,
   IsOptional,
-  IsIn
 } from 'class-validator';
 
 export class LoginDto {

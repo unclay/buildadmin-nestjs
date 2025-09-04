@@ -1,11 +1,14 @@
 import { REQUEST } from "@nestjs/core";
 import { Inject, Injectable } from "@nestjs/common";
+// shared
+import { ApiResponse } from "../../../shared";
 // core
-import { CoreApiService, CoreAuthService, PrismaService, RequestDto } from "../../../core";
+import { CoreApiService, RequestDto, PrismaService } from "../../../core";
+// modules
+import { AuthService } from "../../../modules";
 // local
 import { AuthAdminLogAddDto, AuthAdminLogDelDto, AuthAdminLogEditDto } from "./dto";
 import { AdminLogCrudService } from "./log.crud";
-import { ApiResponse } from "src/shared";
 
 @Injectable()
 export class AuthAdminLogService extends CoreApiService {
@@ -15,9 +18,9 @@ export class AuthAdminLogService extends CoreApiService {
         @Inject(REQUEST) public readonly req: RequestDto,
         public prisma: PrismaService,
         public crudService: AdminLogCrudService,
-        public coreAuthService: CoreAuthService,
+        public authService: AuthService,
     ) {
-        super(req, prisma, crudService, coreAuthService);
+        super(req, prisma, crudService, authService);
     }
     add(body: AuthAdminLogAddDto) {
         return {

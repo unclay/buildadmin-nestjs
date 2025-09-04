@@ -1,8 +1,10 @@
-import { Injectable, HttpStatus, Inject } from "@nestjs/common";
+import { Injectable, Inject } from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
 import { ApiResponse } from "../../../shared/api";
 // core
-import { CoreApiService, CoreAuthService, PrismaService, RequestDto } from "../../../core";
+import { CoreApiService, RequestDto, PrismaService } from "../../../core";
+// modules
+import { AuthService } from "../../../modules";
 // local
 import { AuthAdminAddDto, AuthAdminDelDto, AuthAdminEditDto } from "./dto";
 import { AdminCrudService } from "./admin.crud";
@@ -14,11 +16,11 @@ export class AuthAdminService extends CoreApiService {
     protected preExcludeFields: string | string[] = ['create_time', 'update_time', 'password', 'salt', 'login_failure', 'last_login_time', 'last_login_ip'];
     constructor(
         public prisma: PrismaService,
-        public coreAuthService: CoreAuthService,
+        public authService: AuthService,
         @Inject(REQUEST) public readonly req: RequestDto,
         public crudService: AdminCrudService,
     ) {
-        super(req, prisma, crudService, coreAuthService);
+        super(req, prisma, crudService, authService);
     }
 
     async add(data: AuthAdminAddDto) {

@@ -1,13 +1,13 @@
 import { Body, Controller, Delete, Get, ParseIntPipe, Post, Query } from "@nestjs/common";
 // core
-import { CoreAuthService } from "../../../core/services/auth.service";
+import { AuthService } from "../../../modules";
 // local
 import { AuthRuleAddDto, AuthRuleDelDto, AuthRuleEditDto, AuthRuleIndexQueryDto } from "./dto";
 import { AuthRuleService } from "./rule.service";
 
 @Controller('admin/auth.rule')
 export class AuthRuleController {
-    constructor(private ruleService: AuthRuleService, private coreAuthService: CoreAuthService) {}
+    constructor(private ruleService: AuthRuleService, private coreAuthService: AuthService) {}
     // 增删改查
 
     @Post('add')

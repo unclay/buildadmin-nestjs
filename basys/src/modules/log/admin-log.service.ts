@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService, RequestDto } from 'src/core';
-import { ParamFilter } from 'src/shared';
+import { RequestDto } from 'src/core';
+import { ParamFilter } from '../../shared';
+import { PrismaService } from '../../core/database/prisma.service';
 
 @Injectable()
-export class CoreAdminLogService {
+export class AdminLogService {
   constructor(
     private readonly prisma: PrismaService
   ) { }
@@ -53,11 +54,9 @@ export class CoreAdminLogService {
       const actionName = actionObj?.title ?? `Unknown(${routeInfo?.action})`
       title = controllerObj?.title ? `${controllerObj.title}-${actionName}` : actionName;
     }
-    console.log(routeInfo);
     // 忽略的链接正则列表
     if (this.urlIgnoreRegex) {
       for (const regex of this.urlIgnoreRegex) {
-        console.log(regex, routeInfo.action_name, regex.test(routeInfo.action_name));
         if (regex.test(routeInfo.action_name)) {
           return;
         }
@@ -68,17 +67,6 @@ export class CoreAdminLogService {
     data = ParamFilter.applyJson(data, 'trim,strip_tags,htmlspecialchars'.split(','))
     data = this.desensitization(data);
 
-    console.log(
-      {
-        admin_id: req.user?.id,
-        username: req.user?.username,
-        url: req.route.path.slice(0, 1500),
-        title,
-        data: typeof data !== 'string' ? JSON.stringify(data) : data,
-        ip: req.ip,
-        useragent: req.headers['user-agent'].slice(0, 255),
-      }
-    );
     await this.prisma.baAdminLog.create({
       data: {
         admin_id: req.user?.id,

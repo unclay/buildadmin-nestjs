@@ -1,183 +1,138 @@
-import * as bcrypt from 'bcrypt';
-import { HttpStatus, Injectable } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
-import { Request } from 'express';
-import { pick } from 'lodash';
+import { Inject, Injectable } from "@nestjs/common";
+import { REQUEST } from '@nestjs/core';
+import { Prisma } from "@prisma/client";
+// common
+import { array_diff } from "../../shared";
+// extend
 import { BaAuth } from '../../extend/ba/Auth';
-import { TokenService } from './token.service';
-import { PrismaService } from '../../core/database';
-import { ApiResponse } from '../../shared/api';
+// core
+import { PrismaService, RequestDto } from "../../core";
 
 @Injectable()
 export class AuthService extends BaAuth {
-    // 刷新 token 过期时间
-    refreshTokenKeepTime = 2592000;
-    // 允许返回的字段
-    allowFields = ['id', 'username', 'nickname', 'avatar', 'last_login_time'];
-
-    /**
-     * 需要登录时/无需登录时的响应状态代码
-     */
-    LOGIN_RESPONSE_CODE = 303;
-
-    /**
-     * 需要登录标记 - 前台应清理 token、记录当前路由 path、跳转到登录页
-     */
-    NEED_LOGIN = 'need login';
-
-    /**
-     * 已经登录标记 - 前台应跳转到基础路由
-     */
-    LOGGED_IN = 'logged in';
-
-    /**
-     * token 入库 type
-     */
-    TOKEN_TYPE = 'admin';
-
+    protected dataLimit: boolean | number | string = false;
+    protected dataLimitField: string = 'admin_id';
     constructor(
-        private jwtService: JwtService,
-        public prisma: PrismaService,
-        private configService: ConfigService,
-        private tokenService: TokenService,
+        @Inject(REQUEST) private readonly req: RequestDto,
+        public prismaService: PrismaService,
     ) {
-        super(prisma);
+        super(prismaService);
     }
-
-    public async checkToken(token: string) {
-        if (!token) {
-            throw ApiResponse.error('Token Not Found', null, HttpStatus.UNAUTHORIZED);
-        }
-        const tokenDB = await this.tokenService.getTokenWithDB(token);
-        if (!tokenDB) {
-            throw ApiResponse.error('Token Record Not Found', null, HttpStatus.UNAUTHORIZED);
-        }
+    /**
+     * 从 request 读取用户的属性值
+     */
+    getUser(userField: string) {
+        return (this.req as any).user[userField];
     }
-
-    async loginWithRequest(req: Request, username: string, password: string) {
-        // 需要先将 Request 转换为 any 类型来访问 body 属性
-        return this.login(username, password, (req as any).body?.keep, req.ip);
-    }
-    // 校验用户，并返回用户信息
-    async login(username: string, password: string, keep: boolean, ip: string) {
-        const admin = await this.prisma.baAdmin.findUnique({
-            where: {
-                username,
-            },
-        });
-        if (!admin) {
-            throw ApiResponse.error('Username is incorrect');
-        }
-        if (admin.status == 'disable') {
-            throw ApiResponse.error('Account disabled');
-        }
-        const lastLoginTime = admin.last_login_time?.getTime();
-        const adminLoginRetry = this.configService.get('buildadmin.admin_login_retry');
-
-        if (adminLoginRetry && lastLoginTime) {
-            // 重置失败次数
-            if (admin.login_failure > 0 && Math.floor(Date.now() / 1000) - Number(lastLoginTime) >= 86400) {
-                this.prisma.baAdmin.update({
-                    where: {
-                        id: admin.id,
-                    },
-                    data: {
-                        login_failure: 0,
-                    },
-                });
-            }
-
-            if (admin.login_failure >= adminLoginRetry) {
-                throw ApiResponse.error('Please try again after 1 day');
-            }
-        }
-
-        // 密码检查
-        const isPasswordValid = await bcrypt.compare(password, admin.password);
-        if (!isPasswordValid) {
-            this.loginFailed(admin, ip);
-            throw ApiResponse.error('Password is incorrect');
-        }
-
-        // 清理 token
-        if (this.configService.get('buildadmin.admin_sso')) {
-            // this.tokenService.clear(this.TOKEN_TYPE, admin.id);
-            // this.tokenService.clear(this.TOKEN_TYPE + '-refresh', admin.id);
-        }
-
-        if (keep) {
-            // this.setRefreshToken(this.refreshTokenKeepTime);
-        }
-
-        const token = this.jwtService.sign({
-            user_id: admin.id,
-            type: this.TOKEN_TYPE,
-        });
-        this.loginSuccessful(admin, ip, token);
-
-        delete admin.password;
-        return {
-            ...pick(admin, this.allowFields),
-            token,
-        };
+    /**
+     * 从 request 设置用户的属性值
+     */
+    setUser(key: string, value: any) {
+        (this.req as any).user[key] = value;
     }
 
     /**
-     * 管理员登录失败
-     * @return bool
+     * 是否超级管理员
+     * @returns boolean
      */
-    async loginFailed(admin: any, ip: string) {
-        await this.prisma.baAdmin.update({
-            where: { id: admin.id },
+    async isSuperAdmin() {
+        // 读取缓存
+        let isSuperAdmin = this.getUser('isSuperAdmin');
+        if (typeof isSuperAdmin === 'boolean') return isSuperAdmin;
+        // 读取数据库
+        const rules = await this.getRuleIds();
+        isSuperAdmin = rules.includes('*');
+        this.setUser('isSuperAdmin', isSuperAdmin);
+        return isSuperAdmin;
+    }
+
+    /**
+     * 重置管理员id
+     * @param adminId 管理员id
+     * @param password 未加密的密码
+     * @param prisma 事务context，默认使用全局prisma实例，也可传外部事务的prisma实例（context）
+     * @returns 
+     */
+    resetPassword(adminId: number, password: string, prisma?: Prisma.TransactionClient) {
+        const ctx = prisma || this.prisma;
+        return ctx.baAdmin.update({
+            where: {
+                id: adminId,
+            },
             data: {
-                login_failure: admin.login_failure + 1,
-                last_login_time: new Date(),
-                last_login_ip: ip
+                password: this.hashPassword(password),
             },
         });
     }
 
-    async loginSuccessful(admin: any, ip: string, token: string) {
-        await this.prisma.baAdmin.update({
-            where: { id: admin.id },
-            data: {
-                login_failure: 0,          // 重置登录失败次数
-                last_login_time: new Date(),
-                last_login_ip: ip
-            },
-        });
-        await this.prisma.baToken.create({
-            data: {
-                token,
-                type: this.TOKEN_TYPE,
-                user_id: admin.id,
-                // create_time: Math.floor(Date.now() / 1000),
-                expire_time: new Date(Date.now() + this.configService.get('buildadmin.admin_token_keep_time') * 1000),
-            },
-        });
+    /**
+     * 获取管理员所在分组的所有子级分组
+     * @return array
+     * @throws Throwable
+     */
+    async getAdminChildGroups(){
+        const groupIds = await this.prisma.baAdminGroupAccess.findMany({
+            where: {
+                uid: this.getUser('id')
+            }
+        })
+        const children = [];
+        for (const group of groupIds) {
+            this.getGroupChildGroups(group.group_id, children);
+        }
+        return Array.from(new Set(children));
     }
 
+    /**
+     * 获取一个分组下的子分组
+     * @param int   $groupId  分组ID
+     * @param array $children 存放子分组的变量
+     * @return void
+     * @throws Throwable
+     */
+    async getGroupChildGroups(groupId: number, children: number[]) {
+        const childrenTemp = await this.prisma.baAdminGroup.findMany({
+            where: {
+                pid: groupId,
+                status: 1,
+            }
+        })
+        for (const item of childrenTemp) {
+            children.push(item.id);
+            this.getGroupChildGroups(item.id, children);
+        }
+    }
 
-
+    /**
+     * 获取分组内的管理员
+     * @param array $groups
+     * @return array 管理员数组
+     */
+    async getGroupAdmins(groups: number[]) {
+        const list = await this.prisma.baAdminGroupAccess.findMany({
+            where: {
+                group_id: {
+                    in: groups
+                }
+            }
+        });
+        return list.map(item => item.uid);
+    }
 
     /**
      * 获取拥有 `所有权限` 的分组
-     * @param number id
      * @param string $dataLimit       数据权限
      * @param array  $groupQueryWhere 分组查询条件（默认查询启用的分组：[['status','=',1]]）
      * @return array 分组数组
      * @throws Throwable
      */
-    async getAllAuthGroups(uid: number, dataLimit: string, groupQueryWhere: any = { status: 1 }): Promise<number[]> {
+    async getAllAuthGroups(dataLimit: string | number, groupQueryWhere: { [key:string]: any } = { status: 1 }) {
         // 当前管理员拥有的权限
-        const rules = await this.getRuleIds(uid);
-        const allAuthGroups: number[] = [];
-
+        const rules = await this.getRuleIds();
+        const allAuthGroups = [];
         const groups = await this.prisma.baAdminGroup.findMany({
             where: groupQueryWhere
         });
-
         for (const group of groups) {
             if (group.rules === '*') {
                 continue;
@@ -192,32 +147,62 @@ export class AuthService extends BaAuth {
                     break;
                 }
             }
-
             if (all) {
-                if (dataLimit === 'allAuth' ||
-                    (dataLimit === 'allAuthAndOthers' &&
-                        rules.filter(rule => !groupRules.includes(rule)).length > 0)) {
+                if (dataLimit === 'allAuth' || (dataLimit === 'allAuthAndOthers' && array_diff(rules, groupRules))) {
                     allAuthGroups.push(group.id);
                 }
             }
         }
-
+            
         return allAuthGroups;
     }
 
+    async getAdminGroupIds() {
+        const adminGroups = await this.prisma.baAdminGroupAccess.findMany({
+            where: {
+                uid: this.getUser('id')
+            },
+            select: {
+                group_id: true,
+            }
+        });
+        return adminGroups.map(item => item.group_id);
+    }
+
+
     /**
-     * 是否是超级管理员
-     * @throws Throwable
+     * 获取权限规则的 remark
+     * @returns 
      */
-    async isSuperAdmin(uid: number) {
-        const rules = await this.getRuleIds(uid);
-        return rules.includes('*');
+    async getRouteRemark() {
+        const adminRule = await this.prisma.baAdminRule.findFirst({
+            where: {
+                OR: [
+                    { name: this.req.routeInfo.controller_name },
+                    { name: this.req.routeInfo.action_name }
+                ]
+            },
+            select: {
+                remark: true
+            }
+        });
+
+        return adminRule?.remark || '';
     }
 
-
-    getMenus(uid: number) {
-        return super.getMenus(uid);
+    getRuleIds() {
+        return super.getRuleIds(this.req.user?.id);
     }
-
-
+    getMenus() {
+        return super.getMenus(this.req.user?.id);
+    }
+    isLogin() {
+        return Boolean(this.req.user.id);
+    }
+    get id() {
+        return this.req.user.id;
+    }
+    get username() {
+        return this.req.user.username;
+    }
 }

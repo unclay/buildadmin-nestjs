@@ -1,8 +1,10 @@
 import { Controller, Get, Post, UseGuards, Request } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
-import { Public } from '../../modules/auth/auth.decorator';
+// core
 import { RouteTitle } from '../../core';
+// modules
+import { Public } from '../../modules';
 
 @Controller('admin/index')
 export class LoginController {

@@ -2,13 +2,15 @@
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
+// core
 import { RequestDto } from '../dtos';
-import { CoreAdminLogService } from '../services';
+// modules
+import { AdminLogService } from '../../modules';
 
 @Injectable()
 export class AdminLogInterceptor implements NestInterceptor {
   constructor(
-    private readonly adminLogService: CoreAdminLogService) {
+    private readonly adminLogService: AdminLogService) {
   }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {

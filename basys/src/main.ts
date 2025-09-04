@@ -1,8 +1,11 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+// core
+import { DateTimeInterceptor, ResponseInterceptor, SerializerInterceptor, HttpExceptionFilter, AdminLogInterceptor } from './core';
+// modules
+import { AdminLogService, AuthGuard } from './modules';
+// local
 import { AppModule } from './app.module';
-import { DateTimeInterceptor, ResponseInterceptor, SerializerInterceptor, HttpExceptionFilter, AdminLogInterceptor, CoreAdminLogService } from './core';
-import { GlobalAuthGuard } from './modules/auth/global-auth.guard';
 
 async function bootstrap() {
   // 中间件 → 守卫 → 拦截器 → 控制器
@@ -20,14 +23,14 @@ async function bootstrap() {
     new ResponseInterceptor(),
     new SerializerInterceptor(),
     new DateTimeInterceptor(),
-    new AdminLogInterceptor(app.get(CoreAdminLogService)),
+    new AdminLogInterceptor(app.get(AdminLogService)),
   );
   // 全局过滤器
   app.useGlobalFilters(
     new HttpExceptionFilter(),
   );
   // 全局守卫
-  app.useGlobalGuards(new GlobalAuthGuard(app.get(Reflector)));
+  app.useGlobalGuards(new AuthGuard(app.get(Reflector)));
   await app.listen(process.env.PORT ?? 18000, '0.0.0.0');
 }
 bootstrap();

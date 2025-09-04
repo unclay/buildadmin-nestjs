@@ -1,12 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
-// shared
-import { ApiResponse } from '../../../shared/api';
-// common
-import { array_diff } from '../../../shared';
-// core
-import { RequestDto, CoreApiService, CoreAuthService, PrismaService } from '../../../core';
-// extend ba
+import { ApiResponse, array_diff } from '../../../shared';
+import { RequestDto, CoreApiService, PrismaService } from '../../../core';
+import { AuthService } from "../../../modules";
 import { BaTree } from '../../../extend/ba';
 // local
 import { AuthGroupAddDto, AuthGroupDelDto, AuthGroupEditDto, AuthGroupIndexQueryDto } from './dto';
@@ -24,11 +20,11 @@ export class AuthGroupService extends CoreApiService {
     protected preExcludeFields = ['create_time', 'update_time'];
     constructor(
         public prisma: PrismaService,
-        public coreAuthService: CoreAuthService,
+        public authService: AuthService,
         @Inject(REQUEST) public readonly req: RequestDto,
         public crudService: AdminGroupCrudService,
     ) {
-        super(req, prisma, crudService, coreAuthService);
+        super(req, prisma, crudService, authService);
     }
     // 增删改查
 

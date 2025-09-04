@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaService, BaseCrudService } from "../../../core";
+// core
+import { BaseCrudService, PrismaService } from "../../../core";
 
 @Injectable()
 export class AdminLogCrudService extends BaseCrudService {

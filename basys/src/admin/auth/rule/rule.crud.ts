@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaService, BaseCrudService } from "../../../core";
+import { BaseCrudService, PrismaService } from "../../../core";
 
 @Injectable()
 export class AdminRuleCrudService extends BaseCrudService {

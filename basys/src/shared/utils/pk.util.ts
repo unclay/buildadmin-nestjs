@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 const modelNames = Object.getOwnPropertyNames(prisma).filter(item => !item.match(/^_|^\$|constructor|^[A-Z]/));
 
-console.log('Getter 名称:', modelNames);
+// console.log('Getter 名称:', modelNames);
 // console.log(PrismaClient.prototype, Object.getOwnPropertyNames(PrismaClient.prototype));
 // delete prisma.baAdminGroupAccess['$parent'];
 // console.log(prisma.baAdminGroupAccess['name']);

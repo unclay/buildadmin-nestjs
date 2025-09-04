@@ -1,15 +1,17 @@
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
-import { Strategy, ExtractJwt } from "passport-jwt";
+import { Strategy } from "passport-jwt";
 import { Request } from 'express';
+// shared
 import { extractTokenFromRequest } from "../../shared";
-import { AuthService } from "./auth.service";
+// local
+import { LoginService } from "./login.service";
 import { TokenService } from "./token.service";
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy, 'auth-jwt') {
-  constructor(private readonly configService: ConfigService, private authService: AuthService, private tokenService: TokenService) {
+export class LoginJwtStrategy extends PassportStrategy(Strategy, 'auth-jwt') {
+  constructor(private readonly configService: ConfigService, private loginService: LoginService, private tokenService: TokenService) {
     super({
       passReqToCallback: true,
       jwtFromRequest: (req: Request) => {
@@ -22,7 +24,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'auth-jwt') {
 
   async validate(req: Request, payload: any) {
     const token = extractTokenFromRequest(req);
-    await this.authService.checkToken(token);
+    await this.loginService.checkToken(token);
     const admin = await this.tokenService.getUser(payload.user_id);
     if (!admin) {
       return null;
