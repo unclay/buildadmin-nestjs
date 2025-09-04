@@ -27,18 +27,18 @@ getPrimaryKey('ba_admin').then(keys => {
 });
 
 async function find() {
-    const pks = await getPrimaryKey(tableName);
-    console.log(pks);
-    const uniqueKey = pks.map(v => v.column_name).join('_');
-    console.log(uniqueKey);
-    const row = await prisma.baAdminGroupAccess.findUnique({
-        where: {
-            [uniqueKey]: {
-                uid: 13,
-                group_id: 3,
-            },
-        }
-    } as any);
-    console.log(row);
+  const pks = await getPrimaryKey(tableName);
+  console.log(pks);
+  const uniqueKey = pks.map(v => v.column_name).join('_');
+  console.log(uniqueKey);
+  const row = await prisma.baAdminGroupAccess.findUnique({
+    where: {
+      [uniqueKey]: {
+        uid: 13,
+        group_id: 3,
+      },
+    }
+  } as any);
+  console.log(row);
 }
 find();

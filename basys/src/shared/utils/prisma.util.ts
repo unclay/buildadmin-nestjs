@@ -16,7 +16,7 @@ type PrismaModel = keyof {
 function getPrismaModelNames(): string[] {
   const prisma = new PrismaClient();
   const allKeys = Object.keys(prisma) as (keyof PrismaClient)[];
-  
+
   return allKeys.filter(key => {
     const value = prisma[key];
     return typeof value === 'object' && value !== null && 'findMany' in value;

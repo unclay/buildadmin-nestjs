@@ -13,4 +13,4 @@ import { AdminGroupCrudService } from './group.crud';
   controllers: [AuthGroupController],
   providers: [AuthGroupService, AdminGroupCrudService],
 })
-export class AuthGroupModule {}
+export class AuthGroupModule { }

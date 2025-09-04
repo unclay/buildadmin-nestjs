@@ -12,7 +12,7 @@ import { AuthService, LoginService, LoginJwtStrategy, LoginLocalStrategy, TokenS
   providers: [AuthService],
   exports: [AuthService]
 })
-export class AuthModule {}
+export class AuthModule { }
 
 // 登录专用模块
 @Module({
@@ -29,6 +29,6 @@ export class AuthModule {}
     })
   ],
   providers: [LoginJwtStrategy, LoginLocalStrategy, AuthGuard, LoginService, TokenService],
-  exports: [AuthGuard, LoginLocalStrategy] 
+  exports: [AuthGuard, LoginLocalStrategy]
 })
-export class LoginModule {}
+export class LoginModule { }

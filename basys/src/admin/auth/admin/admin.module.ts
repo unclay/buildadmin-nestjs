@@ -13,4 +13,4 @@ import { AdminCrudService } from "./admin.crud";
   controllers: [AuthAdminController],
   providers: [AuthAdminService, AdminCrudService],
 })
-export class AuthAdminModule {}
+export class AuthAdminModule { }

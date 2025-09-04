@@ -5,6 +5,6 @@ import { AuthModule } from './auth/auth.module';
 import { AuthAdminLogModule } from './auth/log/log.module';
 
 @Module({
-    imports: [IndexModule, DashboardModule, AuthModule, AuthAdminLogModule],
+  imports: [IndexModule, DashboardModule, AuthModule, AuthAdminLogModule],
 })
-export class AdminModule {}
+export class AdminModule { }

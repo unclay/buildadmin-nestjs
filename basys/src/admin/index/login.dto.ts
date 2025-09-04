@@ -1,8 +1,8 @@
-import { 
-  IsNotEmpty, 
-  IsString, 
-  MinLength, 
-  MaxLength, 
+import {
+  IsNotEmpty,
+  IsString,
+  MinLength,
+  MaxLength,
   Matches,
   IsBoolean,
   IsOptional,

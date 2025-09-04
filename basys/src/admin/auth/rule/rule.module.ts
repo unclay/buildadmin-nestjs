@@ -13,4 +13,4 @@ import { AdminRuleCrudService } from './rule.crud';
   controllers: [AuthRuleController],
   providers: [AuthRuleService, AdminRuleCrudService],
 })
-export class AuthRuleModule {}
+export class AuthRuleModule { }

@@ -3,7 +3,7 @@ import { AdminLogModule } from "./log";
 import { LoginModule } from "./auth";
 
 @Module({
-    imports: [AdminLogModule, LoginModule],
-    exports: [AdminLogModule, LoginModule],
+  imports: [AdminLogModule, LoginModule],
+  exports: [AdminLogModule, LoginModule],
 })
-export class ModulesModule {}
+export class ModulesModule { }

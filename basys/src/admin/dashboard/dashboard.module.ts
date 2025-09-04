@@ -4,4 +4,4 @@ import { IndexController } from './index.controller';
 @Module({
   controllers: [IndexController]
 })
-export class DashboardModule {}
+export class DashboardModule { }

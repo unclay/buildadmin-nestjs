@@ -7,4 +7,4 @@ import { AuthModule } from '../../modules';
   imports: [AuthModule],
   controllers: [IndexController, LoginController]
 })
-export class IndexModule {}
+export class IndexModule { }

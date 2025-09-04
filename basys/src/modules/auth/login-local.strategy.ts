@@ -48,7 +48,7 @@ export class LoginLocalStrategy extends PassportStrategy(Strategy, 'auth-local')
                 type: this.loginService.LOGGED_IN
             }, this.loginService.LOGIN_RESPONSE_CODE);
         }
-        
+
         // 校验逻辑交给service处理，返回校验结果
         const user = await this.loginService.loginWithRequest(req, username, password);
         return user;
