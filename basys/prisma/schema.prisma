@@ -141,3 +141,14 @@ model BaToken {
   
   @@map("ba_token")
 }
+
+
+model BaCaptcha {
+  key         String    @id @db.VarChar(32)
+  code        String    @default("") @db.VarChar(32)
+  captcha     String?   @db.Text
+  create_time DateTime  @default(now())
+  expire_time DateTime  @default(now())
+
+  @@map("ba_captcha")
+}
