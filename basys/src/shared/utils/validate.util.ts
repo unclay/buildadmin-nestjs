@@ -1,4 +1,4 @@
-// common/utils/validation.util.ts
+// shared/utils/validate.util.ts
 import { validate } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
 import { BadRequestException } from '@nestjs/common';
@@ -12,9 +12,10 @@ export async function validateDto<T extends object>(
 
   if (errors.length > 0) {
     const message = errors
-      .map(error => Object.values(error.constraints || {}))
+      .map(error => Object.values(error.constraints || {})[0])
       .flat()
       .join(', ');
+    // 减少耦合，不用 ApiResponese
     throw new BadRequestException(message);
   }
 

@@ -46,7 +46,17 @@ export class ApiResponse {
     const responseType = type ?? ApiResponse.defaultType;
     const statusCode = header.statusCode ?? ApiResponse.defaultStatusCode;
     delete header.statusCode;
-    return new HttpException({
+    const json = {
+      code,
+      msg,
+      time: Math.floor(Date.now() * 0.001),
+      data,
+      metadata: {
+        type: responseType,
+        header,
+      }
+    };
+    const errorApiResponse = new ApiResponse({
       code,
       msg,
       time: Math.floor(Date.now() * 0.001),
@@ -56,5 +66,25 @@ export class ApiResponse {
         header,
       }
     }, statusCode);
+    // nestjs 采用异常过滤器，把自定义的异常对象，转换为 http 异常对象，并挂载到 cause
+    return new HttpException(json, statusCode, {
+      cause: errorApiResponse,
+    });
+  }
+  static from(data: any) {
+    // 已封装的统一数据格式
+    if (data instanceof ApiResponse) {
+      return data;
+    }
+    if (data?.cause instanceof ApiResponse) {
+      return data.cause; 
+    }
+    // 未封装的异常数据
+    if (data?.error || data?.message) {
+      return ApiResponse.error(data?.message, data?.error, data?.statusCode).cause;
+    }
+    // 未封装的纯数据
+    const xdata = (data?.code || data?.msg) ? data?.data : data;
+    return ApiResponse.success(data?.msg, data?.data ?? xdata ?? null, data?.code);
   }
 }
