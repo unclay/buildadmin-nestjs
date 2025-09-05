@@ -1,9 +1,12 @@
-import { Module } from "@nestjs/common";
+import { Global, Module } from "@nestjs/common";
 import { CoreMiddlewareModule } from "./middlewares/middleware.module";
+import { DatabaseModule } from "./database/database.module";
+import { CoreCaptchaModule } from "./services/captcha.module";
 
-// 移除 @Global() 装饰器，改为显式导入
+@Global()
 @Module({
-  imports: [CoreMiddlewareModule],
-  exports: [],
+  imports: [DatabaseModule, CoreMiddlewareModule, CoreCaptchaModule],
+  providers: [],
+  exports: [DatabaseModule, CoreCaptchaModule],
 })
-export class CoreModule {}
+export class CoreModule { }
