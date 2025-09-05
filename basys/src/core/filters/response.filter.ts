@@ -9,7 +9,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     // 统一数据格式
-    const apiResponse = ApiResponse.from(exception.getResponse());
+    const apiResponse = ApiResponse.from(exception);
     const { responseData, statusCode } = apiResponse;
     const { metadata } = responseData;
     delete responseData.metadata;

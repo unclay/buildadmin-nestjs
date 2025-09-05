@@ -23,7 +23,7 @@ export class AdminLogService {
    * @var array
    */
   protected urlIgnoreRegex: RegExp[] = [
-    /^(.*)\/(select|index|logout)$/i,
+    /^(.*)\/(select|index|logout|login|checkClickCaptcha)$/i,
   ];
   protected desensitizationRegex: RegExp[] = [
     /(password|salt|token)/i
@@ -67,15 +67,32 @@ export class AdminLogService {
     data = ParamFilter.applyJson(data, 'trim,strip_tags,htmlspecialchars'.split(','))
     data = this.desensitization(data);
 
+    // 检查用户是否存在且有效
+    if (!req.user?.id) {
+      console.warn('AdminLogService: 无法记录日志，用户信息不存在');
+      return;
+    }
+
+    // 验证管理员是否存在
+    const adminExists = await this.prisma.baAdmin.findUnique({
+      where: { id: req.user.id },
+      select: { id: true }
+    });
+
+    if (!adminExists) {
+      console.warn(`AdminLogService: 管理员 ID ${req.user.id} 不存在，无法记录日志`);
+      return;
+    }
+
     await this.prisma.baAdminLog.create({
       data: {
-        admin_id: req.user?.id,
-        username: req.user?.username,
+        admin_id: req.user.id,
+        username: req.user.username || '',
         url: req.route.path.slice(0, 1500),
         title,
         data: typeof data !== 'string' ? JSON.stringify(data) : data,
         ip: req.ip,
-        useragent: req.headers['user-agent'].slice(0, 255),
+        useragent: req.headers['user-agent']?.slice(0, 255) || '',
       }
     });
   }
