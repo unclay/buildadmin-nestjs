@@ -4,10 +4,10 @@
 https://www.conventionalcommits.org/zh-hans/v1.0.0/
 
 ```
-feat：新功能（feature）
-fix：修补bug
+feat: 新功能（feature）
+fix: 修补bug
 
-chore：构建过程或辅助工具的变动
+chore: 构建过程或辅助工具的变动
 build: 用于修改项目构建系统，例如修改依赖库、外部接口或者升级 Node 版本等；
 chore: 用于对非业务性代码进行修改，例如修改构建流程或者工具配置等；
 ci: 用于修改持续集成流程，例如修改 Travis、Jenkins 等工作流配置；
