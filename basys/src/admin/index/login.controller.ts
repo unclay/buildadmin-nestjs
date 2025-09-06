@@ -5,6 +5,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { RouteTitle } from '../../core';
 // modules
 import { Public } from '../../modules';
+import { ApiResponse } from '../../shared';
 
 @Controller('admin/index')
 export class LoginController {
@@ -34,5 +35,11 @@ export class LoginController {
         userInfo: req.user
       },
     };
+  }
+
+  @Public()
+  @Get('test')
+  getTest() {
+    throw ApiResponse.error('测试失败');
   }
 }

@@ -1,16 +1,19 @@
 import { JwtService } from '@nestjs/jwt';
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { Strategy } from 'passport-local';
 // shared
-import { extractTokenFromRequest, ApiResponse } from '../../shared';
+import { validateDto, ApiResponse } from '../../shared';
 // core
-import { PrismaService } from '../../core';
+import { CoreCaptchaService, CoreClickCaptchaService, PrismaService } from '../../core';
 // local
 import { LoginService } from './login.service';
 import { TokenService } from './token.service';
+import { BuildAdminConfig } from '../../config/index.types';
+import { LoginCaptchaDto } from './login-local.dto';
+import { LoginDto } from './login-local.dto';
 
 /**
  * 本地策略
@@ -22,7 +25,12 @@ import { TokenService } from './token.service';
  */
 @Injectable()
 export class LoginLocalStrategy extends PassportStrategy(Strategy, 'auth-local') {
-    constructor(private loginService: LoginService, private jwtService: JwtService, private configService: ConfigService, private tokenService: TokenService, private prisma: PrismaService) {
+    constructor(
+        private readonly loginService: LoginService,
+        private readonly configService: ConfigService,
+        @Inject(forwardRef(() => CoreClickCaptchaService))
+        private readonly captchaService: CoreClickCaptchaService
+    ) {
         // 可自定义字段名，默认 username/password
         super({
             passReqToCallback: true, // 关键：允许将请求对象传递给 validate 方法
@@ -31,22 +39,23 @@ export class LoginLocalStrategy extends PassportStrategy(Strategy, 'auth-local')
         });
     }
     async validate(req: Request, username: string, password: string) {
-        let isLogin = false;
-        try {
-            // 获取token
-            const token = extractTokenFromRequest(req);
-            // token是否有效
-            await this.loginService.checkToken(token);
-            // 没有异常抛出，说明能正常获取用户信息
-            isLogin = true;
-        } catch (error) {
-            // token 异常，当做未登录处理，继续后续逻辑
-            // console.log(error, 'token 异常');
-        }
+        const isLogin = await this.loginService.isLogin(req);
         if (isLogin) {
             throw ApiResponse.error('You have already logged in. There is no need to log in again~', {
                 type: this.loginService.LOGGED_IN
             }, this.loginService.LOGIN_RESPONSE_CODE);
+        }
+
+        const adminLoginCaptcha = this.configService.get<BuildAdminConfig>('buildadmin').admin_login_captcha;
+        const dto = adminLoginCaptcha ? LoginCaptchaDto : LoginDto;
+        const result = await validateDto(dto, req.body);
+        if (adminLoginCaptcha) {
+            const captchaBody = result as LoginCaptchaDto;
+            console.log('captchaBody', captchaBody);
+            const captchaResult = await this.captchaService.check(captchaBody.captchaId, captchaBody.captchaInfo);
+            if (!captchaResult) {
+                throw ApiResponse.error('验证码错误');
+            }
         }
 
         // 校验逻辑交给service处理，返回校验结果

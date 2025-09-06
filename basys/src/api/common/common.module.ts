@@ -1,7 +1,12 @@
 import { Module } from '@nestjs/common';
-import { ClickCaptchaController } from './click-captcha.controller';
+import { CoreModule } from '../../core/core.module';
+// local
+import { CommonCaptchaController } from './captcha.controller';
+import { CommonCaptchaService } from './captcha.service';
 
 @Module({
-  controllers: [ClickCaptchaController],
+  imports: [CoreModule],
+  controllers: [CommonCaptchaController],
+  providers: [CommonCaptchaService],
 })
 export class CommonModule { }

@@ -7,3 +7,4 @@ export * from './login-local.strategy';
 export * from './login-jwt.strategy';
 export * from './public.decorator';
 export * from './auth.module';
+export * from './login.module';

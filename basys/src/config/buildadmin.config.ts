@@ -1,12 +1,13 @@
 import { registerAs } from '@nestjs/config';
+import { BuildAdminConfig } from './index.types';
 
-export default registerAs('buildadmin', () => ({
+export default registerAs('buildadmin', (): BuildAdminConfig => ({
   // 允许跨域访问的域名
   cors_request_domain: 'localhost,127.0.0.1',
   // 是否开启会员登录验证码
   user_login_captcha: true,
   // 是否开启管理员登录验证码
-  admin_login_captcha: false,
+  admin_login_captcha: true,
   // 会员登录失败可重试次数,false则无限
   user_login_retry: 10,
   // 管理员登录失败可重试次数,false则无限

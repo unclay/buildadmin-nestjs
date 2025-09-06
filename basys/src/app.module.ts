@@ -9,7 +9,7 @@ import { ModulesModule } from './modules/modules.module';
 
 @Module({
   // 从左到右
-  imports: [NestConfigModule, CoreModule, AdminModule, ApiModule, ModulesModule],
+  imports: [NestConfigModule, CoreModule, ModulesModule, ApiModule, AdminModule],
   controllers: [AppController],
   providers: [AppService],
 })

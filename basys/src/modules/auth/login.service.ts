@@ -6,7 +6,7 @@ import { Request } from 'express';
 import { pick } from 'lodash';
 import { BaAuth } from '../../extend/ba/Auth';
 // shared
-import { ApiResponse } from '../../shared';
+import { ApiResponse, extractTokenFromRequest } from '../../shared';
 // core
 import { PrismaService } from '../../core';
 // modules
@@ -46,6 +46,30 @@ export class LoginService extends BaAuth {
     private tokenService: TokenService,
   ) {
     super(prisma);
+  }
+
+  /**
+   * 检查请求是否登录，token检查专用，用于账密登录前的token检查
+   * @param req 
+   * @returns 
+   */
+  public async isLogin(req: Request) {
+    try {
+      // 获取token
+      const token = extractTokenFromRequest(req);
+      // token是否有效
+      await this.checkToken(token);
+      // 没有异常抛出，说明能正常获取用户信息
+      return true;
+    } catch (error) {
+      if (error instanceof ApiResponse || error?.cause instanceof ApiResponse) {
+        // token 的 ApiResponse 异常，当做未登录处理，继续后续逻辑
+        return false;
+      } else {
+        // 其他异常抛出
+        throw error;
+      }
+    }
   }
 
   public async checkToken(token: string) {

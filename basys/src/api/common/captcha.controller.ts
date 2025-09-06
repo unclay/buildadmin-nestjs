@@ -1,12 +1,21 @@
-import { Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Public } from '../../modules';
+import { CommonCaptchaService } from './captcha.service';
+import { ClickCaptchaDto } from './captcha.dto';
+import { ApiResponse } from '../../shared';
 
 @Controller('/api/common')
-export class ClickCaptchaController {
+export class CommonCaptchaController {
+  constructor(
+    private readonly captchaService: CommonCaptchaService
+  ) {}
   /**
    * [GET] /api/common/clickCaptcha
    */
   @Get('clickCaptcha')
-  getCaptcha(@Query('id') id: string) {
+  @Public()
+  clickCaptcha(@Query('id') id: string) {
+    return this.captchaService.create(id);
     return {
       id,
       "text": [
@@ -23,8 +32,17 @@ export class ClickCaptchaController {
    * [POST] /api/common/checkClickCaptcha
    */
   @Post('checkClickCaptcha')
-  postCheckCaptcha() {
-    // 假装校验通过
-    return null;
+  @Public()
+  async postCheckCaptcha(@Body() body: ClickCaptchaDto) {
+    const {
+      id,
+      info,
+      unset
+    } = body;
+    const result = await this.captchaService.check(id, info, unset);
+    if (result) {
+      return ApiResponse.success();
+    }
+    throw ApiResponse.error();
   }
 }
