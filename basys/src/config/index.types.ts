@@ -25,6 +25,10 @@ export interface ClickCaptchaConfig {
   length?: number;
   // 混淆长度
   confuse_length?: number;
+  // 点击位置容差范围(像素)
+  tolerance?: number;
+  // 验证码过期时间(秒)
+  expire?: number;
 }
 
 // BuildAdmin 配置类型
