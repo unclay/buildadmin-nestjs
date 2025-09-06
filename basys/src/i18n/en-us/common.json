@@ -1,0 +1,39 @@
+{
+  "success": "Operation successful",
+  "error": "Operation failed",
+  "required": "{{name}} is required",
+  "email": "Please enter a valid email address",
+  "validation": {
+    "required": "{field} is required",
+    "email": "Please enter a valid email address",
+    "minLength": "{field} must be at least {min} characters",
+    "maxLength": "{field} cannot exceed {max} characters",
+    "password": "Invalid password format"
+  },
+  "auth": {
+    "login": {
+      "success": "Login successful",
+      "failed": "Invalid username or password",
+      "captcha": {
+        "required": "Please enter captcha",
+        "invalid": "Invalid or expired captcha"
+      }
+    },
+    "logout": {
+      "success": "Logout successful"
+    },
+    "unauthorized": "Unauthorized access",
+    "forbidden": "Insufficient permissions"
+  },
+  "user": {
+    "notFound": "User not found",
+    "created": "User created successfully",
+    "updated": "User updated successfully",
+    "deleted": "User deleted successfully"
+  },
+  "system": {
+    "maintenance": "System under maintenance",
+    "error": "System error",
+    "notFound": "Resource not found"
+  }
+}

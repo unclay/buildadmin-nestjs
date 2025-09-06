@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { ApiResponse, array_diff } from '../../../shared';
-import { RequestDto, CoreApiService, PrismaService } from '../../../core';
+import { RequestDto, CoreApiService, PrismaService, CoreI18nService } from '../../../core';
 import { AuthService } from "../../../modules";
 import { BaTree } from '../../../extend/ba';
 // local
@@ -23,6 +23,7 @@ export class AuthGroupService extends CoreApiService {
     public authService: AuthService,
     @Inject(REQUEST) public readonly req: RequestDto,
     public crudService: AdminGroupCrudService,
+    public i18n: CoreI18nService,
   ) {
     super(req, prisma, crudService, authService);
   }
@@ -159,9 +160,9 @@ export class AuthGroupService extends CoreApiService {
       });
     });
     if (result) {
-      return ApiResponse.success('Update successful');
+      return ApiResponse.success(this.i18n.translate('api.responses.updated'));
     }
-    throw ApiResponse.error('No rows updated');
+    throw ApiResponse.error(this.i18n.translate('No rows updated'));
   }
 
   /**

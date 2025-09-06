@@ -1,0 +1,31 @@
+{
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome to Admin System",
+    "statistics": {
+      "users": "Total Users",
+      "orders": "Total Orders",
+      "revenue": "Total Revenue"
+    }
+  },
+  "menu": {
+    "home": "Home",
+    "users": "User Management",
+    "orders": "Order Management",
+    "settings": "System Settings"
+  },
+  "actions": {
+    "create": "Create",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm"
+  },
+  "messages": {
+    "deleteConfirm": "Are you sure you want to delete this record?",
+    "saveSuccess": "Save successful",
+    "deleteSuccess": "Delete successful",
+    "operationFailed": "Operation failed"
+  }
+}

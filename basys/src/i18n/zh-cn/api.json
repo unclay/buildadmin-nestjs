@@ -1,0 +1,27 @@
+{
+  "errors": {
+    "notFound": "资源未找到",
+    "unauthorized": "未授权访问",
+    "forbidden": "权限不足",
+    "badRequest": "请求参数错误",
+    "internalError": "服务器内部错误",
+    "timeout": "请求超时"
+  },
+  "responses": {
+    "created": "创建成功",
+    "updated": "更新成功",
+    "deleted": "删除成功",
+    "retrieved": "获取成功"
+  },
+  "validation": {
+    "invalidFormat": "格式不正确",
+    "duplicateEntry": "数据已存在",
+    "outOfRange": "数值超出范围",
+    "invalidDate": "日期格式无效"
+  },
+  "database": {
+    "connectionFailed": "数据库连接失败",
+    "queryError": "查询执行错误",
+    "transactionFailed": "事务执行失败"
+  }
+}

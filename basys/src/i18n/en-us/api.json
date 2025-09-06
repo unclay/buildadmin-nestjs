@@ -1,0 +1,27 @@
+{
+  "errors": {
+    "notFound": "Resource not found",
+    "unauthorized": "Unauthorized access",
+    "forbidden": "Insufficient permissions",
+    "badRequest": "Invalid request parameters",
+    "internalError": "Internal server error",
+    "timeout": "Request timeout"
+  },
+  "responses": {
+    "created": "Created successfully",
+    "updated": "Updated successfully",
+    "deleted": "Deleted successfully",
+    "retrieved": "Retrieved successfully"
+  },
+  "validation": {
+    "invalidFormat": "Invalid format",
+    "duplicateEntry": "Data already exists",
+    "outOfRange": "Value out of range",
+    "invalidDate": "Invalid date format"
+  },
+  "database": {
+    "connectionFailed": "Database connection failed",
+    "queryError": "Query execution error",
+    "transactionFailed": "Transaction execution failed"
+  }
+}

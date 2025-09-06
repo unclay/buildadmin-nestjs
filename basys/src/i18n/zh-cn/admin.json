@@ -1,0 +1,31 @@
+{
+  "dashboard": {
+    "title": "仪表盘",
+    "welcome": "欢迎使用管理系统",
+    "statistics": {
+      "users": "用户总数",
+      "orders": "订单总数",
+      "revenue": "总收入"
+    }
+  },
+  "menu": {
+    "home": "首页",
+    "users": "用户管理",
+    "orders": "订单管理",
+    "settings": "系统设置"
+  },
+  "actions": {
+    "create": "创建",
+    "edit": "编辑",
+    "delete": "删除",
+    "save": "保存",
+    "cancel": "取消",
+    "confirm": "确认"
+  },
+  "messages": {
+    "deleteConfirm": "确定要删除这条记录吗？",
+    "saveSuccess": "保存成功",
+    "deleteSuccess": "删除成功",
+    "operationFailed": "操作失败"
+  }
+}
