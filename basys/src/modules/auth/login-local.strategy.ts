@@ -51,7 +51,6 @@ export class LoginLocalStrategy extends PassportStrategy(Strategy, 'auth-local')
         const result = await validateDto(dto, req.body);
         if (adminLoginCaptcha) {
             const captchaBody = result as LoginCaptchaDto;
-            console.log('captchaBody', captchaBody);
             const captchaResult = await this.captchaService.check(captchaBody.captchaId, captchaBody.captchaInfo);
             if (!captchaResult) {
                 throw ApiResponse.error('验证码错误');

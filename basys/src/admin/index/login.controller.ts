@@ -70,26 +70,18 @@ export class LoginController {
     return {
       currentLanguage: lang,
       supportedLanguages: this.i18nService.getSupportedLanguages(),
-      translations2: {
-        success: tCommon('success'),
-        error: tCommon('error'),
-        loginSuccess: tCommon('auth.login.success'),
-        userNotFound: this.i18nService.t('common.user.notFound'),
-        validation: {
-          requiredArgs: tCommon('required', { name: '用户名' }),
-          email: tCommon('email'),
+      module: {
+        'auth.admin': this.i18nService.t('auth.admin.Group Name Arr'),
+        'auth.group': this.i18nService.t('auth.group.name'),
+        'auth.rule': this.i18nService.t('auth.rule.name'),
+        'auth.rule.type': this.i18nService.t('auth.rule.type'),
+        'auth.rule.title': this.i18nService.t('auth.rule.title'),
+        'auth.rule.name': this.i18nService.t('auth.rule.name'),
+        'timeAgo': {
+             seconds: this.i18nService.t('common.{d} second{s} ago', { d: 30, s: 's' }),
+             minutes: this.i18nService.t('common.{d} minute{s} ago', { d: 1, s: '' }),
+           },
         },
-      },
-      translations: {
-        success: t('success'),
-        error: t('error'),
-        loginSuccess: t('auth.login.success'),
-        userNotFound: t('user.notFound'),
-        validation: {
-          requiredArgs: t('required', { name: '用户名' }),
-          email: t('email'),
-        },
-      },
-    };
-  }
+      };
+    }
 }
