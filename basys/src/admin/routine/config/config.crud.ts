@@ -7,7 +7,7 @@ export class RoutineConfigCrudService extends BaseCrudService {
         super(prisma);
     }
     public async init() {
-    this.model = this.prisma.baAdminGroup;
+    this.model = this.prisma.baConfig;
     super.init();
   }
 }

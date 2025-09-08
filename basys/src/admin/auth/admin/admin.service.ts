@@ -137,15 +137,15 @@ export class AuthAdminService extends CoreApiService {
   async postEdit(body: AuthAdminEditDto) {
     let record = await this.getEdit(body.id);
     if (!record) {
-      throw ApiResponse.error(this.i18n.t('common.Record not found'))
+      throw ApiResponse.error(this.i18n.t('common', 'Record not found'))
     }
     const dataLimitAdminIds = await this.getDataLimitAdminIds();
     if (dataLimitAdminIds?.length > 0 && !dataLimitAdminIds.includes(record[this.dataLimitField])) {
-      throw ApiResponse.error(this.i18n.t('common.You have no permission'));
+      throw ApiResponse.error(this.i18n.t('common', 'You have no permission'));
     }
     const loginAdminId = this.coreAuthService.getUser('id');
     if (loginAdminId === body.id && body.status === 'disable') {
-      throw ApiResponse.error(this.i18n.t('auth.admin.Please use another administrator account to disable the current account!'));
+      throw ApiResponse.error(this.i18n.t('auth.admin', 'Please use another administrator account to disable the current account!'));
     }
     if (body.password) {
       await this.coreAuthService.resetPassword(body.id, body.password);
@@ -192,8 +192,8 @@ export class AuthAdminService extends CoreApiService {
         });
       }
     });
-    if (result) return ApiResponse.success(this.i18n.t('common.Update successful'));
-    throw ApiResponse.error(this.i18n.t('common.Update failed'));
+    if (result) return ApiResponse.success(this.i18n.t('common', 'Update successful'));
+    throw ApiResponse.error(this.i18n.t('common', 'Update failed'));
   }
 
   async getList(page: number, limit: number) {
@@ -251,7 +251,7 @@ export class AuthAdminService extends CoreApiService {
     const authGroups = await this.coreAuthService.getAllAuthGroups('allAuthAndOthers');
     for (const group of groups) {
       if (!authGroups.includes(group)) {
-        throw ApiResponse.error(this.i18n.t('auth.admin.You have no permission to add an administrator to this group!'))
+        throw ApiResponse.error(this.i18n.t('auth.admin', 'You have no permission to add an administrator to this group!'))
       }
     }
   }

@@ -66,7 +66,7 @@ export class AuthRuleService extends CoreApiService {
         }
       }
     });
-    return ApiResponse.success(this.i18n.t('common.Added successfully'));
+    return ApiResponse.success(this.i18n.t('common', 'Added successfully'));
   }
 
   async del(body: AuthRuleDelDto) {
@@ -87,7 +87,7 @@ export class AuthRuleService extends CoreApiService {
 
     for (const item of subData) {
       if (!ids.includes(item.id)) {
-        throw ApiResponse.error(this.i18n.t('common.Please delete the child element first, or use batch deletion'));
+        throw ApiResponse.error(this.i18n.t('common', 'Please delete the child element first, or use batch deletion'));
       }
     }
 
@@ -125,9 +125,9 @@ export class AuthRuleService extends CoreApiService {
       });
     });
     if (result) {
-      return ApiResponse.success(this.i18n.t('common.Update successful'));
+      return ApiResponse.success(this.i18n.t('common', 'Update successful'));
     }
-    throw ApiResponse.error(this.i18n.t('common.Update failed'));
+    throw ApiResponse.error(this.i18n.t('common', 'Update failed'));
   }
 
 

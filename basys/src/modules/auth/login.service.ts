@@ -1,5 +1,5 @@
 import * as bcrypt from 'bcrypt';
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, Inject, forwardRef, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
@@ -8,7 +8,7 @@ import { BaAuth } from '../../extend/ba/Auth';
 // shared
 import { ApiResponse, extractTokenFromRequest } from '../../shared';
 // core
-import { PrismaService } from '../../core';
+import { CoreI18nService, PrismaService } from '../../core';
 // modules
 import { TokenService } from './token.service';
 
@@ -44,6 +44,7 @@ export class LoginService extends BaAuth {
     public prisma: PrismaService,
     private configService: ConfigService,
     private tokenService: TokenService,
+    @Inject(forwardRef(() => CoreI18nService)) private i18n: CoreI18nService,
   ) {
     super(prisma);
   }
@@ -73,12 +74,13 @@ export class LoginService extends BaAuth {
   }
 
   public async checkToken(token: string) {
+    const tCommon = this.i18n.namespace('common');
     if (!token) {
-      throw ApiResponse.error('Token Not Found', null, HttpStatus.UNAUTHORIZED);
+      throw ApiResponse.error(tCommon('Token Not Found'));
     }
     const tokenDB = await this.tokenService.getTokenWithDB(token);
     if (!tokenDB) {
-      throw ApiResponse.error('Token Record Not Found', null, HttpStatus.UNAUTHORIZED);
+      throw ApiResponse.error(tCommon('Token login failed'));
     }
   }
 
@@ -88,16 +90,17 @@ export class LoginService extends BaAuth {
   }
   // 校验用户，并返回用户信息
   async login(username: string, password: string, keep: boolean, ip: string) {
+    const tCommon = this.i18n.namespace('common');
     const admin = await this.prisma.baAdmin.findUnique({
       where: {
         username,
       },
     });
     if (!admin) {
-      throw ApiResponse.error('Username is incorrect');
+      throw ApiResponse.error(tCommon('Username is incorrect'));
     }
     if (admin.status == 'disable') {
-      throw ApiResponse.error('Account disabled');
+      throw ApiResponse.error(tCommon('Account disabled'));
     }
     const lastLoginTime = admin.last_login_time?.getTime();
     const adminLoginRetry = this.configService.get('buildadmin.admin_login_retry');
@@ -116,7 +119,7 @@ export class LoginService extends BaAuth {
       }
 
       if (admin.login_failure >= adminLoginRetry) {
-        throw ApiResponse.error('Please try again after 1 day');
+        throw ApiResponse.error(('Please try again after 1 day'));
       }
     }
 
@@ -124,7 +127,7 @@ export class LoginService extends BaAuth {
     const isPasswordValid = await bcrypt.compare(password, admin.password);
     if (!isPasswordValid) {
       this.loginFailed(admin, ip);
-      throw ApiResponse.error('Password is incorrect');
+      throw ApiResponse.error(tCommon('Password is incorrect'));
     }
 
     // 清理 token

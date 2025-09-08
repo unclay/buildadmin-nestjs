@@ -45,10 +45,9 @@ export class LoginController {
 
   @Public()
   @Get('test')
-  getTest(@I18nLang() lang: string) {
+  getTest() {
     // 使用服务方式获取翻译
-    const errorMessage = this.i18nService.translate('system.error', {}, lang);
-    throw ApiResponse.error(errorMessage);
+    throw ApiResponse.error('system.error');
   }
 
   /**
@@ -66,17 +65,22 @@ export class LoginController {
       currentLanguage: lang,
       supportedLanguages: this.i18nService.getSupportedLanguages(),
       module: {
-        'auth.admin': this.i18nService.t('auth.admin.Group Name Arr'),
-        'auth.group': this.i18nService.t('auth.group.name'),
-        'auth.rule': this.i18nService.t('auth.rule.name'),
-        'auth.rule.type': this.i18nService.t('auth.rule.type'),
-        'auth.rule.title': this.i18nService.t('auth.rule.title'),
-        'auth.rule.name': this.i18nService.t('auth.rule.name'),
+        'auth.admin': this.i18nService.t('auth.admin', 'Group Name Arr'),
+        'auth.group': this.i18nService.t('auth.group', 'name'),
+        'auth.rule': this.i18nService.t('auth.rule', 'name'),
+        'auth.rule.type': this.i18nService.t('auth.rule', 'type'),
+        'auth.rule.title': this.i18nService.t('auth.rule', 'title'),
+        'auth.rule.name': this.i18nService.t('auth.rule', 'name'),
         'timeAgo': {
-             seconds: this.i18nService.t('common.{d} second{s} ago', { d: 30, s: 's' }),
-             minutes: this.i18nService.t('common.{d} minute{s} ago', { d: 1, s: '' }),
-           },
+          seconds: this.i18nService.t('common', '{d} second{s} ago', { d: 30, s: 's' }),
+          minutes: this.i18nService.t('common', '{d} minute{s} ago', { d: 1, s: '' }),
         },
-      };
-    }
+        'root': {
+          'hello': this.i18nService.t('common', 'hello'),
+          'hello.name': this.i18nService.t('common', 'hello.name', { name: 'world' }),
+          'hello.null': this.i18nService.t('common', 'hello.null . sd'),
+        }
+      },
+    };
+  }
 }

@@ -93,8 +93,6 @@ export type I18nTranslations = {
         };
     };
     "common": {
-        "hello": string;
-        "hello.name": string;
         "Please login first": string;
         "You have no permission": string;
         "Username": string;
@@ -106,7 +104,7 @@ export type I18nTranslations = {
         "CaptchaId": string;
         "Please enter the correct verification code": string;
         "Captcha error": string;
-        "Parameter %s can not be empty": string;
+        "Parameter {s} can not be empty": string;
         "Record not found": string;
         "No rows were added": string;
         "No rows were deleted": string;
@@ -119,7 +117,7 @@ export type I18nTranslations = {
         "No files were uploaded": string;
         "The uploaded file format is not allowed": string;
         "The uploaded image file is not a valid image": string;
-        "The uploaded file is too large (%sMiB), Maximum file size:%sMiB": string;
+        "The uploaded file is too large ({s}MiB), Maximum file size:{s}MiB": string;
         "No files have been uploaded or the file size exceeds the upload limit of the server": string;
         "Unknown": string;
         "Account not exist": string;
@@ -137,9 +135,7 @@ export type I18nTranslations = {
         "{d} week{s} ago": string;
         "{d} month{s} ago": string;
         "{d} year{s} ago": string;
-        "Parameter {s} can not be empty": string;
         "Please use the {s} field to sort before operating": string;
-        "The uploaded file is too large ({s}MiB), Maximum file size:{s}MiB": string;
         "Topic format error": string;
         "Driver {s} not supported": string;
         "{d} second{s} after": string;

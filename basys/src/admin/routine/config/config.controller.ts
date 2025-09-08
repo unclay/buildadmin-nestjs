@@ -28,8 +28,6 @@ export class RoutineConfigController {
 
     @Get('index')
     async index(@Query() query: RoutineConfigQueryDto) {
-        return {
-            row: await this.configService.index(query),
-        }
+        return await this.configService.index(query)
     }
 }
