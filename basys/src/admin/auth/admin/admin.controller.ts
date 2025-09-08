@@ -4,6 +4,7 @@ import { ApiResponse } from "../../../shared/api";
 // local
 import { AuthAdminAddDto, AuthAdminDelDto, AuthAdminEditDto } from "./dto";
 import { AuthAdminService } from "./admin.service";
+import { I18nTranslate } from "../../../core";
 
 @Controller('admin/auth.admin')
 export class AuthAdminController {
@@ -33,10 +34,10 @@ export class AuthAdminController {
    * @returns 
    */
   @Get('edit')
-  async getEdit(@Query('id', ParseIntPipe) id: number) {
+  async getEdit(@Query('id', ParseIntPipe) id: number, @I18nTranslate() t: Function) {
     const record = await this.authAdminService.getEdit(id);
     if (!record) {
-      throw ApiResponse.error('Record not found')
+      throw ApiResponse.error(t('user.Record not found'))
     }
     return {
       row: record

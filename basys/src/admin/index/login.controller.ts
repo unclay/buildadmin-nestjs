@@ -33,17 +33,12 @@ export class LoginController {
   @Post('login')
   async postLogin(
     @Request() req,
-    @I18nLang() lang: string,
     @I18nTranslate() t: Function,
   ) {
-    // 使用装饰器方式获取翻译
-    const message = t('auth.login.success');
-    
     return {
-      msg: message,
+      msg: t('user.Login succeeded!'),
       data: {
         userInfo: req.user,
-        language: lang,
       },
     };
   }

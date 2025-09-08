@@ -3,7 +3,7 @@ import { REQUEST } from "@nestjs/core";
 // shared
 import { ApiResponse } from "../../../shared/api";
 // core
-import { RequestDto, CoreApiService, PrismaService } from "../../../core";
+import { RequestDto, CoreApiService, PrismaService, CoreI18nService } from "../../../core";
 // modules
 import { AuthService } from "../../../modules";
 // extend base
@@ -22,6 +22,7 @@ export class AuthRuleService extends CoreApiService {
     public authService: AuthService,
     public prisma: PrismaService,
     public crudService: AdminRuleCrudService,
+    public i18n: CoreI18nService,
   ) {
     super(req, prisma, crudService, authService);
   }
@@ -65,7 +66,7 @@ export class AuthRuleService extends CoreApiService {
         }
       }
     });
-    return ApiResponse.success('Added successfully');
+    return ApiResponse.success(this.i18n.t('common.Added successfully'));
   }
 
   async del(body: AuthRuleDelDto) {
@@ -86,7 +87,7 @@ export class AuthRuleService extends CoreApiService {
 
     for (const item of subData) {
       if (!ids.includes(item.id)) {
-        throw ApiResponse.error('Please delete the child element first, or use batch deletion');
+        throw ApiResponse.error(this.i18n.t('common.Please delete the child element first, or use batch deletion'));
       }
     }
 
@@ -124,9 +125,9 @@ export class AuthRuleService extends CoreApiService {
       });
     });
     if (result) {
-      return ApiResponse.success('Update successful');
+      return ApiResponse.success(this.i18n.t('common.Update successful'));
     }
-    throw ApiResponse.error('No rows updated');
+    throw ApiResponse.error(this.i18n.t('common.Update failed'));
   }
 
 

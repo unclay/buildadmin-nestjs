@@ -160,9 +160,9 @@ export class AuthGroupService extends CoreApiService {
       });
     });
     if (result) {
-      return ApiResponse.success(this.i18n.translate('api.responses.updated'));
+      return ApiResponse.success(this.i18n.t('common.Update successful'));
     }
-    throw ApiResponse.error(this.i18n.translate('No rows updated'));
+    throw ApiResponse.error(this.i18n.t('common.Update failed'));
   }
 
   /**
@@ -271,8 +271,8 @@ export class AuthGroupService extends CoreApiService {
     if (!isSuperAdmin && !authGroups.includes(groupId)) {
       throw ApiResponse.error(
         this.authMethod === 'allAuth'
-          ? 'You need to have all permissions of this group to operate this group~'
-          : 'You need to have all the permissions of the group and have additional permissions before you can operate the group~'
+          ? this.i18n.t('auth.admin.You need to have all permissions of this group to operate this group~')
+          : this.i18n.t('auth.admin.You need to have all the permissions of the group and have additional permissions before you can operate the group~')
       );
     }
   }
@@ -340,11 +340,11 @@ export class AuthGroupService extends CoreApiService {
         const ownedRuleIds = await this.coreAuthService.getRuleIds();
         // 禁止添加`拥有自己全部权限`的分组
         if (!array_diff(ownedRuleIds, checkedRules)) {
-          throw ApiResponse.error('Role group has all your rights, please contact the upper administrator to add or do not need to add!')
+          throw ApiResponse.error(this.i18n.t('auth.admin.Role group has all your rights, please contact the upper administrator to add or do not need to add!'))
         }
         // 检查分组权限是否超出了自己的权限（超管的 $ownedRuleIds 为 ['*']，不便且可以不做此项检查）
         if (array_diff(checkedRules, ownedRuleIds) && !isSuperAdmin) {
-          throw ApiResponse.error('The group permission node exceeds the range that can be allocated');
+          throw ApiResponse.error(this.i18n.t('auth.admin.The group permission node exceeds the range that can be allocated'));
         }
         (data as any).rules = checkedRules.join(',');
       }
