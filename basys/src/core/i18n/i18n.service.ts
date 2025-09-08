@@ -1,22 +1,14 @@
-import { Injectable, Scope } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { I18nContext, I18nService } from 'nestjs-i18n';
+import { I18nTranslations } from '../../i18n/i18n.generated';
+import { PathImpl2 } from '@nestjs/config';
+import { I18nKeys, I18nNamespaces } from '../../i18n';
 
-@Injectable({ scope: Scope.REQUEST })
+@Injectable()
 export class CoreI18nService {
   constructor(
-    private readonly i18n: I18nService
+    public readonly i18n: I18nService<I18nTranslations>
   ) {}
-
-  // t(key: string, options?: Record<string, any>): string {
-  //   console.log(I18nContext.current(), 9908);
-  //   return this.i18n.t(key, {
-  //     ...options,
-  //     // 读取语言信息
-  //     lang: I18nContext.current().lang,
-  //   })
-  // }
-
-
 
   /**
    * 翻译文本
@@ -25,21 +17,28 @@ export class CoreI18nService {
    * @param lang 语言代码，可选。如果不提供，将自动从请求中获取
    * @returns 翻译后的文本
    */
-  t(key: string, args?: Record<string, any>, lang?: string) {
-    return this.translate(key, args, lang);
+  t(namespace: I18nNamespaces, key: I18nKeys, args?: Record<string, any>, lang?: string) {
+    return this.translate(namespace, key, args, lang);
   }
-  translate(key: string, args?: Record<string, any>, lang?: string): string {
+  translate(namespace: I18nNamespaces, key: I18nKeys, args?: Record<string, any>, lang?: string): string {
+    const fullKey = namespace ? `${namespace}.${key}` : key;
     const targetLang = lang || this.getCurrentLanguage();
-    // 如果key不包含点号，自动添加'common.'前缀
-    return this.i18n.t(key, {
+    const result = this.i18n.t(fullKey as any, {
       args,
       lang: targetLang,
-    });
+    }) as string;
+    
+    // 如果翻译失败（返回原始key），则只显示key的最后一部分
+    if (result === fullKey) {
+      return result.replace(namespace + '.', '');
+    }
+    
+    return result;
   }
 
-  namespace(namespace: string) {
-    return (key: string, args?: Record<string, any>, lang?: string) => {
-      return this.translate(`${namespace}.${key}`, args, lang);
+  namespace(namespace: I18nNamespaces) {
+    return (key: I18nKeys, args?: Record<string, any>, lang?: string) => {
+      return this.translate(namespace, key, args, lang);
     }
   }
 
@@ -70,35 +69,22 @@ export class CoreI18nService {
   }
 
   /**
-   * 从指定文件命名空间翻译文本
-   * @param namespace 文件命名空间 (如: 'common', 'admin', 'api')
-   * @param key 翻译键
-   * @param options 翻译选项
-   * @param lang 语言代码，可选
-   * @returns 翻译后的文本
-   */
-  translateFromNamespace(namespace: string, key: string, options?: any, lang?: string): string {
-    const fullKey = `${namespace}.${key}`;
-    return this.translate(fullKey, options, lang);
-  }
-
-  /**
    * 批量翻译多个键值
    * @param keys 翻译键数组或键值对象
    * @param options 翻译选项
    * @param lang 语言代码，可选
    * @returns 翻译结果对象
    */
-  translateBatch(keys: string[] | Record<string, string>, options?: any, lang?: string): Record<string, string> {
+  translateBatch(namespace: I18nNamespaces, keys: I18nKeys[] | Record<string, string>, options?: any, lang?: string): Record<string, string> {
     const result: Record<string, string> = {};
     
     if (Array.isArray(keys)) {
       keys.forEach(key => {
-        result[key] = this.translate(key, options, lang);
+        result[key] = this.translate(namespace, key, options, lang);
       });
     } else {
       Object.entries(keys).forEach(([alias, key]) => {
-        result[alias] = this.translate(key, options, lang);
+        result[alias] = this.translate(namespace, key as I18nKeys, options, lang);
       });
     }
     
@@ -111,14 +97,13 @@ export class CoreI18nService {
    * @param lang 语言代码，可选
    * @returns 按命名空间分组的翻译结果
    */
-  translateFromNamespaces(namespaces: Record<string, string[]>, lang?: string): Record<string, Record<string, string>> {
+  translateFromNamespaces(namespaces: Record<I18nNamespaces, I18nKeys[]>, lang?: string): Record<string, Record<string, string>> {
     const result: Record<string, Record<string, string>> = {};
     
     Object.entries(namespaces).forEach(([namespace, keys]) => {
       result[namespace] = {};
       keys.forEach(key => {
-        const fullKey = `${namespace}.${key}`;
-        result[namespace][key] = this.translate(fullKey, {}, lang);
+        result[namespace][key] = this.translate(namespace as I18nNamespaces, key as I18nKeys, {}, lang);
       });
     });
     

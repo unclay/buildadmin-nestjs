@@ -13,9 +13,10 @@ import { CoreI18nService } from './i18n.service';
       },
       resolvers: [
         { use: QueryResolver, options: ['lang'] },
-        AcceptLanguageResolver,
         new HeaderResolver(['think-lang']),
+        AcceptLanguageResolver,
       ],
+      typesOutputPath: path.join(process.cwd(), 'src/i18n/i18n.generated.ts'),
     }),
   ],
   providers: [CoreI18nService],

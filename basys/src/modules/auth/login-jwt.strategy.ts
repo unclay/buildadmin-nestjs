@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
 import { Strategy } from "passport-jwt";
@@ -11,7 +11,12 @@ import { TokenService } from "./token.service";
 
 @Injectable()
 export class LoginJwtStrategy extends PassportStrategy(Strategy, 'auth-jwt') {
-  constructor(private readonly configService: ConfigService, private loginService: LoginService, private tokenService: TokenService) {
+  constructor(
+    private readonly configService: ConfigService, 
+    @Inject(forwardRef(() => LoginService))
+    private loginService: LoginService, 
+    private tokenService: TokenService
+  ) {
     super({
       passReqToCallback: true,
       jwtFromRequest: (req: Request) => {
