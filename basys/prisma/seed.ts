@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
+
   await prisma.baAdmin.upsert({
     where: { username: 'admin' },
     update: {},
@@ -156,6 +157,130 @@ async function main() {
       { pid: 45, type: "button", title: "删除", name: "routine/config/del", path: "", icon: "", menu_type: null, url: "", component: "", keepalive: 0, extend: "none", remark: "", weigh: 0, status: 1, update_time: new Date(1754215106000), create_time: new Date(1754215106000) },
       { pid: 1, type: "button", title: "查看", name: "dashboard/index", path: "", icon: "", menu_type: null, url: "", component: "", keepalive: 0, extend: "none", remark: "", weigh: 0, status: 1, update_time: new Date(1754215106000), create_time: new Date(1754215106000) }
     ]
+  });
+
+  await prisma.baConfig.createMany({
+    skipDuplicates: true,
+    data: [
+      {
+        id: 1,
+        name: 'config_group',
+        group: 'basics',
+        title: 'Config group',
+        type: 'array',
+        value: '[{"key":"basics","value":"Basics"},{"key":"mail","value":"Mail"},{"key":"config_quick_entrance","value":"Config Quick entrance"}]',
+        rule: 'required',
+        weigh: -1,
+      },
+      {
+        id: 2,
+        name: 'site_name',
+        group: 'basics',
+        title: 'Site Name',
+        tip: '',
+        type: 'string',
+        value: '站点名称',
+        rule: 'required',
+        weigh: 99,
+      },
+      {
+        id: 3,
+        name: 'record_number',
+        group: 'basics',
+        title: 'Record number',
+        tip: '域名备案号',
+        type: 'string',
+        value: '渝ICP备8888888号-1',
+      },
+      {
+        id: 4,
+        name: 'version',
+        group: 'basics',
+        title: 'Version number',
+        tip: '系统版本号',
+        type: 'string',
+        value: 'v1.0.0',
+        rule: 'required',
+      },
+      {
+        id: 5,
+        name: 'time_zone',
+        group: 'basics',
+        title: 'time zone',
+        type: 'string',
+        value: 'Asia/Shanghai',
+        rule: 'required',
+      },
+      {
+        id: 6,
+        name: 'no_access_ip',
+        group: 'basics',
+        title: 'No access ip',
+        tip: '禁止访问站点的ip列表,一行一个',
+        type: 'textarea',
+      },
+      {
+        id: 7,
+        name: 'smtp_server',
+        group: 'mail',
+        title: 'smtp server',
+        type: 'string',
+        value: 'smtp.qq.com',
+        weigh: 9,
+      },
+      {
+        id: 8,
+        name: 'smtp_port',
+        group: 'mail',
+        title: 'smtp port',
+        type: 'string',
+        value: '465',
+        weigh: 8,
+      },
+      {
+        id: 9,
+        name: 'smtp_user',
+        group: 'mail',
+        title: 'smtp user',
+        type: 'string',
+        weigh: 7,
+      },
+      {
+        id: 10,
+        name: 'smtp_pass',
+        group: 'mail',
+        title: 'smtp pass',
+        type: 'string',
+        weigh: 6,
+      },
+      {
+        id: 11,
+        name: 'smtp_verification',
+        group: 'mail',
+        title: 'smtp verification',
+        type: 'select',
+        value: 'SSL',
+        content: '{"SSL":"SSL","TLS":"TLS"}',
+        weigh: 5,
+      },
+      {
+        id: 12,
+        name: 'smtp_sender_mail',
+        group: 'mail',
+        title: 'smtp sender mail',
+        type: 'string',
+        rule: 'email',
+        weigh: 4,
+      },
+      {
+        id: 13,
+        name: 'config_quick_entrance',
+        group: 'config_quick_entrance',
+        title: 'Config Quick entrance',
+        type: 'array',
+        value: '[{"key":"数据回收规则配置","value":"/admin/security/dataRecycle"},{"key":"敏感数据规则配置","value":"/admin/security/sensitiveData"}]',
+      },
+    ],
   });
 }
 
