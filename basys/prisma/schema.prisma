@@ -40,50 +40,51 @@ enum ExtendType {
   add_rules_only
   add_menu_only
 }
+
 model BaAdmin {
-  id                Int         @id @default(autoincrement())
-  username          String      @unique @db.VarChar(20)
-  nickname          String      @default("") @db.VarChar(50)
-  avatar            String      @default("") @db.VarChar(255)
-  email             String      @default("") @db.VarChar(50)
-  mobile            String      @default("") @db.VarChar(11)
-  login_failure     Int         @default(0)
-  last_login_time   DateTime?
-  last_login_ip     String      @default("") @db.VarChar(50)
-  password          String      @default("") @db.VarChar(255)
-  salt              String      @default("") @db.VarChar(30)
-  motto             String      @default("") @db.VarChar(255)
-  status            AdminStatus @default(enable)
-  update_time       DateTime    @default(now()) @updatedAt
-  create_time       DateTime    @default(now())
-  
+  id              Int         @id @default(autoincrement())
+  username        String      @unique @db.VarChar(20)
+  nickname        String      @default("") @db.VarChar(50)
+  avatar          String      @default("") @db.VarChar(255)
+  email           String      @default("") @db.VarChar(50)
+  mobile          String      @default("") @db.VarChar(11)
+  login_failure   Int         @default(0)
+  last_login_time DateTime?
+  last_login_ip   String      @default("") @db.VarChar(50)
+  password        String      @default("") @db.VarChar(255)
+  salt            String      @default("") @db.VarChar(30)
+  motto           String      @default("") @db.VarChar(255)
+  status          AdminStatus @default(enable)
+  update_time     DateTime    @default(now()) @updatedAt
+  create_time     DateTime    @default(now())
+
   groups BaAdminGroupAccess[]
   logs   BaAdminLog[]
-  
+
   @@map("ba_admin")
 }
 
 model BaAdminGroup {
-  id           Int        @id @default(autoincrement())
-  pid          Int        @default(0)
-  name         String     @default("") @db.VarChar(100)
-  rules        String?    
-  status       Int        @default(1)
-  update_time  DateTime   @default(now()) @updatedAt
-  create_time  DateTime   @default(now())
-  
+  id          Int      @id @default(autoincrement())
+  pid         Int      @default(0)
+  name        String   @default("") @db.VarChar(100)
+  rules       String?
+  status      Int      @default(1)
+  update_time DateTime @default(now()) @updatedAt
+  create_time DateTime @default(now())
+
   members BaAdminGroupAccess[]
-  
+
   @@map("ba_admin_group")
 }
 
 model BaAdminGroupAccess {
-  uid       Int 
-  group_id  Int 
-  
-  admin BaAdmin   @relation(fields: [uid], references: [id])
+  uid      Int
+  group_id Int
+
+  admin BaAdmin      @relation(fields: [uid], references: [id])
   group BaAdminGroup @relation(fields: [group_id], references: [id])
-  
+
   @@id([uid, group_id])
   @@index([uid])
   @@index([group_id])
@@ -91,64 +92,80 @@ model BaAdminGroupAccess {
 }
 
 model BaAdminLog {
-  id           Int        @id @default(autoincrement())
-  admin_id     Int        @default(0)
-  username     String     @default("") @db.VarChar(20)
-  url          String     @default("") @db.VarChar(1500)
-  title        String     @default("") @db.VarChar(100)
-  data         String?    
-  ip           String     @default("") @db.VarChar(50)
-  useragent    String     @default("") @db.VarChar(255)
-  create_time  DateTime   @default(now())
-  
+  id          Int      @id @default(autoincrement())
+  admin_id    Int      @default(0)
+  username    String   @default("") @db.VarChar(20)
+  url         String   @default("") @db.VarChar(1500)
+  title       String   @default("") @db.VarChar(100)
+  data        String?
+  ip          String   @default("") @db.VarChar(50)
+  useragent   String   @default("") @db.VarChar(255)
+  create_time DateTime @default(now())
+
   admin BaAdmin? @relation(fields: [admin_id], references: [id])
-  
+
   @@map("ba_admin_log")
 }
 
 model BaAdminRule {
-  id           Int          @id @default(autoincrement())
-  pid          Int          @default(0)
-  type         RuleType     @default(menu)
-  title        String       @default("") @db.VarChar(50)
-  name         String       @default("") @db.VarChar(50)
-  path         String       @default("") @db.VarChar(100)
-  icon         String       @default("") @db.VarChar(50)
-  menu_type    MenuType?    
-  url          String       @default("") @db.VarChar(255)
-  component    String       @default("") @db.VarChar(100)
-  keepalive    Int          @default(0)
-  extend       ExtendType   @default(none)
-  remark       String       @default("") @db.VarChar(255)
-  weigh        Int          @default(0)
-  status       Int          @default(1)
-  update_time  DateTime     @default(now())
-  create_time  DateTime     @default(now()) @updatedAt()
-  
+  id          Int        @id @default(autoincrement())
+  pid         Int        @default(0)
+  type        RuleType   @default(menu)
+  title       String     @default("") @db.VarChar(50)
+  name        String     @default("") @db.VarChar(50)
+  path        String     @default("") @db.VarChar(100)
+  icon        String     @default("") @db.VarChar(50)
+  menu_type   MenuType?
+  url         String     @default("") @db.VarChar(255)
+  component   String     @default("") @db.VarChar(100)
+  keepalive   Int        @default(0)
+  extend      ExtendType @default(none)
+  remark      String     @default("") @db.VarChar(255)
+  weigh       Int        @default(0)
+  status      Int        @default(1)
+  update_time DateTime   @default(now())
+  create_time DateTime   @default(now()) @updatedAt()
+
   // parent   BaAdminRule? @relation("RuleParent", fields: [pid], references: [id])
   // children BaAdminRule[] @relation("RuleParent")
-  
+
   @@index([pid])
   @@map("ba_admin_rule")
 }
 
 model BaToken {
-  token       String     @id @default("") @db.VarChar(255)
-  type        String     @default("") @db.VarChar(15)
-  user_id     Int        @default(0)
-  create_time DateTime   @default(now())
-  expire_time DateTime  @default(now())
-  
+  token       String   @id @default("") @db.VarChar(255)
+  type        String   @default("") @db.VarChar(15)
+  user_id     Int      @default(0)
+  create_time DateTime @default(now())
+  expire_time DateTime @default(now())
+
   @@map("ba_token")
 }
 
-
 model BaCaptcha {
-  key         String    @id @db.VarChar(32)
-  code        String    @default("") @db.VarChar(32)
-  captcha     String?   @db.Text
-  create_time DateTime  @default(now())
-  expire_time DateTime  @default(now())
+  key         String   @id @db.VarChar(32)
+  code        String   @default("") @db.VarChar(32)
+  captcha     String?  @db.Text
+  create_time DateTime @default(now())
+  expire_time DateTime @default(now())
 
   @@map("ba_captcha")
+}
+
+model BaConfig {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique @db.VarChar(30) @default("")
+  group     String   @db.VarChar(30) @default("")
+  title     String   @db.VarChar(50) @default("")
+  tip       String   @db.VarChar(100) @default("")
+  type      String   @db.VarChar(30) @default("")
+  value     String?  @db.Text
+  content   String?  @db.Text
+  rule      String   @db.VarChar(100) @default("")
+  extend    String   @db.VarChar(255) @default("")
+  allow_del Int      @default(0) @db.SmallInt
+  weigh     Int      @default(0)
+
+  @@map("ba_config")
 }
