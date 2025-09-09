@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus } from "@nestjs/common";
+import { BadRequestException, HttpException, HttpStatus } from "@nestjs/common";
 
 type ApiResponseType = 'json' | 'jsonp'
 export interface ApiResponseMetadata {
@@ -78,6 +78,12 @@ export class ApiResponse {
     }
     if (data?.cause instanceof ApiResponse) {
       return data.cause; 
+    }
+    // 主要处理 dto 异常
+    if (data instanceof BadRequestException) {
+      const res = data.getResponse() as Record<string, any>;
+      const message = Array.isArray(res?.message) ? Array.from(new Set(res.message)).join(',') : res?.message;
+      return ApiResponse.error(message, res.error, res.statusCode).cause;
     }
     // 未封装的异常数据
     if (data?.error || data?.message) {
