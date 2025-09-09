@@ -56,14 +56,20 @@ export class CoreSysConfigService {
         weigh: 'desc',
       },
     });
-    const configs = await this.getCache(key, () => {
-      return this.prisma.baConfig.findMany({
+    const configs = await this.getCache(key, async () => {
+      const list = await this.prisma.baConfig.findMany({
         ...findOptions as any,
       });
+      return list.map(item => {
+        return {
+          ...item,
+          value: this.toJson(item.value),
+        }
+      })
     });
     if (concise) {
       return configs.reduce((prev, cur) => {
-        prev[cur.name] = this.toJson(cur.value);
+        prev[cur.name] = cur.value;
         return prev;
       }, {});
     }
