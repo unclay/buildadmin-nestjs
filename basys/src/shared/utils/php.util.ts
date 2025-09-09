@@ -39,3 +39,24 @@ export function svgToBase64(svg: string) {
   // 编码为Base64
   return `data:image/svg+xml;base64,${Buffer.from(formattedSvg).toString('base64')}`;
 }
+
+/**
+ * 左trim
+ * @param str 字符串
+ * @param chars 要删除的字符
+ * @returns 左trim后的字符串
+ */
+export function ltrim(str: string, chars: string = '\\s'): string {
+  const pattern = chars ? `^[${chars}]+` : `^\\s+`;
+  return str.replace(new RegExp(pattern), '');
+}
+/**
+ * 右trim
+ * @param str 字符串
+ * @param chars 要删除的字符
+ * @returns 右trim后的字符串
+ */
+export function rtrim(str: string, chars: string = '\\s'): string {
+  const pattern = chars ? `[${chars}]+$` : `\\s+$`;
+  return str.replace(new RegExp(pattern), '');
+}

@@ -1,5 +1,5 @@
 export class BaApi {
-  protected preExcludeFields: string | string[];
+  protected preExcludeFields: string | string[] = [];
   /**
    * 排除不需要的字段
    * @param data 

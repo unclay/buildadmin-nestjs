@@ -30,6 +30,9 @@ export class CoreSysConfigService {
     if (typeof json === 'string') return json;
     return JSON.stringify(json);
   }
+  public get(...args: any[]) {
+    return this.getSysConfig(...args);
+  }
   public async getSysConfig(name = '', group = '', concise = true) {
     if (name) {
       // 直接使用->value('value')不能使用到模型的类型格式化

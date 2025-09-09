@@ -27,7 +27,6 @@ export class CoreI18nService {
       args,
       lang: targetLang,
     }) as string;
-    
     // 如果翻译失败（返回原始key），则只显示key的最后一部分
     if (result === fullKey) {
       return result.replace(namespace + '.', '');

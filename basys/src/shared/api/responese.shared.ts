@@ -1,4 +1,5 @@
 import { BadRequestException, HttpException, HttpStatus } from "@nestjs/common";
+import { I18nValidationException } from "nestjs-i18n";
 
 type ApiResponseType = 'json' | 'jsonp'
 export interface ApiResponseMetadata {
@@ -42,7 +43,7 @@ export class ApiResponse {
   /**
    * 用法：throw ApiResponse.error()
    */
-  static error(msg = '', data = null, code = 0, type: ApiResponseType = null, header: Record<string, any> = {}) {
+  static error(msg = '', data = null, code = 0, type: ApiResponseType = null, header: Record<string, any> = {}, metadata: Record<string, any> = {}) {
     const responseType = type ?? ApiResponse.defaultType;
     const statusCode = header.statusCode ?? ApiResponse.defaultStatusCode;
     delete header.statusCode;
@@ -54,6 +55,7 @@ export class ApiResponse {
       metadata: {
         type: responseType,
         header,
+        ...metadata,
       }
     };
     const errorApiResponse = new ApiResponse({
@@ -64,6 +66,7 @@ export class ApiResponse {
       metadata: {
         type: responseType,
         header,
+        ...metadata,
       }
     }, statusCode);
     // nestjs 采用异常过滤器，把自定义的异常对象，转换为 http 异常对象，并挂载到 cause
@@ -77,7 +80,26 @@ export class ApiResponse {
       return data;
     }
     if (data?.cause instanceof ApiResponse) {
-      return data.cause; 
+      return data.cause;
+    }
+    if (data instanceof I18nValidationException) {
+      const messages = data.errors.reduce((prev, item) => {
+        return prev.concat(Object.values(item.constraints));
+      }, []).map((constraint) => {
+        const params = constraint.split('|');
+        let args: any = params.pop();
+        try {
+          args = JSON.parse(args);
+        } catch (err) {
+          args = {}
+        }
+        const key = params.join('|');
+        return [key, args];
+      });
+      return ApiResponse.error(messages.join(', '), data.getResponse(), data.getStatus(), null, undefined, {
+        source: data,
+        messages,
+      }).cause;
     }
     // 主要处理 dto 异常
     if (data instanceof BadRequestException) {
