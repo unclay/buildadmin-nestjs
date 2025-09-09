@@ -1,3 +1,5 @@
+import path from "node:path";
+import fs from "node:fs/promises";
 import { REQUEST } from "@nestjs/core";
 import { Inject, Injectable } from "@nestjs/common";
 // core
@@ -7,9 +9,17 @@ import { AuthService } from "../../../modules";
 import { RoutineConfigAddDto, RoutineConfigDelDto, RoutineConfigEditDto, RoutineConfigQueryDto } from "./dto";
 import { RoutineConfigCrudService } from "./config.crud";
 import { ApiResponse } from "../../../shared";
+import { ConfigService } from "@nestjs/config";
+
+import { ltrim, rtrim } from "../../../shared/utils/php.util";
 
 @Injectable()
 export class RoutineConfigService extends CoreApiService {
+  private filePath = {
+    appConfig: 'config/app.php',
+    webAdminBase: 'web/src/router/static/adminBase.ts',
+    backendEntranceStub: 'app/admin/library/stubs/backendEntrance.stub',
+  };
   constructor(
     @Inject(REQUEST) public readonly req: RequestDto,
     public prisma: PrismaService,
@@ -17,6 +27,7 @@ export class RoutineConfigService extends CoreApiService {
     public crudService: RoutineConfigCrudService,
     public i18n: CoreI18nService,
     public sysConfig: CoreSysConfigService,
+    public configService: ConfigService,
   ) {
     super(req, prisma, crudService, coreAuthService);
   }
@@ -41,11 +52,70 @@ export class RoutineConfigService extends CoreApiService {
       id,
     };
   }
-  postEdit(body: RoutineConfigEditDto) {
-    return {
-      method: 'postEdit',
-      body
-    };
+  async postEdit(xbody: RoutineConfigEditDto) {
+    // $this -> modelValidate = false;
+    // if (editorExists) {
+    //   // 对请求体进行 XSS 过滤
+    //   if (request.body) {
+    //     this.cleanXss(request.body);
+    //   }
+    // }
+
+    const body = this.excludeFields(xbody);
+    const configValue = [];
+    const all = await this.model.findMany();
+    for (const item of all) {
+      if (body[item.name]) {
+        configValue.push({
+          id: item.id,
+          type: item.type,
+          value: JSON.stringify(body[item.name]),
+        });
+
+        if (item.name === 'backend_entrance') {
+          const backendEntrance = await this.sysConfig.get('backend_entrance');
+          if (backendEntrance === body[item.name]) continue;
+
+          if (!/^\/[a-zA-Z0-9]+$/.test(body[item.name])) {
+            throw ApiResponse.error(this.t('Backend entrance rule'));
+          }
+
+          // 修改 adminBaseRoutePath
+          const adminBaseFilePath = path.join(process.cwd(), this.filePath.webAdminBase);
+          let adminBaseContent = await fs.readFile(adminBaseFilePath, 'utf8');
+          if (!adminBaseContent) throw ApiResponse.error(this.t('Configuration write failed: {s}', { s: this.filePath.webAdminBase }));
+          adminBaseContent = adminBaseContent.replace(/export const adminBaseRoutePath = '.*?'/g, `export const adminBaseRoutePath = '${body[item.name]}'`);
+          const result = fs.writeFile(adminBaseFilePath, adminBaseContent);
+          if (!result) throw ApiResponse.error(this.t('Configuration write failed: {s}', { s: this.filePath.webAdminBase }));
+
+          // 去除后台入口开头的斜杠
+          const oldBackendEntrance = ltrim(backendEntrance, '/');
+          const newBackendEntrance = ltrim(body[item.name], '/');
+
+          // 设置应用别名映射
+          const appMap = this.configService.get('app.app_map');
+          const adminMapKey = appMap.indexOf('admin');
+          if (adminMapKey !== -1) {
+            appMap.splice(adminMapKey, 1);
+          }
+          if (newBackendEntrance != 'admin') {
+            appMap[newBackendEntrance] = 'admin';
+          }
+
+          const appConfigFilePath = path.join(process.cwd(), this.filePath.appConfig);
+          let appConfigContent = await fs.readFile(appConfigFilePath, 'utf8');
+          if (!appConfigContent) throw ApiResponse.error(this.t('Configuration write failed: {s}', { s: this.filePath.appConfig }));
+        }
+      }
+    }
+
+    try {
+      await this.saveAll(configValue);
+      await this.sysConfig.clearCache();
+      return ApiResponse.success(this.t('The current page configuration item was updated successfully'));
+    } catch (err) {
+      throw ApiResponse.error(this.t('No rows updated'));
+    }
   }
   async index(query: RoutineConfigQueryDto) {
     const configGroup = await this.sysConfig.getSysConfig('config_group');
@@ -80,5 +150,32 @@ export class RoutineConfigService extends CoreApiService {
       configGroup,
       configs,
     }
+  }
+
+  private async saveAll(items: any[]) {
+    const list = items.map(item => {
+      console.log({
+        where: { id: item.id ?? -1 }, // 使用name作为唯一标识符
+        update: item,
+        create: item,
+      });
+      return this.model.upsert({
+        where: { id: item.id ?? -1 }, // 使用name作为唯一标识符
+        update: item,
+        create: item,
+      });
+    });
+    return this.prisma.$transaction(
+      items.map(item =>
+        this.model.upsert({
+          where: { id: item.id ?? undefined }, // 使用name作为唯一标识符
+          update: item,
+          create: {
+            ...item,
+            id: undefined
+          },
+        })
+      )
+    );
   }
 }

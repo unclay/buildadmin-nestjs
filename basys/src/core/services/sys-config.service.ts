@@ -1,15 +1,20 @@
 // 生成nestjs service
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../database';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
+import { Cache, createCache } from 'cache-manager';
 
 @Injectable()
 export class CoreSysConfigService {
+  private cache: Cache;
+  
   constructor(
-    @Inject(CACHE_MANAGER) private cache: Cache,
     private prisma: PrismaService,
-  ) { }
+  ) {
+    // 创建独立的系统配置缓存实例
+    this.cache = createCache({
+      ttl: 60 * 1000, // 60秒过期时间
+    });
+  }
   private async getCache(key, callback) {
     const data = await this.cache.get(key);
     if (data) return data;
@@ -77,5 +82,18 @@ export class CoreSysConfigService {
       }, {});
     }
     return configs;
+  }
+
+  /**
+   * 清除指定配置项的缓存
+   * @param name 配置项名称
+   */
+  public async clearCache(name?: string) {
+    if (name) {
+      await this.cache.del(name);
+    } else {
+      // 清除所有缓存
+      await this.cache.clear();
+    }
   }
 }
