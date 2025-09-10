@@ -1,11 +1,11 @@
 import { Injectable } from "@nestjs/common";
 // core
-import { PrismaService, BaseCrudService } from "../../../core";
+import { BaseCrudService } from "../../../core";
 
 @Injectable()
 export class AdminGroupCrudService extends BaseCrudService {
-  constructor(protected readonly prisma: PrismaService) {
-    super(prisma);
+  constructor() {
+    super();
   }
   public async init() {
     this.model = this.prisma.baAdminGroup;

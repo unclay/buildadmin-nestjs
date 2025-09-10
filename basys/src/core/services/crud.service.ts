@@ -1,9 +1,10 @@
 import { PrismaClient } from '@prisma/client';
-import { InternalServerErrorException } from '@nestjs/common';
+import { InternalServerErrorException, Inject, Optional, OnModuleInit } from '@nestjs/common';
 // shared
-import { ApiResponse } from '../../shared/api';
+import { ApiResponse } from '../../shared';
 // core
 import { PrismaService } from '../database';
+import { CoreI18nService } from '../i18n';
 
 // 定义所有可能的 Prisma 模型委托类型
 type PrismaDelegate = {
@@ -20,14 +21,22 @@ type PrimaryKeyItem = {
 }
 type PrimaryKeys = PrimaryKeyItem[]
 
-export abstract class BaseCrudService {
+export abstract class BaseCrudService implements OnModuleInit {
   public model;
   public pk: string = 'id';
-  constructor(
-    protected readonly prisma: PrismaService,
-  ) {
+
+  // 注入服务
+  @Inject(CoreI18nService)
+  protected readonly i18n!: CoreI18nService;
+  @Inject(PrismaService)
+  protected readonly prisma: PrismaService;
+
+  // 等待服务注入完成
+  async onModuleInit() {
     this.init();
   }
+
+  constructor() {}
   protected async init() {
     this.pk = await this.getPk();
   }
@@ -79,9 +88,9 @@ export abstract class BaseCrudService {
       }
     })
     if (count) {
-      return ApiResponse.success('Deleted successfully');
+      return ApiResponse.success(this.i18n.t('common', 'Deleted successfully'));
     }
-    throw ApiResponse.error('No rows were deleted');
+    throw ApiResponse.error(this.i18n.t('common', 'No rows were deleted'));
   }
 
   /**
@@ -97,7 +106,7 @@ export abstract class BaseCrudService {
       }
     });
     if (!row) {
-      throw ApiResponse.error('Record not found');
+      throw ApiResponse.error(this.i18n.t('common', 'Record not found'));
     }
     return row;
   }

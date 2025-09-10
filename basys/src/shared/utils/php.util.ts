@@ -60,3 +60,49 @@ export function rtrim(str: string, chars: string = '\\s'): string {
   const pattern = chars ? `[${chars}]+$` : `\\s+$`;
   return str.replace(new RegExp(pattern), '');
 }
+
+/**
+ * 将字符串属性列表转为数组
+ * @param attr 属性字符串，一行一个，无需引号，比如：class=input-class
+ * @returns 属性数组
+ */
+export function strAttrToArray(attr: string): Record<string, any> {
+  if (!attr) return {};
+
+  // 统一换行符并分割成数组
+  const attrLines = attr.replace(/\r\n/g, '\n').trim().split('\n');
+  const attrTemp: Record<string, any> = {};
+
+  for (const line of attrLines) {
+    const [key, value] = line.split('=');
+
+    if (key && value !== undefined) {
+      let attrVal: string | number | boolean = value;
+
+      // 处理布尔值
+      if (value === 'false' || value === 'true') {
+        attrVal = value !== 'false';
+      }
+      // 处理数字
+      else if (!isNaN(Number(value))) {
+        attrVal = parseFloat(value);
+      }
+
+      // 处理嵌套属性 (如 'a.b')
+      if (key.includes('.')) {
+        const [parentKey, childKey] = key.split('.');
+        if (parentKey && childKey) {
+          if (!attrTemp[parentKey]) {
+            attrTemp[parentKey] = {};
+          }
+          attrTemp[parentKey][childKey] = attrVal;
+          continue;
+        }
+      }
+
+      attrTemp[key] = attrVal;
+    }
+  }
+
+  return attrTemp;
+}
