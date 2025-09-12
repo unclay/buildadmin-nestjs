@@ -1,5 +1,7 @@
 import { Transform } from 'class-transformer';
 import { registerDecorator, ValidationOptions, ValidatorConstraint, ValidatorConstraintInterface, ValidationArguments } from 'class-validator';
+import { PrismaService } from '../database';
+import { Prisma } from "@prisma/client";
 
 @ValidatorConstraint({ name: 'isNumberOrString', async: false })
 export class IsNumberOrStringConstraint implements ValidatorConstraintInterface {
@@ -59,4 +61,39 @@ export function TransformToNumber(options?: { array: boolean }) {
     }
     return value;
   });
+}
+
+
+export function IsUnique(table: any, column: string, validationOptions?: ValidationOptions) {
+  return function (object: Object, propertyName: string) {
+    registerDecorator({
+      name: 'isUnique',
+      target: object.constructor,
+      propertyName: propertyName,
+      constraints: [table, column],
+      options: validationOptions,
+      validator: {
+        async validate(value: any, args: ValidationArguments) {
+          console.log(value, args);
+          if (!value) {
+            return true;
+          }
+          const [table, column] = args.constraints;
+          const prisma = new PrismaService();
+
+          const record = await prisma[table as Prisma.ModelName].findFirst({
+            where: {
+              [column]: value,
+            },
+          });
+          console.log(record, 99, !record);
+
+          return !record;
+        },
+        defaultMessage(args: ValidationArguments) {
+          return `${args.property} must be unique`;
+        }
+      },
+    });
+  };
 }

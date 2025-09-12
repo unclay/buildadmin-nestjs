@@ -120,6 +120,7 @@ export type I18nTranslations = {
         "The uploaded file is too large ({s}MiB), Maximum file size:{s}MiB": string;
         "No files have been uploaded or the file size exceeds the upload limit of the server": string;
         "Unknown": string;
+        "{field} already exist": string;
         "Account not exist": string;
         "Account disabled": string;
         "Token login failed": string;

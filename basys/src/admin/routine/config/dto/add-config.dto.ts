@@ -1,13 +1,13 @@
 import { IsNotEmpty, ValidateIf } from "class-validator"
 // core
-import { i18nValidationNamespace } from "../../../../core";
+import { i18nValidationNamespace, IsUnique } from "../../../../core";
 
 export class RoutineConfigAddDto {
+  @IsUnique('baConfig', 'name', {
+    message: i18nValidationNamespace('common', '{field} already exist', { field: '名称' }),
+  })
   @IsNotEmpty({
-    message: '名称不能为空',
-    context: {
-      i18n: i18nValidationNamespace
-    }
+    message: i18nValidationNamespace('common', 'Parameter {s} can not be empty', { s: '名称' }),
   })
   name: string;
 

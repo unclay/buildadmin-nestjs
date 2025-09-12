@@ -29,6 +29,7 @@
   "Topic format error": "上传存储子目录格式错误！",
   "Driver {s} not supported": "不支持的驱动：{s}",
   "Unknown": "未知",
+  "{field} already exist": "{field}已存在",
   "Account not exist": "帐户不存在",
   "Account disabled": "帐户已禁用",
   "Token login failed": "令牌登录失败",

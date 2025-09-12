@@ -41,13 +41,17 @@ export class RoutineConfigService extends CoreApiService {
   async add(body: RoutineConfigAddDto) {
     const data = this.excludeFields(body);
     const result = await this.crudService.create(data);
+    await this.sysConfig.clearCache();
+
     if (result) {
       return ApiResponse.success(this.tCommon('Added successfully'));
     }
     throw ApiResponse.error(this.tCommon('No rows were added'));
   }
-  del(query: RoutineConfigDelDto) {
-    return this.crudService.del(query.ids);
+  async del(query: RoutineConfigDelDto) {
+    const result = await this.crudService.del(query.ids);
+    await this.sysConfig.clearCache();
+    return result;
   }
   getEdit(id: number) {
     return {

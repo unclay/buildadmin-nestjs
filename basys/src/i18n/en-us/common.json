@@ -26,6 +26,7 @@
   "The uploaded file is too large ({s}MiB), Maximum file size:{s}MiB": "The uploaded file is too large ({s}MiB), maximum file size:{s}MiB",
   "No files have been uploaded or the file size exceeds the upload limit of the server": "No files have been uploaded or the file size exceeds the server upload limit.",
   "Unknown": "Unknown",
+  "{field} already exist": "{field} already exist",
   "Account not exist": "Account does not exist",
   "Account disabled": "Account is disabled",
   "Token login failed": "Token login failed",

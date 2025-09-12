@@ -72,6 +72,7 @@ export class CoreSysConfigService {
         return {
           ...item,
           value: this.toJson(item.value),
+          content: this.toJson(item.content),
         }
       })
     });

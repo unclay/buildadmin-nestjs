@@ -87,12 +87,16 @@ export class ApiResponse {
         return prev.concat(Object.values(item.constraints));
       }, []).map((constraint) => {
         const params = constraint.split('|');
-        let args: any = params.pop();
-        try {
-          args = JSON.parse(args);
-        } catch (err) {
-          args = {}
+        let args: any = {};
+        if (params.length > 1) {
+          args = params.pop();
+          try {
+            args = JSON.parse(args);
+          } catch (err) {
+            args = {}
+          }
         }
+        
         const key = params.join('|');
         return [key, args];
       });
