@@ -9,8 +9,14 @@ import { ModulesModule } from './modules/modules.module';
 
 @Module({
   // 从左到右
-  imports: [NestConfigModule, CoreModule, ModulesModule, ApiModule, AdminModule],
+  imports: [
+    NestConfigModule,
+    CoreModule,
+    ModulesModule,
+    ApiModule,
+    AdminModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

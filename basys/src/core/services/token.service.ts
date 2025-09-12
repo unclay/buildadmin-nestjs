@@ -3,8 +3,13 @@ import { PrismaService } from '../database';
 
 @Injectable()
 export class TokenService {
-  constructor(private prisma: PrismaService) { }
-  async set(token: string, type: string, user_id: number, expire: number = null) {
+  constructor(private prisma: PrismaService) {}
+  async set(
+    token: string,
+    type: string,
+    user_id: number,
+    expire: number = null,
+  ) {
     return this.prisma.baToken.create({
       data: {
         token,

@@ -1,5 +1,9 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { AssembleTreeMiddleware, RequestTimeMiddleware, RouteInfoMiddleware } from '.';
+import {
+  AssembleTreeMiddleware,
+  RequestTimeMiddleware,
+  RouteInfoMiddleware,
+} from '.';
 
 @Module({})
 export class CoreMiddlewareModule implements NestModule {

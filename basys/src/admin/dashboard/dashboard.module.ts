@@ -2,6 +2,6 @@ import { Module } from '@nestjs/common';
 import { IndexController } from './index.controller';
 
 @Module({
-  controllers: [IndexController]
+  controllers: [IndexController],
 })
-export class DashboardModule { }
+export class DashboardModule {}

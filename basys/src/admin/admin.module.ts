@@ -6,6 +6,12 @@ import { AuthAdminLogModule } from './auth/log/log.module';
 import { RoutineModule } from './routine/routine.module';
 
 @Module({
-  imports: [IndexModule, DashboardModule, AuthModule, AuthAdminLogModule, RoutineModule],
+  imports: [
+    IndexModule,
+    DashboardModule,
+    AuthModule,
+    AuthAdminLogModule,
+    RoutineModule,
+  ],
 })
-export class AdminModule { }
+export class AdminModule {}

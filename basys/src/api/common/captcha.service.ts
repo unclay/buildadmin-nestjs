@@ -1,19 +1,19 @@
 // service demo
 import { Injectable } from '@nestjs/common';
-import { CoreClickCaptchaService } from '../../core';
+import { ClickCaptchaData, CoreClickCaptchaService } from '../../core';
 
 @Injectable()
 export class CommonCaptchaService {
   constructor(
     // private readonly prisma: PrismaService,
     private readonly captchaService: CoreClickCaptchaService,
-  ) { }
+  ) {}
 
-  create(id: string): any {
+  create(id: string): Promise<ClickCaptchaData> {
     return this.captchaService.create(id);
   }
 
-  check(id: string, info: string, unset: boolean): any {
+  check(id: string, info: string, unset: boolean): Promise<boolean> {
     return this.captchaService.check(id, info, unset);
   }
 }

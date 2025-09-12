@@ -1,7 +1,4 @@
-import app from "./app.config";
-import buildadmin from "./buildadmin.config";
+import app from './app.config';
+import buildadmin from './buildadmin.config';
 
-export default [
-  app,
-  buildadmin,
-];
+export default [app, buildadmin];

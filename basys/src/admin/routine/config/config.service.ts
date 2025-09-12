@@ -1,17 +1,28 @@
-import path from "node:path";
-import fs from "node:fs/promises";
-import { REQUEST } from "@nestjs/core";
-import { Inject, Injectable } from "@nestjs/common";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import path from 'node:path';
+import fs from 'node:fs/promises';
+import { REQUEST } from '@nestjs/core';
+import { Inject, Injectable } from '@nestjs/common';
 // core
-import { CoreApiService, CoreI18nService, CoreSysConfigService, PrismaService, RequestDto } from "../../../core";
-import { AuthService } from "../../../modules";
+import {
+  CoreApiService,
+  CoreI18nService,
+  CoreSysConfigService,
+  PrismaService,
+  RequestDto,
+} from '../../../core';
+import { AuthService } from '../../../modules';
 // local
-import { RoutineConfigAddDto, RoutineConfigDelDto, RoutineConfigEditDto, RoutineConfigQueryDto } from "./dto";
-import { RoutineConfigCrudService } from "./config.crud";
-import { ApiResponse } from "../../../shared";
-import { ConfigService } from "@nestjs/config";
+import {
+  RoutineConfigAddDto,
+  RoutineConfigDelDto,
+  RoutineConfigEditDto,
+} from './dto';
+import { RoutineConfigCrudService } from './config.crud';
+import { ApiResponse } from '../../../shared';
+import { ConfigService } from '@nestjs/config';
 
-import { ltrim, rtrim } from "../../../shared/utils/php.util";
+import { ltrim } from '../../../shared/utils/php.util';
 
 @Injectable()
 export class RoutineConfigService extends CoreApiService {
@@ -20,7 +31,7 @@ export class RoutineConfigService extends CoreApiService {
     webAdminBase: 'web/src/router/static/adminBase.ts',
     backendEntranceStub: 'app/admin/library/stubs/backendEntrance.stub',
   };
-  protected preExcludeFields = []
+  protected preExcludeFields = [];
   constructor(
     @Inject(REQUEST) public readonly req: RequestDto,
     public prisma: PrismaService,
@@ -32,10 +43,10 @@ export class RoutineConfigService extends CoreApiService {
   ) {
     super(req, prisma, crudService, coreAuthService);
   }
-  t(key: string, ...args: any[]) {
+  t(key: string, ...args: Record<string, any>[]) {
     return this.i18n.t('routine.config', key, ...args);
   }
-  tCommon(key: string, ...args: any[]) {
+  tCommon(key: string, ...args: Record<string, any>[]) {
     return this.i18n.t('common', key, ...args);
   }
   async add(body: RoutineConfigAddDto) {
@@ -88,15 +99,31 @@ export class RoutineConfigService extends CoreApiService {
           }
 
           // 修改 adminBaseRoutePath
-          const adminBaseFilePath = path.join(process.cwd(), this.filePath.webAdminBase);
+          const adminBaseFilePath = path.join(
+            process.cwd(),
+            this.filePath.webAdminBase,
+          );
           let adminBaseContent = await fs.readFile(adminBaseFilePath, 'utf8');
-          if (!adminBaseContent) throw ApiResponse.error(this.t('Configuration write failed: {s}', { s: this.filePath.webAdminBase }));
-          adminBaseContent = adminBaseContent.replace(/export const adminBaseRoutePath = '.*?'/g, `export const adminBaseRoutePath = '${body[item.name]}'`);
+          if (!adminBaseContent)
+            throw ApiResponse.error(
+              this.t('Configuration write failed: {s}', {
+                s: this.filePath.webAdminBase,
+              }),
+            );
+          adminBaseContent = adminBaseContent.replace(
+            /export const adminBaseRoutePath = '.*?'/g,
+            `export const adminBaseRoutePath = '${body[item.name]}'`,
+          );
           const result = fs.writeFile(adminBaseFilePath, adminBaseContent);
-          if (!result) throw ApiResponse.error(this.t('Configuration write failed: {s}', { s: this.filePath.webAdminBase }));
+          if (!result)
+            throw ApiResponse.error(
+              this.t('Configuration write failed: {s}', {
+                s: this.filePath.webAdminBase,
+              }),
+            );
 
           // 去除后台入口开头的斜杠
-          const oldBackendEntrance = ltrim(backendEntrance, '/');
+          // const oldBackendEntrance = ltrim(backendEntrance, "/");
           const newBackendEntrance = ltrim(body[item.name], '/');
 
           // 设置应用别名映射
@@ -109,9 +136,17 @@ export class RoutineConfigService extends CoreApiService {
             appMap[newBackendEntrance] = 'admin';
           }
 
-          const appConfigFilePath = path.join(process.cwd(), this.filePath.appConfig);
-          let appConfigContent = await fs.readFile(appConfigFilePath, 'utf8');
-          if (!appConfigContent) throw ApiResponse.error(this.t('Configuration write failed: {s}', { s: this.filePath.appConfig }));
+          const appConfigFilePath = path.join(
+            process.cwd(),
+            this.filePath.appConfig,
+          );
+          const appConfigContent = await fs.readFile(appConfigFilePath, 'utf8');
+          if (!appConfigContent)
+            throw ApiResponse.error(
+              this.t('Configuration write failed: {s}', {
+                s: this.filePath.appConfig,
+              }),
+            );
         }
       }
     }
@@ -119,14 +154,20 @@ export class RoutineConfigService extends CoreApiService {
     try {
       await this.saveAll(configValue);
       await this.sysConfig.clearCache();
-      return ApiResponse.success(this.t('The current page configuration item was updated successfully'));
-    } catch (err) {
+      return ApiResponse.success(
+        this.t('The current page configuration item was updated successfully'),
+      );
+    } catch {
       throw ApiResponse.error(this.t('No rows updated'));
     }
   }
-  async index(query: RoutineConfigQueryDto) {
+  async index() {
     const configGroup = await this.sysConfig.getSysConfig('config_group');
-    const configs = await this.sysConfig.getSysConfig(undefined, undefined, false);
+    const configs = await this.sysConfig.getSysConfig(
+      undefined,
+      undefined,
+      false,
+    );
 
     const data = {};
     const newConfigGroup = {};
@@ -147,42 +188,30 @@ export class RoutineConfigService extends CoreApiService {
     }
 
     return ApiResponse.success('', {
-      'list': data,
-      'remark': await this.coreAuthService.getRouteRemark(),
-      'configGroup': newConfigGroup ?? {},
-      'quickEntrance': await this.sysConfig.getSysConfig('config_quick_entrance'),
+      list: data,
+      remark: await this.coreAuthService.getRouteRemark(),
+      configGroup: newConfigGroup ?? {},
+      quickEntrance: await this.sysConfig.getSysConfig('config_quick_entrance'),
     });
 
     return {
       configGroup,
       configs,
-    }
+    };
   }
 
   private async saveAll(items: any[]) {
-    const list = items.map(item => {
-      console.log({
-        where: { id: item.id ?? -1 }, // 使用name作为唯一标识符
-        update: item,
-        create: item,
-      });
-      return this.model.upsert({
-        where: { id: item.id ?? -1 }, // 使用name作为唯一标识符
-        update: item,
-        create: item,
-      });
-    });
     return this.prisma.$transaction(
-      items.map(item =>
+      items.map((item) =>
         this.model.upsert({
           where: { id: item.id ?? undefined }, // 使用name作为唯一标识符
           update: item,
           create: {
             ...item,
-            id: undefined
+            id: undefined,
           },
-        })
-      )
+        }),
+      ),
     );
   }
 }

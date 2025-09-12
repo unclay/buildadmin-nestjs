@@ -9,7 +9,7 @@ export class RouteInfoMiddleware implements NestMiddleware {
     const pathStr = req.baseUrl.toLowerCase();
     const pathParts = pathStr.split('/').filter(Boolean);
     const [module = '', controller = '', action = ''] = pathParts;
-    
+
     // 挂载到req对象
     req.routeInfo = {
       module,
@@ -18,7 +18,7 @@ export class RouteInfoMiddleware implements NestMiddleware {
       controller_name: [controller].join('/').replace('.', '/'),
       action_name: [controller, action].join('/').replace('.', '/'),
     };
-    
+
     next();
   }
 }

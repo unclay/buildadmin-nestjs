@@ -1,11 +1,24 @@
-import { Body, Controller, Delete, Get, ParseIntPipe, Post, Query } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  ParseIntPipe,
+  Post,
+  Query,
+} from '@nestjs/common';
 // local
-import { AuthAdminLogService } from "./log.service";
-import { AuthAdminLogAddDto, AuthAdminLogDelDto, AuthAdminLogEditDto, AuthAdminLogQueryDto } from "./dto";
+import { AuthAdminLogService } from './log.service';
+import {
+  AuthAdminLogAddDto,
+  AuthAdminLogDelDto,
+  AuthAdminLogEditDto,
+  AuthAdminLogQueryDto,
+} from './dto';
 
 @Controller('admin/auth.adminlog')
 export class AuthAdminLogController {
-  constructor(private logService: AuthAdminLogService) { }
+  constructor(private logService: AuthAdminLogService) {}
   // 增删改查
   @Post('add')
   async add(@Body() body: AuthAdminLogAddDto) {

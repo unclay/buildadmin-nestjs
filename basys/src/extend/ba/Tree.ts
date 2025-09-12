@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * 树
  */
@@ -34,20 +35,35 @@ export class BaTree {
    * @param level 递归数组层次,无需手动维护
    * @param superiorEnd 递归上一级树枝是否结束,无需手动维护
    */
-  public static getTreeArray(arr: any[], field: string = 'name', level: number = 0, superiorEnd: boolean = false): any[] {
+  public static getTreeArray(
+    arr: any[],
+    field: string = 'name',
+    level: number = 0,
+    superiorEnd: boolean = false,
+  ): any[] {
     level++;
     let num = 1;
     const total = arr.length;
     arr.forEach((item, index) => {
-      const prefix = (num === total) ? BaTree.icon[2] : BaTree.icon[1];
+      const prefix = num === total ? BaTree.icon[2] : BaTree.icon[1];
       if (level === 2) {
         arr[index][field] = ' '.repeat(4) + prefix + item[field];
       } else if (level >= 3) {
-        arr[index][field] = ' '.repeat(4) + (superiorEnd ? '' : BaTree.icon[0]) + ' '.repeat((level - 2) * 4) + prefix + item[field];
+        arr[index][field] =
+          ' '.repeat(4) +
+          (superiorEnd ? '' : BaTree.icon[0]) +
+          ' '.repeat((level - 2) * 4) +
+          prefix +
+          item[field];
       }
 
       if (item.children) {
-        arr[index].children = BaTree.getTreeArray(item.children, field, level, num === total);
+        arr[index].children = BaTree.getTreeArray(
+          item.children,
+          field,
+          level,
+          num === total,
+        );
       }
       num++;
     });
@@ -60,7 +76,7 @@ export class BaTree {
    */
   public static assembleTree(data: any[]): any[] {
     const arr: any[] = [];
-    data.forEach(v => {
+    data.forEach((v) => {
       const { children = [], ...rest } = v;
       arr.push(rest);
       if (children.length) {
@@ -76,13 +92,17 @@ export class BaTree {
    * @param pid 存储上级id的字段
    * @param pk 主键字段
    */
-  public assembleChild(data: any[], pid: string = 'pid', pk: string = 'id'): any[] {
+  public assembleChild(
+    data: any[],
+    pid: string = 'pid',
+    pk: string = 'id',
+  ): any[] {
     if (!data.length) return [];
     const pks: any[] = [];
     const topLevelData: any[] = [];
     this.children = [];
 
-    data.forEach(item => {
+    data.forEach((item) => {
       pks.push(item[pk]);
       if (!this.children[item[pid]]) {
         this.children[item[pid]] = [];
@@ -90,7 +110,7 @@ export class BaTree {
       this.children[item[pid]].push(item);
     });
 
-    data.forEach(item => {
+    data.forEach((item) => {
       if (!pks.includes(item[pid])) {
         topLevelData.push(item);
       }
@@ -98,7 +118,10 @@ export class BaTree {
 
     if (Object.keys(this.children).length > 0) {
       topLevelData.forEach((item, key) => {
-        topLevelData[key].children = this.getChildren(this.children[item[pk]] || [], pk);
+        topLevelData[key].children = this.getChildren(
+          this.children[item[pk]] || [],
+          pk,
+        );
       });
       return topLevelData;
     }

@@ -18,4 +18,4 @@ import configs from './index';
   ],
   exports: [ConfigModule],
 })
-export class NestConfigModule { }
+export class NestConfigModule {}

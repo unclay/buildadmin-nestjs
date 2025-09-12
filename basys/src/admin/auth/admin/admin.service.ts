@@ -1,19 +1,33 @@
-import { Injectable, Inject } from "@nestjs/common";
-import { REQUEST } from "@nestjs/core";
-import { ApiResponse } from "../../../shared/api";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Injectable, Inject } from '@nestjs/common';
+import { REQUEST } from '@nestjs/core';
+import { ApiResponse } from '../../../shared/api';
 // core
-import { CoreApiService, RequestDto, PrismaService, I18nTranslate, CoreI18nService } from "../../../core";
+import {
+  CoreApiService,
+  RequestDto,
+  PrismaService,
+  CoreI18nService,
+} from '../../../core';
 // modules
-import { AuthService } from "../../../modules";
+import { AuthService } from '../../../modules';
 // local
-import { AuthAdminAddDto, AuthAdminDelDto, AuthAdminEditDto } from "./dto";
-import { AdminCrudService } from "./admin.crud";
+import { AuthAdminAddDto, AuthAdminDelDto, AuthAdminEditDto } from './dto';
+import { AdminCrudService } from './admin.crud';
 
 @Injectable()
 export class AuthAdminService extends CoreApiService {
   protected dataLimit = 'allAuthAndOthers';
   protected dataLimitField = 'id';
-  protected preExcludeFields: string | string[] = ['create_time', 'update_time', 'password', 'salt', 'login_failure', 'last_login_time', 'last_login_ip'];
+  protected preExcludeFields: string | string[] = [
+    'create_time',
+    'update_time',
+    'password',
+    'salt',
+    'login_failure',
+    'last_login_time',
+    'last_login_ip',
+  ];
   constructor(
     public prisma: PrismaService,
     public authService: AuthService,
@@ -42,7 +56,7 @@ export class AuthAdminService extends CoreApiService {
         last_login_time: undefined,
       });
       const admin = await ctx.baAdmin.create({
-        data: json
+        data: json,
       });
 
       result = admin;
@@ -50,10 +64,10 @@ export class AuthAdminService extends CoreApiService {
       // 处理分组关联
       if (data.group_arr) {
         await ctx.baAdminGroupAccess.createMany({
-          data: (data.group_arr.map(groupId => ({
+          data: data.group_arr.map((groupId) => ({
             uid: admin.id,
-            group_id: groupId
-          }))) as any
+            group_id: groupId,
+          })) as any,
         });
       }
 
@@ -77,26 +91,26 @@ export class AuthAdminService extends CoreApiService {
     const whereAnd = [];
     if (dataLimitAdminIds.length) {
       whereAnd.push({
-        [this.dataLimitField]: { in: dataLimitAdminIds }
+        [this.dataLimitField]: { in: dataLimitAdminIds },
       });
     }
     whereAnd.push({
-      id: { in: body.ids }
+      id: { in: body.ids },
     });
     const data = await this.model.findMany({
       where: {
         AND: whereAnd,
-      }
+      },
     });
     let count = 0;
     await this.prisma.$transaction(async (ctx) => {
       for (const v of data) {
         if (v.id !== loginAdminId) {
           await ctx.baAdminGroupAccess.deleteMany({
-            where: { uid: v.id }
+            where: { uid: v.id },
           });
           await ctx.baAdmin.delete({
-            where: { id: v.id }
+            where: { id: v.id },
           });
           count += 1;
         }
@@ -106,27 +120,27 @@ export class AuthAdminService extends CoreApiService {
       throw ApiResponse.error('No rows were deleted');
     }
     return {
-      msg: 'Deleted successfully'
-    }
+      msg: 'Deleted successfully',
+    };
   }
 
   /**
    * 获取某个管理员
-   * @param id 
-   * @returns 
+   * @param id
+   * @returns
    */
   async getEdit(id: number) {
-    let record = await this.model.findUnique({
+    const record = await this.model.findUnique({
       where: {
         id,
       },
       include: {
         groups: {
           include: {
-            group: true
-          }
+            group: true,
+          },
         },
-      }
+      },
     });
     if (!record) {
       return;
@@ -135,17 +149,25 @@ export class AuthAdminService extends CoreApiService {
   }
 
   async postEdit(body: AuthAdminEditDto) {
-    let record = await this.getEdit(body.id);
+    const record = await this.getEdit(body.id);
     if (!record) {
-      throw ApiResponse.error(this.i18n.t('common', 'Record not found'))
+      throw ApiResponse.error(this.i18n.t('common', 'Record not found'));
     }
     const dataLimitAdminIds = await this.getDataLimitAdminIds();
-    if (dataLimitAdminIds?.length > 0 && !dataLimitAdminIds.includes(record[this.dataLimitField])) {
+    if (
+      dataLimitAdminIds?.length > 0 &&
+      !dataLimitAdminIds.includes(record[this.dataLimitField])
+    ) {
       throw ApiResponse.error(this.i18n.t('common', 'You have no permission'));
     }
     const loginAdminId = this.coreAuthService.getUser('id');
     if (loginAdminId === body.id && body.status === 'disable') {
-      throw ApiResponse.error(this.i18n.t('auth.admin', 'Please use another administrator account to disable the current account!'));
+      throw ApiResponse.error(
+        this.i18n.t(
+          'auth.admin',
+          'Please use another administrator account to disable the current account!',
+        ),
+      );
     }
     if (body.password) {
       await this.coreAuthService.resetPassword(body.id, body.password);
@@ -160,7 +182,7 @@ export class AuthAdminService extends CoreApiService {
         }
         groupAccess.push({
           uid: body.id,
-          group_id: groupId
+          group_id: groupId,
         });
       }
       this.checkGroupAuth(checkGroups);
@@ -168,7 +190,7 @@ export class AuthAdminService extends CoreApiService {
     await this.prisma.baAdminGroupAccess.deleteMany({
       where: {
         uid: body.id,
-      }
+      },
     });
 
     const newBody = this.excludeFields(body);
@@ -182,17 +204,18 @@ export class AuthAdminService extends CoreApiService {
           id: undefined,
           group_arr: undefined,
           group_name_arr: undefined,
-        } as any
+        } as any,
       });
 
       // 如果有分组信息，更新管理员分组
       if (groupAccess.length > 0) {
         await ctx.baAdminGroupAccess.createMany({
-          data: groupAccess
+          data: groupAccess,
         });
       }
     });
-    if (result) return ApiResponse.success(this.i18n.t('common', 'Update successful'));
+    if (result)
+      return ApiResponse.success(this.i18n.t('common', 'Update successful'));
     throw ApiResponse.error(this.i18n.t('common', 'Update failed'));
   }
 
@@ -219,24 +242,26 @@ export class AuthAdminService extends CoreApiService {
             group: {
               select: {
                 name: true,
-              }
-            }
-          }
+              },
+            },
+          },
         },
-      }
+      },
     });
     const total = await this.model.count();
     return {
       // 同步buildadmin
-      list: list.map(item => {
-        (item as any).group_arr = item.groups.map(group => group.group_id);
-        (item as any).group_name_arr = item.groups.map(group => group.group.name);
+      list: list.map((item) => {
+        (item as any).group_arr = item.groups.map((group) => group.group_id);
+        (item as any).group_name_arr = item.groups.map(
+          (group) => group.group.name,
+        );
         delete item.groups;
         return item;
       }),
       remark: '',
       total,
-    }
+    };
   }
 
   /**
@@ -248,10 +273,16 @@ export class AuthAdminService extends CoreApiService {
     if (isSuperAdmin) {
       return;
     }
-    const authGroups = await this.coreAuthService.getAllAuthGroups('allAuthAndOthers');
+    const authGroups =
+      await this.coreAuthService.getAllAuthGroups('allAuthAndOthers');
     for (const group of groups) {
       if (!authGroups.includes(group)) {
-        throw ApiResponse.error(this.i18n.t('auth.admin', 'You have no permission to add an administrator to this group!'))
+        throw ApiResponse.error(
+          this.i18n.t(
+            'auth.admin',
+            'You have no permission to add an administrator to this group!',
+          ),
+        );
       }
     }
   }

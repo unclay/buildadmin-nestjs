@@ -1,6 +1,13 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 // core
-import { DateTimeInterceptor, ResponseInterceptor, SerializerInterceptor, HttpExceptionFilter, AdminLogInterceptor, CoreI18nService } from './core';
+import {
+  DateTimeInterceptor,
+  ResponseInterceptor,
+  SerializerInterceptor,
+  HttpExceptionFilter,
+  AdminLogInterceptor,
+  CoreI18nService,
+} from './core';
 // modules
 import { AdminLogService, AuthGuard } from './modules';
 // local
@@ -26,10 +33,8 @@ async function bootstrap() {
     new AdminLogInterceptor(app.get(AdminLogService)),
   );
   // 全局过滤器
-  app.useGlobalFilters(
-    new HttpExceptionFilter(app.get(CoreI18nService)),
-  );
-  
+  app.useGlobalFilters(new HttpExceptionFilter(app.get(CoreI18nService)));
+
   // 全局守卫
   app.useGlobalGuards(new AuthGuard(app.get(Reflector)));
   await app.listen(process.env.PORT ?? 18000, '0.0.0.0');

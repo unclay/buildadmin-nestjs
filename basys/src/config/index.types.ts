@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // App 配置类型
 export interface AppConfig {
   app_host: string;
@@ -97,9 +98,9 @@ export type ConfigKey = keyof ConfigMap | `${keyof ConfigMap}.${string}`;
 export type ConfigValue<T extends ConfigKey> = T extends keyof ConfigMap
   ? ConfigMap[T]
   : T extends `${infer K}.${infer Rest}`
-  ? K extends keyof ConfigMap
-    ? Rest extends keyof ConfigMap[K]
-      ? ConfigMap[K][Rest]
+    ? K extends keyof ConfigMap
+      ? Rest extends keyof ConfigMap[K]
+        ? ConfigMap[K][Rest]
+        : any
       : any
-    : any
-  : any;
+    : any;

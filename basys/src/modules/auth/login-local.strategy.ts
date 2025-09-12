@@ -1,16 +1,14 @@
-import { JwtService } from '@nestjs/jwt';
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { Strategy } from 'passport-local';
 // shared
 import { validateDto, ApiResponse } from '../../shared';
 // core
-import { CoreCaptchaService, CoreClickCaptchaService, PrismaService } from '../../core';
+import { CoreClickCaptchaService } from '../../core';
 // local
 import { LoginService } from './login.service';
-import { TokenService } from './token.service';
 import { BuildAdminConfig } from '../../config/index.types';
 import { LoginCaptchaDto } from './login-local.dto';
 import { LoginDto } from './login-local.dto';
@@ -24,41 +22,58 @@ import { LoginDto } from './login-local.dto';
  * 5. 校验通过后，将用户信息挂载到请求对象上，后续可以在控制器中通过 @Request() 装饰器获取
  */
 @Injectable()
-export class LoginLocalStrategy extends PassportStrategy(Strategy, 'auth-local') {
-    constructor(
-        private readonly loginService: LoginService,
-        private readonly configService: ConfigService,
-        @Inject(forwardRef(() => CoreClickCaptchaService))
-        private readonly captchaService: CoreClickCaptchaService
-    ) {
-        // 可自定义字段名，默认 username/password
-        super({
-            passReqToCallback: true, // 关键：允许将请求对象传递给 validate 方法
-            usernameField: 'username',
-            passwordField: 'password',
-        });
+export class LoginLocalStrategy extends PassportStrategy(
+  Strategy,
+  'auth-local',
+) {
+  constructor(
+    private readonly loginService: LoginService,
+    private readonly configService: ConfigService,
+    @Inject(forwardRef(() => CoreClickCaptchaService))
+    private readonly captchaService: CoreClickCaptchaService,
+  ) {
+    // 可自定义字段名，默认 username/password
+    super({
+      passReqToCallback: true, // 关键：允许将请求对象传递给 validate 方法
+      usernameField: 'username',
+      passwordField: 'password',
+    });
+  }
+  async validate(req: Request, username: string, password: string) {
+    const isLogin = await this.loginService.isLogin(req);
+    if (isLogin) {
+      throw ApiResponse.error(
+        'You have already logged in. There is no need to log in again~',
+        {
+          type: this.loginService.LOGGED_IN,
+        },
+        this.loginService.LOGIN_RESPONSE_CODE,
+      );
     }
-    async validate(req: Request, username: string, password: string) {
-        const isLogin = await this.loginService.isLogin(req);
-        if (isLogin) {
-            throw ApiResponse.error('You have already logged in. There is no need to log in again~', {
-                type: this.loginService.LOGGED_IN
-            }, this.loginService.LOGIN_RESPONSE_CODE);
-        }
 
-        const adminLoginCaptcha = this.configService.get<BuildAdminConfig>('buildadmin').admin_login_captcha;
-        const dto = adminLoginCaptcha ? LoginCaptchaDto : LoginDto;
-        const result = await validateDto(dto, req.body);
-        if (adminLoginCaptcha) {
-            const captchaBody = result as LoginCaptchaDto;
-            const captchaResult = await this.captchaService.check(captchaBody.captchaId, captchaBody.captchaInfo);
-            if (!captchaResult) {
-                throw ApiResponse.error('验证码错误');
-            }
-        }
-
-        // 校验逻辑交给service处理，返回校验结果
-        const user = await this.loginService.loginWithRequest(req, username, password);
-        return user;
+    const adminLoginCaptcha =
+      this.configService.get<BuildAdminConfig>(
+        'buildadmin',
+      ).admin_login_captcha;
+    const dto = adminLoginCaptcha ? LoginCaptchaDto : LoginDto;
+    const result = await validateDto(dto, req.body);
+    if (adminLoginCaptcha) {
+      const captchaBody = result as LoginCaptchaDto;
+      const captchaResult = await this.captchaService.check(
+        captchaBody.captchaId,
+        captchaBody.captchaInfo,
+      );
+      if (!captchaResult) {
+        throw ApiResponse.error('验证码错误');
+      }
     }
+
+    // 校验逻辑交给service处理，返回校验结果
+    const user = await this.loginService.loginWithRequest(
+      req,
+      username,
+      password,
+    );
+    return user;
+  }
 }

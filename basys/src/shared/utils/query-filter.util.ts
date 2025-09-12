@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/utils/filter.util.ts
 export class ParamFilter {
   static applyJson(json: Record<string, any>, filters: string[]) {
@@ -6,21 +7,26 @@ export class ParamFilter {
     }
     return json;
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static apply(value: any, filters: string[]) {
     return filters.reduce((val, filter) => {
       switch (filter) {
         case 'trim':
           return typeof val === 'string' ? val.trim() : val;
         case 'strip_tags':
-          return typeof val === 'string' ? val.replace(/<\/?[^>]+(>|$)/g, '') : val;
-        case 'htmlspecialchars':
           return typeof val === 'string'
-            ? val.replace(/&/g, '&amp;')
+            ? val.replace(/<\/?[^>]+(>|$)/g, '')
+            : val;
+        case 'htmlspecialchars':
+          if (typeof val === 'string') {
+            return val
+              .replace(/&/g, '&amp;')
               .replace(/</g, '&lt;')
               .replace(/>/g, '&gt;')
               .replace(/"/g, '&quot;')
-              .replace(/'/g, '&#039;')
-            : val;
+              .replace(/'/g, '&#039;');
+          }
+          return val;
         default:
           return val;
       }

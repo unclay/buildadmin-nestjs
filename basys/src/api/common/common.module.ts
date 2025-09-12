@@ -9,4 +9,4 @@ import { CommonCaptchaService } from './captcha.service';
   controllers: [CommonCaptchaController],
   providers: [CommonCaptchaService],
 })
-export class CommonModule { }
+export class CommonModule {}

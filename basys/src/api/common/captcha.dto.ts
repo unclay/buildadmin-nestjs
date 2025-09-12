@@ -1,4 +1,4 @@
-import { IsBoolean, IsString } from "class-validator";
+import { IsBoolean, IsString } from 'class-validator';
 
 export class ClickCaptchaDto {
   @IsString({ message: 'id不能为空' })

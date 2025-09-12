@@ -2,7 +2,13 @@ import { Controller, Get, Post, UseGuards, Request } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
 // core
-import { RouteTitle, I18nLang, I18nTranslate, CoreI18nService } from '../../core';
+import {
+  RouteTitle,
+  I18nLang,
+  I18nTranslate,
+  I18nTranslateFunction,
+  CoreI18nService,
+} from '../../core';
 // modules
 import { Public } from '../../modules';
 import { ApiResponse } from '../../shared';
@@ -12,7 +18,7 @@ export class LoginController {
   constructor(
     private readonly configService: ConfigService,
     private readonly i18nService: CoreI18nService,
-  ) { }
+  ) {}
   /**
    * [GET] /admin/index/login
    */
@@ -21,7 +27,7 @@ export class LoginController {
   getLogin() {
     return {
       captcha: this.configService.get('buildadmin.admin_login_captcha'),
-    }
+    };
   }
 
   /**
@@ -31,10 +37,7 @@ export class LoginController {
   @RouteTitle('登录')
   @UseGuards(AuthGuard('auth-local'))
   @Post('login')
-  async postLogin(
-    @Request() req,
-    @I18nTranslate() t: Function,
-  ) {
+  async postLogin(@Request() req, @I18nTranslate() t: I18nTranslateFunction) {
     return {
       msg: t('user.Login succeeded!'),
       data: {
@@ -45,9 +48,9 @@ export class LoginController {
 
   @Public()
   @Get('test')
-  getTest() {
+  getTest(@I18nTranslate() t: I18nTranslateFunction) {
     // 使用服务方式获取翻译
-    throw ApiResponse.error('system.error');
+    throw ApiResponse.error(t('system.error'));
   }
 
   /**
@@ -58,9 +61,9 @@ export class LoginController {
   @Get('i18n-demo')
   getI18nDemo(
     @I18nLang() lang: string,
-    @I18nTranslate('common') t: Function,
+    // @I18nTranslate("common") t: I18nTranslateFunction,
   ) {
-    const tCommon = this.i18nService.namespace('common');
+    // const tCommon = this.i18nService.namespace("common");
     return {
       currentLanguage: lang,
       supportedLanguages: this.i18nService.getSupportedLanguages(),
@@ -71,15 +74,23 @@ export class LoginController {
         'auth.rule.type': this.i18nService.t('auth.rule', 'type'),
         'auth.rule.title': this.i18nService.t('auth.rule', 'title'),
         'auth.rule.name': this.i18nService.t('auth.rule', 'name'),
-        'timeAgo': {
-          seconds: this.i18nService.t('common', '{d} second{s} ago', { d: 30, s: 's' }),
-          minutes: this.i18nService.t('common', '{d} minute{s} ago', { d: 1, s: '' }),
+        timeAgo: {
+          seconds: this.i18nService.t('common', '{d} second{s} ago', {
+            d: 30,
+            s: 's',
+          }),
+          minutes: this.i18nService.t('common', '{d} minute{s} ago', {
+            d: 1,
+            s: '',
+          }),
         },
-        'root': {
-          'hello': this.i18nService.t('common', 'hello'),
-          'hello.name': this.i18nService.t('common', 'hello.name', { name: 'world' }),
+        root: {
+          hello: this.i18nService.t('common', 'hello'),
+          'hello.name': this.i18nService.t('common', 'hello.name', {
+            name: 'world',
+          }),
           'hello.null': this.i18nService.t('common', 'hello.null . sd'),
-        }
+        },
       },
     };
   }

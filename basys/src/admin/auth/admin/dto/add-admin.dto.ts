@@ -29,17 +29,17 @@ export class AuthAdminAddDto {
   password: string;
 
   @IsOptional()
-  @Transform(({ value }) => value === "" ? undefined : value)
+  @Transform(({ value }) => (value === '' ? undefined : value))
   @IsEmail({}, { message: '邮箱格式不正确' })
   email: string;
 
   @IsOptional()
-  @Transform(({ value }) => value === "" ? undefined : value)
+  @Transform(({ value }) => (value === '' ? undefined : value))
   @IsMobilePhone('zh-CN', {}, { message: '手机号格式不正确' })
   mobile: string;
 
   @IsArray({ message: '分组必须是一个数组' })
   @IsNotEmpty({ message: '分组不能为空' })
-  @Transform(({ value }) => value.map(str => parseInt(str, 10)))
+  @Transform(({ value }) => value.map((str) => parseInt(str, 10)))
   group_arr: number[];
 }

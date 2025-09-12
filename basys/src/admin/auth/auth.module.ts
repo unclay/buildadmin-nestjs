@@ -6,4 +6,4 @@ import { AuthRuleModule } from './rule/rule.module';
 @Module({
   imports: [AuthAdminModule, AuthGroupModule, AuthRuleModule],
 })
-export class AuthModule { }
+export class AuthModule {}

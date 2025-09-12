@@ -1,23 +1,19 @@
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
-export const modelNames = Object.getOwnPropertyNames(prisma).filter(item => !item.match(/^_|^\$|constructor|^[A-Z]/));
-export const tableNames = modelNames.map(item => item.replace(/([A-Z])/g, '_$1').toLowerCase());
-// console.log(modelNames, tableNames);
-
-
-// 定义类型
-type PrismaModel = keyof {
-  [K in keyof PrismaClient]:
-  PrismaClient[K] extends { findMany: any } ? K : never;
-};
+export const modelNames = Object.getOwnPropertyNames(prisma).filter(
+  (item) => !item.match(/^_|^\$|constructor|^[A-Z]/),
+);
+export const tableNames = modelNames.map((item) =>
+  item.replace(/([A-Z])/g, '_$1').toLowerCase(),
+);
 
 // 运行时获取所有可能的模型名称
 function getPrismaModelNames(): string[] {
   const prisma = new PrismaClient();
   const allKeys = Object.keys(prisma) as (keyof PrismaClient)[];
 
-  return allKeys.filter(key => {
+  return allKeys.filter((key) => {
     const value = prisma[key];
     return typeof value === 'object' && value !== null && 'findMany' in value;
   }) as string[];

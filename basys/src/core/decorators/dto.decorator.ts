@@ -1,11 +1,19 @@
 import { Transform } from 'class-transformer';
-import { registerDecorator, ValidationOptions, ValidatorConstraint, ValidatorConstraintInterface, ValidationArguments } from 'class-validator';
+import {
+  registerDecorator,
+  ValidationOptions,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
+  ValidationArguments,
+} from 'class-validator';
 import { PrismaService } from '../database';
-import { Prisma } from "@prisma/client";
+import { Prisma } from '@prisma/client';
 
 @ValidatorConstraint({ name: 'isNumberOrString', async: false })
-export class IsNumberOrStringConstraint implements ValidatorConstraintInterface {
-  validate(value: any, args: ValidationArguments) {
+export class IsNumberOrStringConstraint
+  implements ValidatorConstraintInterface
+{
+  validate(value: string | number) {
     // 验证值是否为数字或字符串
     return typeof value === 'number' || typeof value === 'string';
   }
@@ -15,8 +23,9 @@ export class IsNumberOrStringConstraint implements ValidatorConstraintInterface 
   }
 }
 export function IsNumberOrString(validationOptions?: ValidationOptions) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
+      name: 'isNumberOrString',
       target: object.constructor,
       propertyName: propertyName,
       options: validationOptions,
@@ -26,13 +35,13 @@ export function IsNumberOrString(validationOptions?: ValidationOptions) {
   };
 }
 
-
 /**
  * 将字符串数字转换为数字，保持其他值不变
  */
 export function TransformToNumber(options?: { array: boolean }) {
   // 转成数组
-  const stringToNumber = (value: string) => (isNaN(Number(value)) ? value : Number(value));
+  const stringToNumber = (value: string) =>
+    isNaN(Number(value)) ? value : Number(value);
   return Transform(({ value }) => {
     const needArray = options?.array ?? false;
     // 数字数组（ids）
@@ -63,9 +72,13 @@ export function TransformToNumber(options?: { array: boolean }) {
   });
 }
 
-
-export function IsUnique(table: any, column: string, validationOptions?: ValidationOptions) {
-  return function (object: Object, propertyName: string) {
+export function IsUnique(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  table: any,
+  column: string,
+  validationOptions?: ValidationOptions,
+) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'isUnique',
       target: object.constructor,
@@ -73,8 +86,7 @@ export function IsUnique(table: any, column: string, validationOptions?: Validat
       constraints: [table, column],
       options: validationOptions,
       validator: {
-        async validate(value: any, args: ValidationArguments) {
-          console.log(value, args);
+        async validate(value: string | number, args: ValidationArguments) {
           if (!value) {
             return true;
           }
@@ -92,7 +104,7 @@ export function IsUnique(table: any, column: string, validationOptions?: Validat
         },
         defaultMessage(args: ValidationArguments) {
           return `${args.property} must be unique`;
-        }
+        },
       },
     });
   };

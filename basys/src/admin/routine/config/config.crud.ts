@@ -1,7 +1,7 @@
-import { Injectable } from "@nestjs/common";
-import { BaseCrudService } from "../../../core";
-import { Prisma } from "@prisma/client";
-import { strAttrToArray } from "../../../shared";
+import { Injectable } from '@nestjs/common';
+import { BaseCrudService } from '../../../core';
+import { Prisma } from '@prisma/client';
+import { strAttrToArray } from '../../../shared';
 
 @Injectable()
 export class RoutineConfigCrudService extends BaseCrudService {
@@ -14,9 +14,11 @@ export class RoutineConfigCrudService extends BaseCrudService {
     this.model = this.prisma.baConfig;
     super.init();
   }
-  public async create(configData: Prisma.BaConfigCreateInput & {
-    inputExtend?: string;
-  }) {
+  public async create(
+    configData: Prisma.BaConfigCreateInput & {
+      inputExtend?: string;
+    },
+  ) {
     // 处理 content
     if (!this.needContent.includes(configData.type)) {
       configData.content = null;

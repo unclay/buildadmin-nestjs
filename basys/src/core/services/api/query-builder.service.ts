@@ -1,6 +1,7 @@
-import { plainToInstance } from "class-transformer";
-import { QueryBuilderDto } from "../../../core";
-import { parse_name } from "../../../shared";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { plainToInstance } from 'class-transformer';
+import { QueryBuilderDto } from '../../../core';
+import { parse_name } from '../../../shared';
 
 export class QueryBuilderService {
   private static instance: QueryBuilderService;
@@ -12,22 +13,21 @@ export class QueryBuilderService {
     return QueryBuilderService.instance;
   }
 
-
   /**
    * 查询的排序参数构建器
    */
-  public queryOrderBuilder(reqQuery, options: {
-    pk: string,
-    defaultSortField: null | string | Record<string, any>,
-    orderGuarantee: null | string | Record<string, any>,
-  }): Record<string, string> {
-    let {
-      pk,
-      defaultSortField,
-      orderGuarantee,
-    } = options;
-    let order: Record<string, 'asc' | 'desc'> = {};
-    const orderParam = reqQuery.order as string || defaultSortField;
+  public queryOrderBuilder(
+    reqQuery,
+    options: {
+      pk: string;
+      defaultSortField: null | string | Record<string, any>;
+      orderGuarantee: null | string | Record<string, any>;
+    },
+  ): Record<string, string> {
+    const { pk, defaultSortField } = options;
+    let { orderGuarantee } = options;
+    const order: Record<string, 'asc' | 'desc'> = {};
+    const orderParam = (reqQuery.order as string) || defaultSortField;
 
     if (orderParam && typeof orderParam === 'string') {
       const [field, direction = 'asc'] = orderParam.split(',');
@@ -49,43 +49,42 @@ export class QueryBuilderService {
     return order;
   }
 
-
-  public async queryBuilder(reqQuery, dataLimitAdminIds, options: {
-    pk: string,
-    defaultSortField: null | string | Record<string, any>,
-    orderGuarantee: null | string | Record<string, any>,
-    quickSearchField: string | string[],
-    dataLimitField: string,
-  }): Promise<any> {
-    const {
-      pk,
-      quickSearchField,
-      dataLimitField,
-    } = options
+  public async queryBuilder(
+    reqQuery,
+    dataLimitAdminIds,
+    options: {
+      pk: string;
+      defaultSortField: null | string | Record<string, any>;
+      orderGuarantee: null | string | Record<string, any>;
+      quickSearchField: string | string[];
+      dataLimitField: string;
+    },
+  ): Promise<any> {
+    const { pk, quickSearchField, dataLimitField } = options;
     const queryParams = plainToInstance(QueryBuilderDto, reqQuery);
-    let {
+    const {
       quickSearch,
       page,
-      limit,
       search,
       initKey = pk,
       initValue,
-      initOperator
+      initOperator,
     } = queryParams;
+    let { limit } = queryParams;
 
     const where: any = {};
     const include: any = {};
 
     // 快速搜索
     if (quickSearch) {
-      const quickSearchArr = Array.isArray(quickSearchField) ?
-        quickSearchField :
-        quickSearchField.split(',');
-      const whereOr = quickSearchArr.map(key => ({
+      const quickSearchArr = Array.isArray(quickSearchField)
+        ? quickSearchField
+        : quickSearchField.split(',');
+      const whereOr = quickSearchArr.map((key) => ({
         [key]: {
           contains: quickSearch,
           mode: 'insensitive',
-        }
+        },
       }));
       if (whereOr.length) {
         where.OR = whereOr;
@@ -94,7 +93,10 @@ export class QueryBuilderService {
 
     // 初始化查询
     if (initValue) {
-      where[initKey] = this.buildPrismaCondition(initOperator, initValue.join('_'));
+      where[initKey] = this.buildPrismaCondition(
+        initOperator,
+        initValue.join('_'),
+      );
       limit = 999999;
     }
 
@@ -104,7 +106,7 @@ export class QueryBuilderService {
         if (!field?.operator || !field?.field || !field?.val) continue;
 
         const operator = this.getOperatorByAlias(field.operator);
-        let fieldPath = field.field;
+        const fieldPath = field.field;
 
         // 处理关联表字段
         if (field.field.includes('.')) {
@@ -114,21 +116,21 @@ export class QueryBuilderService {
           // 构建嵌套 where
           if (!where[relationName]) {
             where[relationName] = {
-              some: {}
+              some: {},
             };
           }
 
           where[relationName].some[relationField] = this.buildPrismaCondition(
             operator,
             field.val,
-            field.render
+            field.render,
           );
         } else {
           // 主表字段
           where[fieldPath] = this.buildPrismaCondition(
             operator,
             field.val,
-            field.render
+            field.render,
           );
         }
       }
@@ -138,7 +140,7 @@ export class QueryBuilderService {
     // const dataLimitAdminIds = await this.getDataLimitAdminIds();
     if (dataLimitAdminIds.length) {
       where[dataLimitField] = {
-        in: dataLimitAdminIds
+        in: dataLimitAdminIds,
       };
     }
 
@@ -146,7 +148,7 @@ export class QueryBuilderService {
     const query: any = {
       where,
       take: limit !== 999999 ? limit : undefined,
-      skip: (page - 1) * limit !== 0 ? (page - 1) * limit : undefined
+      skip: (page - 1) * limit !== 0 ? (page - 1) * limit : undefined,
     };
 
     // 添加 include 如果有关联查询
@@ -162,7 +164,11 @@ export class QueryBuilderService {
 
     return query;
   }
-  private buildPrismaCondition(operator: string, value: any, renderType?: string): any {
+  private buildPrismaCondition(
+    operator: string,
+    value: any,
+    renderType?: string,
+  ): any {
     switch (operator) {
       case '=':
         return { equals: this.parseValue(value, renderType) };
@@ -176,15 +182,15 @@ export class QueryBuilderService {
         }
         return {
           contains: String(value).replace(/%/g, '\\%'),
-          mode: 'insensitive'
+          mode: 'insensitive',
         };
 
       case 'NOT LIKE':
         return {
           not: {
             contains: String(value).replace(/%/g, '\\%'),
-            mode: 'insensitive'
-          }
+            mode: 'insensitive',
+          },
         };
 
       case '>':
@@ -203,7 +209,7 @@ export class QueryBuilderService {
         if (Array.isArray(value)) {
           return {
             gte: this.parseValue(value[0], renderType),
-            lte: this.parseValue(value[1], renderType)
+            lte: this.parseValue(value[1], renderType),
           };
         }
         return {};
@@ -232,14 +238,20 @@ export class QueryBuilderService {
 
       case 'IN':
         return {
-          in: Array.isArray(value) ? value.map(v => this.parseValue(v, renderType)) :
-            String(value).split(',').map(v => this.parseValue(v, renderType))
+          in: Array.isArray(value)
+            ? value.map((v) => this.parseValue(v, renderType))
+            : String(value)
+                .split(',')
+                .map((v) => this.parseValue(v, renderType)),
         };
 
       case 'NOT IN':
         return {
-          notIn: Array.isArray(value) ? value.map(v => this.parseValue(v, renderType)) :
-            String(value).split(',').map(v => this.parseValue(v, renderType))
+          notIn: Array.isArray(value)
+            ? value.map((v) => this.parseValue(v, renderType))
+            : String(value)
+                .split(',')
+                .map((v) => this.parseValue(v, renderType)),
         };
 
       case 'NULL':
@@ -252,10 +264,10 @@ export class QueryBuilderService {
         // Prisma 不支持 FIND_IN_SET，可以用 OR 模拟
         const values = Array.isArray(value) ? value : String(value).split(',');
         return {
-          OR: values.map(v => ({
+          OR: values.map((v) => ({
             contains: `,${v},`,
-            mode: 'insensitive'
-          }))
+            mode: 'insensitive',
+          })),
         };
 
       default:
@@ -286,8 +298,8 @@ export class QueryBuilderService {
 
         result.push({
           [relationName]: {
-            [relationField]: direction.toLowerCase()
-          }
+            [relationField]: direction.toLowerCase(),
+          },
         });
       } else {
         // 主表字段排序
@@ -305,12 +317,12 @@ export class QueryBuilderService {
    */
   protected getOperatorByAlias(operator: string): string {
     const alias: Record<string, string> = {
-      'ne': '<>',
-      'eq': '=',
-      'gt': '>',
-      'egt': '>=',
-      'lt': '<',
-      'elt': '<='
+      ne: '<>',
+      eq: '=',
+      gt: '>',
+      egt: '>=',
+      lt: '<',
+      elt: '<=',
     };
 
     return alias[operator] || operator;

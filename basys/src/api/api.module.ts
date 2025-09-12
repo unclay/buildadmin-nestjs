@@ -4,4 +4,4 @@ import { CommonModule } from './common/common.module';
 @Module({
   imports: [CommonModule],
 })
-export class ApiModule { }
+export class ApiModule {}

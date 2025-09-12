@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as crypto from 'crypto';
 
 /**
@@ -31,10 +32,11 @@ export function randomCharAt(str: string): string {
 /**
  * svg 字符串转换为 base64 编码
  * @param svg svg字符串
- * @returns 
+ * @returns
  */
 export function svgToBase64(svg: string) {
   // 替换双引号为单引号，避免编码问题
+  // eslint-disable-next-line quotes
   const formattedSvg = svg.replace(/"/g, "'");
   // 编码为Base64
   return `data:image/svg+xml;base64,${Buffer.from(formattedSvg).toString('base64')}`;
@@ -47,7 +49,7 @@ export function svgToBase64(svg: string) {
  * @returns 左trim后的字符串
  */
 export function ltrim(str: string, chars: string = '\\s'): string {
-  const pattern = chars ? `^[${chars}]+` : `^\\s+`;
+  const pattern = chars ? `^[${chars}]+` : '^\\s+';
   return str.replace(new RegExp(pattern), '');
 }
 /**
@@ -57,7 +59,7 @@ export function ltrim(str: string, chars: string = '\\s'): string {
  * @returns 右trim后的字符串
  */
 export function rtrim(str: string, chars: string = '\\s'): string {
-  const pattern = chars ? `[${chars}]+$` : `\\s+$`;
+  const pattern = chars ? `[${chars}]+$` : '\\s+$';
   return str.replace(new RegExp(pattern), '');
 }
 
@@ -77,7 +79,7 @@ export function strAttrToArray(attr: string): Record<string, any> {
     const [key, value] = line.split('=');
 
     if (key && value !== undefined) {
-      let attrVal: string | number | boolean = value;
+      let attrVal: any = value;
 
       // 处理布尔值
       if (value === 'false' || value === 'true') {

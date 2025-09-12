@@ -1,16 +1,15 @@
-import { Injectable } from "@nestjs/common"
-import { PrismaClient } from "@prisma/client";
+import { Injectable } from '@nestjs/common';
+import { BaAdmin, Prisma, PrismaClient } from '@prisma/client';
 // shared
 import { array_unique, ApiResponse } from '../../shared';
 // extend
-import { BaApi } from "../../extend/ba/BaApi";
+import { BaApi } from '../../extend/ba/BaApi';
 // core
-import { BaseCrudService, RequestDto } from "..";
+import { BaseCrudService, RequestDto } from '..';
 // modules
-import { AuthService } from "../../modules";
+import { AuthService } from '../../modules';
 // local
-import { QueryBuilderService } from "./api/query-builder.service";
-
+import { QueryBuilderService } from './api/query-builder.service';
 
 @Injectable()
 export abstract class CoreApiService extends BaApi {
@@ -42,12 +41,12 @@ export abstract class CoreApiService extends BaApi {
    * 将以下配置作为数据有序保证（用于无排序字段时、默认排序字段相同时继续保持数据有序），不设置将自动使用 pk 字段
    * @var string| id,desc 或 {'id': 'desc'}（有更方便的格式，此处为了保持和 $defaultSortField 属性的配置格式一致）
    */
-  protected orderGuarantee: string | Record<string, any> = null;
+  protected orderGuarantee: string | Record<string, Prisma.SortOrder> = null;
   /**
    * 默认排序
    * @var string| id,desc 或 {'id': 'desc'}
    */
-  protected defaultSortField: string | Record<string, any> = null;
+  protected defaultSortField: string | Record<string, Prisma.SortOrder> = null;
   /**
    * 快速搜索字段
    * @var string|array
@@ -62,12 +61,13 @@ export abstract class CoreApiService extends BaApi {
     public readonly crudService: BaseCrudService,
     public readonly coreAuthService: AuthService,
   ) {
-    super()
+    super();
     this.queryBuilderService = QueryBuilderService.getInstance();
   }
   protected get pk() {
     return this.crudService.pk;
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected get model(): any {
     return this.crudService.model;
   }
@@ -87,7 +87,7 @@ export abstract class CoreApiService extends BaApi {
   /**
    * 从 request 设置用户的属性值
    */
-  setUser(key: string, value: any) {
+  setUser(key: string, value: BaAdmin) {
     this.req.user[key] = value;
   }
 
@@ -115,13 +115,25 @@ export abstract class CoreApiService extends BaApi {
         // 取得分组内的所有管理员
         adminIds = await this.coreAuthService.getGroupAdmins(parentGroups);
       }
-    } else if ((typeof this.dataLimit === 'number') && this.dataLimit as number > 0) {
+    } else if (
+      typeof this.dataLimit === 'number' &&
+      (this.dataLimit as number) > 0
+    ) {
       // 在组内，可查看所有，不在组内，可查看自己的
-      adminIds = await this.coreAuthService.getGroupAdmins([this.dataLimit as number]);
-      return adminIds.includes(this.coreAuthService.getUser('id')) ? [] : [this.coreAuthService.getUser('id')];
-    } else if (this.dataLimit === 'allAuth' || this.dataLimit === 'allAuthAndOthers') {
+      adminIds = await this.coreAuthService.getGroupAdmins([
+        this.dataLimit as number,
+      ]);
+      return adminIds.includes(this.coreAuthService.getUser('id'))
+        ? []
+        : [this.coreAuthService.getUser('id')];
+    } else if (
+      this.dataLimit === 'allAuth' ||
+      this.dataLimit === 'allAuthAndOthers'
+    ) {
       // 取得拥有他所有权限的分组
-      const allAuthGroups = await this.coreAuthService.getAllAuthGroups(this.dataLimit);
+      const allAuthGroups = await this.coreAuthService.getAllAuthGroups(
+        this.dataLimit,
+      );
       // 取得分组内的所有管理员
       adminIds = await this.coreAuthService.getGroupAdmins(allAuthGroups);
     }

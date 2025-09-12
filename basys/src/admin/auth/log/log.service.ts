@@ -1,18 +1,26 @@
-import { REQUEST } from "@nestjs/core";
-import { Inject, Injectable } from "@nestjs/common";
+import { REQUEST } from '@nestjs/core';
+import { Inject, Injectable } from '@nestjs/common';
 // shared
-import { ApiResponse } from "../../../shared";
+import { ApiResponse } from '../../../shared';
 // core
-import { CoreApiService, RequestDto, PrismaService } from "../../../core";
+import { CoreApiService, RequestDto, PrismaService } from '../../../core';
 // modules
-import { AuthService } from "../../../modules";
+import { AuthService } from '../../../modules';
 // local
-import { AuthAdminLogAddDto, AuthAdminLogDelDto, AuthAdminLogEditDto } from "./dto";
-import { AdminLogCrudService } from "./log.crud";
+import {
+  AuthAdminLogAddDto,
+  AuthAdminLogDelDto,
+  AuthAdminLogEditDto,
+} from './dto';
+import { AdminLogCrudService } from './log.crud';
 
 @Injectable()
 export class AuthAdminLogService extends CoreApiService {
-  protected preExcludeFields: string | string[] = ['create_time', 'admin_id', 'username'];
+  protected preExcludeFields: string | string[] = [
+    'create_time',
+    'admin_id',
+    'username',
+  ];
   protected quickSearchField: string | string[] = ['title'];
   constructor(
     @Inject(REQUEST) public readonly req: RequestDto,
@@ -31,7 +39,7 @@ export class AuthAdminLogService extends CoreApiService {
   del(query: AuthAdminLogDelDto) {
     return {
       method: 'del',
-      query
+      query,
     };
   }
   getEdit(id: number) {
@@ -43,12 +51,17 @@ export class AuthAdminLogService extends CoreApiService {
   postEdit(body: AuthAdminLogEditDto) {
     return {
       method: 'postEdit',
-      body
+      body,
     };
   }
   async index(query) {
     const dataLimitAdminIds = await this.getDataLimitAdminIds();
-    const data = await this.queryBuilderService.queryBuilder(query, dataLimitAdminIds, this as any);
+    const data = await this.queryBuilderService.queryBuilder(
+      query,
+      dataLimitAdminIds,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      this as any,
+    );
     const isSuperAdmin = await this.coreAuthService.isSuperAdmin();
     if (!isSuperAdmin) {
       data.where.admin_id = this.req.user.id;
@@ -56,12 +69,12 @@ export class AuthAdminLogService extends CoreApiService {
     // return data;
     const list = await this.model.findMany(data);
     const count = await this.model.count({
-      where: data.where
+      where: data.where,
     });
     return ApiResponse.success('', {
       list,
       total: count,
-      remark: await this.coreAuthService.getRouteRemark()
+      remark: await this.coreAuthService.getRouteRemark(),
     });
   }
 }

@@ -9,4 +9,4 @@ import { AdminLogService } from './admin-log.service';
   providers: [AdminLogService],
   exports: [AdminLogService],
 })
-export class AdminLogModule { }
+export class AdminLogModule {}

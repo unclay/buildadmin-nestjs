@@ -1,9 +1,15 @@
-import { IsEnum, IsNumber, IsOptional, IsString, Matches } from "class-validator";
-import { AuthAdminAddDto } from "./";
+import {
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Matches,
+} from 'class-validator';
+import { AuthAdminAddDto } from './';
 
 export class AuthAdminEditDto extends AuthAdminAddDto {
   @IsNumber({}, { message: 'ID必须为数字' })
-  id: number
+  id: number;
 
   @IsOptional()
   @IsString()
@@ -14,5 +20,5 @@ export class AuthAdminEditDto extends AuthAdminAddDto {
 
   @IsOptional()
   @IsEnum(['disable', 'enable'], { message: 'status必须为disable或enable' })
-  status: 'disable' | 'enable'
+  status: 'disable' | 'enable';
 }

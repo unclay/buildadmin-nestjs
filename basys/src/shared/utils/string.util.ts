@@ -25,9 +25,12 @@ export function parse_name(name, ucfirst = true, separator = '_') {
     return result;
   } else {
     // 下划线转驼峰
-    let result = name.replace(new RegExp(`${separator}([a-zA-Z])`, 'g'), (_, char) => {
-      return char.toUpperCase();
-    });
+    let result = name.replace(
+      new RegExp(`${separator}([a-zA-Z])`, 'g'),
+      (_, char) => {
+        return char.toUpperCase();
+      },
+    );
 
     // 处理首字母
     if (ucfirst) {

@@ -8,7 +8,7 @@ export class IndexController {
   constructor(
     private readonly configService: ConfigService,
     private authService: AuthService,
-  ) { }
+  ) {}
   /**
    * [GET] /admin/index/index
    */
@@ -33,21 +33,23 @@ export class IndexController {
         upload: {
           maxSize: this.configService.get('site.upload.maxSize'),
           saveName: this.configService.get('site.upload.saveName'),
-          allowedSuffixes: this.configService.get('site.upload.allowedSuffixes'),
-          allowedMimeTypes: this.configService.get('site.upload.allowedMimeTypes')
+          allowedSuffixes: this.configService.get(
+            'site.upload.allowedSuffixes',
+          ),
+          allowedMimeTypes: this.configService.get(
+            'site.upload.allowedMimeTypes',
+          ),
         },
         cdnUrl: this.configService.get('site.cdnUrl'),
-        cdnUrlParams: this.configService.get('site.cdnUrlParams')
+        cdnUrlParams: this.configService.get('site.cdnUrlParams'),
       },
       terminal: {
         phpDevelopmentServer: false, // Node.js环境下不需要PHP开发服务器标识
-        npmPackageManager: process.env.NPM_PACKAGE_MANAGER || 'npm'
-      }
+        npmPackageManager: process.env.NPM_PACKAGE_MANAGER || 'npm',
+      },
     };
   }
 
   @Post('logout')
-  async logout() {
-
-  }
+  async logout() {}
 }

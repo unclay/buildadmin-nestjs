@@ -1,7 +1,7 @@
-import { Transform } from "class-transformer";
-import { IsArray, IsNumber, IsOptional } from "class-validator";
+import { Transform } from 'class-transformer';
+import { IsArray, IsNumber, IsOptional } from 'class-validator';
 // core
-import { TransformToNumber } from "../../../../core/decorators/dto.decorator";
+import { TransformToNumber } from '../../../../core/decorators/dto.decorator';
 
 export class AuthAdminLogQueryDto {
   @IsOptional()

@@ -1,10 +1,22 @@
-import { Body, Controller, Delete, Get, ParseIntPipe, Post, Query } from "@nestjs/common";
-import { RoutineConfigService } from "./config.service";
-import { RoutineConfigAddDto, RoutineConfigDelDto, RoutineConfigEditDto, RoutineConfigQueryDto } from "./dto";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  ParseIntPipe,
+  Post,
+  Query,
+} from '@nestjs/common';
+import { RoutineConfigService } from './config.service';
+import {
+  RoutineConfigAddDto,
+  RoutineConfigDelDto,
+  RoutineConfigEditDto,
+} from './dto';
 
 @Controller('admin/routine.config')
 export class RoutineConfigController {
-  constructor(private configService: RoutineConfigService) { }
+  constructor(private configService: RoutineConfigService) {}
   // 增删改查
   @Post('add')
   async add(@Body() body: RoutineConfigAddDto) {
@@ -27,7 +39,7 @@ export class RoutineConfigController {
   }
 
   @Get('index')
-  async index(@Query() query: RoutineConfigQueryDto) {
-    return await this.configService.index(query)
+  async index() {
+    return await this.configService.index();
   }
 }

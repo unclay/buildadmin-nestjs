@@ -1,4 +1,10 @@
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import {
+  CallHandler,
+  ExecutionContext,
+  Injectable,
+  NestInterceptor,
+} from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApiResponse } from '../../shared/api';
@@ -7,7 +13,7 @@ import { ApiResponse } from '../../shared/api';
 export class SerializerInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(
-      map(data => {
+      map((data) => {
         // 定义一个递归函数来处理对象中的BigInt
         const serializeBigInt = (obj: any): any => {
           if (obj === null || obj === undefined) {
@@ -19,7 +25,7 @@ export class SerializerInterceptor implements NestInterceptor {
           }
 
           if (Array.isArray(obj)) {
-            return obj.map(item => serializeBigInt(item));
+            return obj.map((item) => serializeBigInt(item));
           }
 
           if (typeof obj === 'object') {
@@ -39,7 +45,7 @@ export class SerializerInterceptor implements NestInterceptor {
           return data;
         }
         return serializeBigInt(data);
-      })
+      }),
     );
   }
 }

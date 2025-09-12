@@ -1,17 +1,18 @@
-import * as _ from "lodash";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import * as _ from 'lodash';
 import * as bcrypt from 'bcrypt';
-import { PrismaService } from "../../core";
+import { PrismaService } from '../../core';
 
 export class BaAuth {
-  constructor(public prisma: PrismaService) { }
+  constructor(public prisma: PrismaService) {}
   /**
    * 默认配置
    * @var array|string[]
    */
   protected config = {
-    'auth_group': 'baAdminGroup', // 用户组数据表名
-    'auth_group_access': 'baAdminGroupAccess', // 用户-用户组关系表
-    'auth_rule': 'baAdminRule', // 权限规则表
+    auth_group: 'baAdminGroup', // 用户组数据表名
+    auth_group_access: 'baAdminGroupAccess', // 用户-用户组关系表
+    auth_rule: 'baAdminRule', // 权限规则表
   };
   /**
    * 子菜单规则数组
@@ -31,10 +32,14 @@ export class BaAuth {
 
     for (const group of groups) {
       if (group.rules) {
-        const ruleIds = group.rules === '*' ? ['*'] : group.rules.split(',')
-          .map(id => id.trim())
-          .filter(id => id !== '')
-          .map(id => id === '*' ? '*' : parseInt(id));
+        const ruleIds =
+          group.rules === '*'
+            ? ['*']
+            : group.rules
+                .split(',')
+                .map((id) => id.trim())
+                .filter((id) => id !== '')
+                .map((id) => (id === '*' ? '*' : parseInt(id)));
         ids = [...ids, ...ruleIds];
       }
     }
@@ -62,23 +67,28 @@ export class BaAuth {
               id: true,
               pid: true,
               name: true,
-              rules: true
-            }
-          }
+              rules: true,
+            },
+          },
         },
         where: {
           uid: uid,
           group: {
-            status: 1
-          }
-        }
+            status: 1,
+          },
+        },
       });
 
       // 将嵌套的group数据平铺
-      userGroups = _.map(userGroups, item => _.pick({
-        ...item,
-        ...item.group,
-      }, ['uid', 'group_id', 'id', 'pid', 'name', 'rules']));
+      userGroups = _.map(userGroups, (item) =>
+        _.pick(
+          {
+            ...item,
+            ...item.group,
+          },
+          ['uid', 'group_id', 'id', 'pid', 'name', 'rules'],
+        ),
+      );
     } else {
       userGroups = await this.prisma[prismaName].findMany({
         select: {
@@ -88,28 +98,32 @@ export class BaAuth {
             select: {
               id: true,
               name: true,
-              rules: true
-            }
-          }
+              rules: true,
+            },
+          },
         },
         where: {
           id: uid,
           group: {
-            status: '1'
-          }
-        }
+            status: '1',
+          },
+        },
       });
 
       // 将嵌套的group数据平铺
-      userGroups = _.map(userGroups, item => _.pick({
-        ...item,
-        ...item.group,
-      }, ['uid', 'group_id', 'id', 'name', 'rules']));
+      userGroups = _.map(userGroups, (item) =>
+        _.pick(
+          {
+            ...item,
+            ...item.group,
+          },
+          ['uid', 'group_id', 'id', 'name', 'rules'],
+        ),
+      );
     }
 
     return userGroups;
   }
-
 
   /**
    * 获取菜单规则列表
@@ -145,13 +159,13 @@ export class BaAuth {
 
     const prismaName = this.config['auth_rule'];
     const where: any = {
-      status: 1
+      status: 1,
     };
 
     // 如果没有 * 则只获取用户拥有的规则
     if (!ids.includes('*')) {
       where.id = {
-        in: ids
+        in: ids,
       };
     }
 
@@ -172,15 +186,15 @@ export class BaAuth {
       where: where,
       orderBy: [
         {
-          weigh: 'desc'
+          weigh: 'desc',
         },
         {
-          id: 'asc'
-        }
-      ]
+          id: 'asc',
+        },
+      ],
     });
 
-    return rules.map(rule => {
+    return rules.map((rule) => {
       if (rule.keepalive) {
         rule.keepalive = rule.name;
       }

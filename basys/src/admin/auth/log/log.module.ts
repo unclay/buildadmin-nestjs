@@ -13,4 +13,4 @@ import { AdminLogCrudService } from './log.crud';
   controllers: [AuthAdminLogController],
   providers: [AuthAdminLogService, AdminLogCrudService],
 })
-export class AuthAdminLogModule { }
+export class AuthAdminLogModule {}

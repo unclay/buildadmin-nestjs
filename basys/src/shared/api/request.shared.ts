@@ -1,8 +1,7 @@
-import { RequestDto } from "../../core";
+import { RequestDto } from '../../core';
 
 export class RequestContext {
-  constructor(private readonly req: RequestDto) {
-  }
+  constructor(private readonly req: RequestDto) {}
 
   public isLogin() {
     return Boolean(this.id);

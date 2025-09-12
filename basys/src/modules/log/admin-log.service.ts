@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable } from '@nestjs/common';
 import { RequestDto } from 'src/core';
 import { ParamFilter } from '../../shared';
@@ -5,9 +6,7 @@ import { PrismaService } from '../../core/database/prisma.service';
 
 @Injectable()
 export class AdminLogService {
-  constructor(
-    private readonly prisma: PrismaService
-  ) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   protected $autoWriteTimestamp = true;
   protected $updateTime = false;
@@ -25,9 +24,7 @@ export class AdminLogService {
   protected urlIgnoreRegex: RegExp[] = [
     /^(.*)\/(select|index|logout|login|checkClickCaptcha)$/i,
   ];
-  protected desensitizationRegex: RegExp[] = [
-    /(password|salt|token)/i
-  ];
+  protected desensitizationRegex: RegExp[] = [/(password|salt|token)/i];
 
   public test() {
     console.log(123);
@@ -51,8 +48,10 @@ export class AdminLogService {
         where: { name: routeInfo.action_name },
         select: { title: true },
       });
-      const actionName = actionObj?.title ?? `Unknown(${routeInfo?.action})`
-      title = controllerObj?.title ? `${controllerObj.title}-${actionName}` : actionName;
+      const actionName = actionObj?.title ?? `Unknown(${routeInfo?.action})`;
+      title = controllerObj?.title
+        ? `${controllerObj.title}-${actionName}`
+        : actionName;
     }
     // 忽略的链接正则列表
     if (this.urlIgnoreRegex) {
@@ -63,8 +62,12 @@ export class AdminLogService {
       }
     }
     // 初始化 data
-    let data = req.body && Object.keys(req.body).length > 0 ? req.body : req.query;
-    data = ParamFilter.applyJson(data, 'trim,strip_tags,htmlspecialchars'.split(','))
+    let data =
+      req.body && Object.keys(req.body).length > 0 ? req.body : req.query;
+    data = ParamFilter.applyJson(
+      data,
+      'trim,strip_tags,htmlspecialchars'.split(','),
+    );
     data = this.desensitization(data);
 
     // 检查用户是否存在且有效
@@ -76,11 +79,13 @@ export class AdminLogService {
     // 验证管理员是否存在
     const adminExists = await this.prisma.baAdmin.findUnique({
       where: { id: req.user.id },
-      select: { id: true }
+      select: { id: true },
     });
 
     if (!adminExists) {
-      console.warn(`AdminLogService: 管理员 ID ${req.user.id} 不存在，无法记录日志`);
+      console.warn(
+        `AdminLogService: 管理员 ID ${req.user.id} 不存在，无法记录日志`,
+      );
       return;
     }
 
@@ -93,7 +98,7 @@ export class AdminLogService {
         data: typeof data !== 'string' ? JSON.stringify(data) : data,
         ip: req.ip,
         useragent: req.headers['user-agent']?.slice(0, 255) || '',
-      }
+      },
     });
   }
 
@@ -102,7 +107,9 @@ export class AdminLogService {
    * @param array|string $data
    * @return array|string
    */
-  protected desensitization(data: string | Record<string, any>): string | Record<string, any> {
+  protected desensitization(
+    data: string | Record<string, any>,
+  ): string | Record<string, any> {
     if (typeof data !== 'object' || !this.desensitizationRegex) {
       return data;
     }
@@ -111,7 +118,7 @@ export class AdminLogService {
     for (const [key, value] of Object.entries(result)) {
       for (const regex of this.desensitizationRegex) {
         if (regex.test(key)) {
-          result[key] = "***";
+          result[key] = '***';
         } else if (typeof value === 'object') {
           result[key] = this.desensitization(value);
         }

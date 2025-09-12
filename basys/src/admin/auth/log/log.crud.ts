@@ -1,6 +1,6 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable } from '@nestjs/common';
 // core
-import { BaseCrudService } from "../../../core";
+import { BaseCrudService } from '../../../core';
 
 @Injectable()
 export class AdminLogCrudService extends BaseCrudService {

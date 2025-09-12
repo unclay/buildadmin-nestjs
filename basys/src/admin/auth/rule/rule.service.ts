@@ -1,16 +1,27 @@
-import { Inject, Injectable } from "@nestjs/common";
-import { REQUEST } from "@nestjs/core";
+import { Inject, Injectable } from '@nestjs/common';
+import { REQUEST } from '@nestjs/core';
 // shared
-import { ApiResponse } from "../../../shared/api";
+import { ApiResponse } from '../../../shared/api';
 // core
-import { RequestDto, CoreApiService, PrismaService, CoreI18nService } from "../../../core";
+import {
+  RequestDto,
+  CoreApiService,
+  PrismaService,
+  CoreI18nService,
+} from '../../../core';
 // modules
-import { AuthService } from "../../../modules";
+import { AuthService } from '../../../modules';
 // extend base
-import { BaTree } from "../../../extend/ba";
+import { BaTree } from '../../../extend/ba';
 // local
-import { AuthRuleAddDto, AuthRuleDelDto, AuthRuleEditDto, AuthRuleIndexQueryDto } from "./dto";
-import { AdminRuleCrudService } from "./rule.crud";
+import {
+  AuthRuleAddDto,
+  AuthRuleDelDto,
+  AuthRuleEditDto,
+  AuthRuleIndexQueryDto,
+} from './dto';
+import { AdminRuleCrudService } from './rule.crud';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class AuthRuleService extends CoreApiService {
@@ -48,19 +59,22 @@ export class AuthRuleService extends CoreApiService {
         const groups = await ctx.baAdminGroup.findMany({
           where: {
             rules: {
-              not: '*'
-            }
-          }
+              not: '*',
+            },
+          },
         });
 
         // 遍历用户组检查权限
         for (const group of groups) {
           const rules = group.rules.split(',');
-          if (rules.includes(data.pid.toString()) && !rules.includes(result.id.toString())) {
+          if (
+            rules.includes(data.pid.toString()) &&
+            !rules.includes(result.id.toString())
+          ) {
             rules.push(result.id.toString());
             await ctx.baAdminGroup.update({
               where: { id: group.id },
-              data: { rules: rules.join(',') }
+              data: { rules: rules.join(',') },
             });
           }
         }
@@ -76,18 +90,23 @@ export class AuthRuleService extends CoreApiService {
     const subData = await this.model.findMany({
       where: {
         pid: {
-          in: ids
-        }
+          in: ids,
+        },
       },
       select: {
         id: true,
-        pid: true
-      }
+        pid: true,
+      },
     });
 
     for (const item of subData) {
       if (!ids.includes(item.id)) {
-        throw ApiResponse.error(this.i18n.t('common', 'Please delete the child element first, or use batch deletion'));
+        throw ApiResponse.error(
+          this.i18n.t(
+            'common',
+            'Please delete the child element first, or use batch deletion',
+          ),
+        );
       }
     }
 
@@ -99,7 +118,7 @@ export class AuthRuleService extends CoreApiService {
     this.checkAuth(row[this.dataLimitField]);
     return {
       row,
-    }
+    };
   }
 
   async postEdit(body: AuthRuleEditDto) {
@@ -110,12 +129,12 @@ export class AuthRuleService extends CoreApiService {
       if (newBody.pid > 0) {
         // 满足意图并消除副作用
         const parent = await ctx.baAdminGroup.findFirst({
-          where: { id: newBody.pid }
+          where: { id: newBody.pid },
         });
         if (parent?.pid === row.id) {
           result = await ctx.baAdminGroup.update({
             where: { id: parent.id },
-            data: { pid: 0 }
+            data: { pid: 0 },
           });
         }
       }
@@ -130,28 +149,28 @@ export class AuthRuleService extends CoreApiService {
     throw ApiResponse.error(this.i18n.t('common', 'Update failed'));
   }
 
-
   /**
    * 重写select方法
    * @throws Error
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async select(query: AuthRuleIndexQueryDto): Promise<any> {
     const data = await this.getMenus(query, {
       type: {
-        in: ['menu_dir', 'menu']
+        in: ['menu_dir', 'menu'],
       },
-      status: 1
+      status: 1,
     });
 
     if (this.req.assembleTree) {
       const treeData = await BaTree.getTreeArray(data, 'title');
       return {
-        options: await BaTree.assembleTree(treeData)
+        options: await BaTree.assembleTree(treeData),
       };
     }
 
     return {
-      options: data
+      options: data,
     };
   }
 
@@ -159,18 +178,18 @@ export class AuthRuleService extends CoreApiService {
    * 获取菜单列表
    * @throws Error
    */
-  async getMenus(query: AuthRuleIndexQueryDto, where: { [key: string]: any } = {}) {
-    const {
-      initKey = 'id',
-      quickSearch: keyword = '',
-    } = query;
+  async getMenus(
+    query: AuthRuleIndexQueryDto,
+    where: Prisma.BaAdminRuleWhereInput = {},
+  ) {
+    const { initKey = 'id', quickSearch: keyword = '' } = query;
     const initValue = (query.initValue || []).filter(Boolean);
     const ids = await this.coreAuthService.getRuleIds();
 
     // 如果没有 * 则只获取用户拥有的规则
     if (!ids.includes('*')) {
       where[initKey] = {
-        in: ids
+        in: ids,
       };
     }
 
@@ -178,8 +197,8 @@ export class AuthRuleService extends CoreApiService {
       const keywords = keyword.split(' ');
       for (const item of keywords) {
         where[this.quickSearchField] = {
-          contains: item
-        }
+          contains: item,
+        };
       }
     }
 
@@ -190,10 +209,13 @@ export class AuthRuleService extends CoreApiService {
     // 读取用户组所有权限规则
     const rules = await this.model.findMany({
       where,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       orderBy: this.queryBuilderService.queryOrderBuilder(query, this as any),
-    })
+    });
 
     // 如果要求树状，此处先组装好 children
-    return this.req.assembleTree ? await BaTree.getInstance().assembleChild(rules) : rules;
+    return this.req.assembleTree
+      ? await BaTree.getInstance().assembleChild(rules)
+      : rules;
   }
 }

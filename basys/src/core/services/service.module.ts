@@ -1,5 +1,5 @@
-import { Module } from "@nestjs/common";
-import { CoreSysConfigService } from "./";
+import { Module } from '@nestjs/common';
+import { CoreSysConfigService } from './';
 import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({

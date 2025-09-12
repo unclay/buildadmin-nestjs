@@ -18,7 +18,7 @@ export class LoginDto {
   @IsNotEmpty({ message: '密码不能为空' })
   @IsString({ message: '密码必须是字符串' })
   @Matches(/^(?!.*[&<>"'\n\r]).{6,32}$/, {
-    message: '密码长度需在6-32位之间，且不能包含特殊字符 &<>"\' 和换行符'
+    message: '密码长度需在6-32位之间，且不能包含特殊字符 &<>"\' 和换行符',
   })
   password: string;
 

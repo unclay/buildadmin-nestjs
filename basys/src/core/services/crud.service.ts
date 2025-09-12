@@ -1,5 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { PrismaClient } from '@prisma/client';
-import { InternalServerErrorException, Inject, Optional, OnModuleInit } from '@nestjs/common';
+import {
+  InternalServerErrorException,
+  Inject,
+  OnModuleInit,
+} from '@nestjs/common';
 // shared
 import { ApiResponse } from '../../shared';
 // core
@@ -8,18 +13,22 @@ import { CoreI18nService } from '../i18n';
 
 // 定义所有可能的 Prisma 模型委托类型
 type PrismaDelegate = {
-  [K in keyof PrismaClient]: PrismaClient[K] extends { findMany: any } ? PrismaClient[K] : never;
+  [K in keyof PrismaClient]: PrismaClient[K] extends { findMany: any }
+    ? PrismaClient[K]
+    : never;
 }[keyof PrismaClient];
 
 // 提取所有模型名称
 export type PrismaModelName = keyof {
-  [K in keyof PrismaClient as PrismaClient[K] extends PrismaDelegate ? K : never]: any;
+  [K in keyof PrismaClient as PrismaClient[K] extends PrismaDelegate
+    ? K
+    : never]: any;
 };
 
 type PrimaryKeyItem = {
-  column_name: string
-}
-type PrimaryKeys = PrimaryKeyItem[]
+  column_name: string;
+};
+type PrimaryKeys = PrimaryKeyItem[];
 
 export abstract class BaseCrudService implements OnModuleInit {
   public model;
@@ -42,7 +51,9 @@ export abstract class BaseCrudService implements OnModuleInit {
   }
   private get modelName() {
     if (!this.model?.name) {
-      throw new InternalServerErrorException('Model is not properly initialized');
+      throw new InternalServerErrorException(
+        'Model is not properly initialized',
+      );
     }
     return this.model.name;
   }
@@ -55,7 +66,10 @@ export abstract class BaseCrudService implements OnModuleInit {
     let tableName = modelName ?? this.modelName;
     if (!tableName) return [];
     // baAdminRule => ba_admin_rule
-    tableName = tableName.replace(/([A-Z])/g, '_$1').replace(/^_/, '').toLowerCase();
+    tableName = tableName
+      .replace(/([A-Z])/g, '_$1')
+      .replace(/^_/, '')
+      .toLowerCase();
     const result = await this.prisma.$queryRaw`
             SELECT a.attname AS column_name
             FROM pg_index i
@@ -74,7 +88,7 @@ export abstract class BaseCrudService implements OnModuleInit {
   /**
    * 删除
    * @param ids 主键ids
-   * @returns 
+   * @returns
    */
   public async del(ids: number[] = []): Promise<any> {
     const where = { [this.pk]: { in: ids } };
@@ -83,10 +97,10 @@ export abstract class BaseCrudService implements OnModuleInit {
     const { count } = await model.deleteMany({
       where: {
         [this.pk]: {
-          in: data.map(v => v.id)
-        }
-      }
-    })
+          in: data.map((v) => v.id),
+        },
+      },
+    });
     if (count) {
       return ApiResponse.success(this.i18n.t('common', 'Deleted successfully'));
     }
@@ -96,14 +110,14 @@ export abstract class BaseCrudService implements OnModuleInit {
   /**
    * 查询
    * @param id 主键id
-   * @returns 
+   * @returns
    */
   public async find(id: number): Promise<any> {
     const model = this.model as any;
     const row = await model.findUnique({
       where: {
         [this.pk]: id,
-      }
+      },
     });
     if (!row) {
       throw ApiResponse.error(this.i18n.t('common', 'Record not found'));

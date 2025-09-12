@@ -1,6 +1,14 @@
-import { Transform, Type } from "class-transformer";
-import { IsArray, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from "class-validator";
-import { TransformToNumber } from "../decorators";
+import { Transform, Type } from 'class-transformer';
+import {
+  IsArray,
+  IsIn,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
+import { TransformToNumber } from '../decorators';
 
 export class QueryBuilderSearchDto {
   @IsNotEmpty({ message: '字段名不能为空' })
@@ -10,13 +18,33 @@ export class QueryBuilderSearchDto {
 
   @IsNotEmpty({ message: '操作符不能为空' })
   @IsString({ message: '操作符必须是字符串' })
-  @IsIn(['=', '!=', '>', '<', '>=', '<=', 'LIKE', 'NOT LIKE', 'FIND_IN_SET', 'IN', 'NOT IN', 'NULL', 'NOT NULL', 'eq', 'RANGE', 'NOT RANGE'], {
-    message: '操作符必须是有效的比较运算符'
-  })
+  @IsIn(
+    [
+      '=',
+      '!=',
+      '>',
+      '<',
+      '>=',
+      '<=',
+      'LIKE',
+      'NOT LIKE',
+      'FIND_IN_SET',
+      'IN',
+      'NOT IN',
+      'NULL',
+      'NOT NULL',
+      'eq',
+      'RANGE',
+      'NOT RANGE',
+    ],
+    {
+      message: '操作符必须是有效的比较运算符',
+    },
+  )
   operator: string;
 
   @IsNotEmpty({ message: '值不能为空' })
-  @Transform(({ value, ...other }) => {
+  @Transform(({ value }) => {
     // 尝试转换数字和布尔值
     if (value === 'true') return true;
     if (value === 'false') return false;
@@ -28,7 +56,7 @@ export class QueryBuilderSearchDto {
   @IsOptional()
   @IsString({ message: '操作符必须是字符串' })
   @IsIn(['tag', 'datetime'], {
-    message: '渲染器必须是有效的类型'
+    message: '渲染器必须是有效的类型',
   })
   render: string;
 }

@@ -1,13 +1,29 @@
-import { Body, Controller, Delete, Get, ParseIntPipe, Post, Query } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  ParseIntPipe,
+  Post,
+  Query,
+} from '@nestjs/common';
 // core
-import { AuthService } from "../../../modules";
+import { AuthService } from '../../../modules';
 // local
-import { AuthRuleAddDto, AuthRuleDelDto, AuthRuleEditDto, AuthRuleIndexQueryDto } from "./dto";
-import { AuthRuleService } from "./rule.service";
+import {
+  AuthRuleAddDto,
+  AuthRuleDelDto,
+  AuthRuleEditDto,
+  AuthRuleIndexQueryDto,
+} from './dto';
+import { AuthRuleService } from './rule.service';
 
 @Controller('admin/auth.rule')
 export class AuthRuleController {
-  constructor(private ruleService: AuthRuleService, private coreAuthService: AuthService) { }
+  constructor(
+    private ruleService: AuthRuleService,
+    private coreAuthService: AuthService,
+  ) {}
   // 增删改查
 
   @Post('add')
@@ -38,12 +54,11 @@ export class AuthRuleController {
     return {
       list: await this.ruleService.getMenus(query),
       remark: await this.coreAuthService.getRouteRemark(),
-    }
+    };
   }
 
   @Get('test')
   async test() {
     return await this.ruleService.test();
   }
-
 }

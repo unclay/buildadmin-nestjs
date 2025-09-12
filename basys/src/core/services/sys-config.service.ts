@@ -2,14 +2,13 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../database';
 import { Cache, createCache } from 'cache-manager';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class CoreSysConfigService {
   private cache: Cache;
-  
-  constructor(
-    private prisma: PrismaService,
-  ) {
+
+  constructor(private prisma: PrismaService) {
     // 创建独立的系统配置缓存实例
     this.cache = createCache({
       ttl: 60 * 1000, // 60秒过期时间
@@ -26,17 +25,17 @@ export class CoreSysConfigService {
     if (!value) return;
     try {
       return JSON.parse(value);
-    } catch(err) {
+    } catch {
       return value;
     }
   }
-  private toString(json: any) {
-    if (!json) return '';
-    if (typeof json === 'string') return json;
-    return JSON.stringify(json);
-  }
-  public get(...args: any[]) {
-    return this.getSysConfig(...args);
+  // private toString(json: any) {
+  //   if (!json) return "";
+  //   if (typeof json === "string") return json;
+  //   return JSON.stringify(json);
+  // }
+  public get(name = '', group = '', concise = true) {
+    return this.getSysConfig(name, group, concise);
   }
   public async getSysConfig(name = '', group = '', concise = true) {
     if (name) {
@@ -51,30 +50,32 @@ export class CoreSysConfigService {
     }
 
     const key = group ? `group:${group}` : 'sys_config_all';
-    const findOptions = group ? ({
-      where: {
-        group,
-      },
-      select: {
-        name: true,
-        value: true,
-      }
-    }) : ({
-      orderBy: {
-        weigh: 'desc',
-      },
-    });
+    const findOptions = group
+      ? {
+          where: {
+            group,
+          },
+          select: {
+            name: true,
+            value: true,
+          },
+        }
+      : {
+          orderBy: {
+            weigh: 'desc',
+          },
+        };
     const configs = await this.getCache(key, async () => {
       const list = await this.prisma.baConfig.findMany({
-        ...findOptions as any,
+        ...(findOptions as Prisma.BaConfigFindManyArgs),
       });
-      return list.map(item => {
+      return list.map((item) => {
         return {
           ...item,
           value: this.toJson(item.value),
           content: this.toJson(item.content),
-        }
-      })
+        };
+      });
     });
     if (concise) {
       return configs.reduce((prev, cur) => {

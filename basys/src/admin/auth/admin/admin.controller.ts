@@ -1,19 +1,28 @@
-import { Body, Controller, DefaultValuePipe, Delete, Get, ParseIntPipe, Post, Query } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  DefaultValuePipe,
+  Delete,
+  Get,
+  ParseIntPipe,
+  Post,
+  Query,
+} from '@nestjs/common';
 // shared
-import { ApiResponse } from "../../../shared/api";
+import { ApiResponse } from '../../../shared/api';
 // local
-import { AuthAdminAddDto, AuthAdminDelDto, AuthAdminEditDto } from "./dto";
-import { AuthAdminService } from "./admin.service";
-import { I18nTranslate } from "../../../core";
+import { AuthAdminAddDto, AuthAdminDelDto, AuthAdminEditDto } from './dto';
+import { AuthAdminService } from './admin.service';
+import { I18nTranslate, I18nTranslateFunction } from '../../../core';
 
 @Controller('admin/auth.admin')
 export class AuthAdminController {
-  constructor(private authAdminService: AuthAdminService) { }
+  constructor(private authAdminService: AuthAdminService) {}
   // 增删改查
 
   /**
    * 新增管理员
-   * @returns 
+   * @returns
    */
   @Post('add')
   async add(@Body() body: AuthAdminAddDto) {
@@ -30,24 +39,27 @@ export class AuthAdminController {
 
   /**
    * 获取单个管理员信息
-   * @param id 
-   * @returns 
+   * @param id
+   * @returns
    */
   @Get('edit')
-  async getEdit(@Query('id', ParseIntPipe) id: number, @I18nTranslate() t: Function) {
+  async getEdit(
+    @Query('id', ParseIntPipe) id: number,
+    @I18nTranslate() t: I18nTranslateFunction,
+  ) {
     const record = await this.authAdminService.getEdit(id);
     if (!record) {
-      throw ApiResponse.error(t('user.Record not found'))
+      throw ApiResponse.error(t('user.Record not found'));
     }
     return {
-      row: record
-    }
+      row: record,
+    };
   }
 
   /**
    * 更新单个管理员信息
    * @param id
-   * @returns 
+   * @returns
    */
   @Post('edit')
   async postEdit(@Body() body: AuthAdminEditDto) {
@@ -56,9 +68,9 @@ export class AuthAdminController {
 
   /**
    * 获取管理员列表
-   * @param page 
-   * @param limit 
-   * @returns 
+   * @param page
+   * @param limit
+   * @returns
    */
   @Get('index')
   async getIndex(

@@ -1,13 +1,13 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
-import { Prisma } from "@prisma/client";
+import { BaAdmin, Prisma } from '@prisma/client';
 // common
-import { array_diff } from "../../shared";
+import { array_diff } from '../../shared';
 // extend
 import { BaAuth } from '../../extend/ba/Auth';
 // core
-import { PrismaService } from "../database";
-import { RequestDto } from "../dtos/request.dto";
+import { PrismaService } from '../database';
+import { RequestDto } from '../dtos/request.dto';
 
 @Injectable()
 export class CoreAuthService extends BaAuth {
@@ -23,13 +23,13 @@ export class CoreAuthService extends BaAuth {
    * 从 request 读取用户的属性值
    */
   getUser(userField: string) {
-    return (this.req as any).user[userField];
+    return this.req.user[userField];
   }
   /**
    * 从 request 设置用户的属性值
    */
-  setUser(key: string, value: any) {
-    (this.req as any).user[key] = value;
+  setUser(key: string, value: BaAdmin) {
+    this.req.user[key] = value;
   }
 
   /**
@@ -52,9 +52,13 @@ export class CoreAuthService extends BaAuth {
    * @param adminId 管理员id
    * @param password 未加密的密码
    * @param prisma 事务context，默认使用全局prisma实例，也可传外部事务的prisma实例（context）
-   * @returns 
+   * @returns
    */
-  resetPassword(adminId: number, password: string, prisma?: Prisma.TransactionClient) {
+  resetPassword(
+    adminId: number,
+    password: string,
+    prisma?: Prisma.TransactionClient,
+  ) {
     const ctx = prisma || this.prisma;
     return ctx.baAdmin.update({
       where: {
@@ -74,9 +78,9 @@ export class CoreAuthService extends BaAuth {
   async getAdminChildGroups() {
     const groupIds = await this.prisma.baAdminGroupAccess.findMany({
       where: {
-        uid: this.getUser('id')
-      }
-    })
+        uid: this.getUser('id'),
+      },
+    });
     const children = [];
     for (const group of groupIds) {
       this.getGroupChildGroups(group.group_id, children);
@@ -96,8 +100,8 @@ export class CoreAuthService extends BaAuth {
       where: {
         pid: groupId,
         status: 1,
-      }
-    })
+      },
+    });
     for (const item of childrenTemp) {
       children.push(item.id);
       this.getGroupChildGroups(item.id, children);
@@ -113,11 +117,11 @@ export class CoreAuthService extends BaAuth {
     const list = await this.prisma.baAdminGroupAccess.findMany({
       where: {
         group_id: {
-          in: groups
-        }
-      }
+          in: groups,
+        },
+      },
     });
-    return list.map(item => item.uid);
+    return list.map((item) => item.uid);
   }
 
   /**
@@ -127,12 +131,15 @@ export class CoreAuthService extends BaAuth {
    * @return array 分组数组
    * @throws Throwable
    */
-  async getAllAuthGroups(dataLimit: string | number, groupQueryWhere: { [key: string]: any } = { status: 1 }) {
+  async getAllAuthGroups(
+    dataLimit: string | number,
+    groupQueryWhere: Prisma.BaAdminGroupWhereInput = { status: 1 },
+  ) {
     // 当前管理员拥有的权限
     const rules = await this.getRuleIds();
     const allAuthGroups = [];
     const groups = await this.prisma.baAdminGroup.findMany({
-      where: groupQueryWhere
+      where: groupQueryWhere,
     });
     for (const group of groups) {
       if (group.rules === '*') {
@@ -149,7 +156,10 @@ export class CoreAuthService extends BaAuth {
         }
       }
       if (all) {
-        if (dataLimit === 'allAuth' || (dataLimit === 'allAuthAndOthers' && array_diff(rules, groupRules))) {
+        if (
+          dataLimit === 'allAuth' ||
+          (dataLimit === 'allAuthAndOthers' && array_diff(rules, groupRules))
+        ) {
           allAuthGroups.push(group.id);
         }
       }
@@ -161,31 +171,30 @@ export class CoreAuthService extends BaAuth {
   async getAdminGroupIds() {
     const adminGroups = await this.prisma.baAdminGroupAccess.findMany({
       where: {
-        uid: this.getUser('id')
+        uid: this.getUser('id'),
       },
       select: {
         group_id: true,
-      }
+      },
     });
-    return adminGroups.map(item => item.group_id);
+    return adminGroups.map((item) => item.group_id);
   }
-
 
   /**
    * 获取权限规则的 remark
-   * @returns 
+   * @returns
    */
   async getRouteRemark() {
     const adminRule = await this.prisma.baAdminRule.findFirst({
       where: {
         OR: [
           { name: this.req.routeInfo.controller_name },
-          { name: this.req.routeInfo.action_name }
-        ]
+          { name: this.req.routeInfo.action_name },
+        ],
       },
       select: {
-        remark: true
-      }
+        remark: true,
+      },
     });
 
     return adminRule?.remark || '';

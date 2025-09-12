@@ -5,6 +5,6 @@ import { AuthModule } from '../../modules';
 
 @Module({
   imports: [AuthModule],
-  controllers: [IndexController, LoginController]
+  controllers: [IndexController, LoginController],
 })
-export class IndexModule { }
+export class IndexModule {}

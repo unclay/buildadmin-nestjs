@@ -1,13 +1,29 @@
-import { Body, Controller, Delete, Get, ParseIntPipe, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  ParseIntPipe,
+  Post,
+  Query,
+} from '@nestjs/common';
 // core
 import { AuthService } from '../../../modules';
 // local
-import { AuthGroupAddDto, AuthGroupDelDto, AuthGroupEditDto, AuthGroupIndexQueryDto } from './dto';
+import {
+  AuthGroupAddDto,
+  AuthGroupDelDto,
+  AuthGroupEditDto,
+  AuthGroupIndexQueryDto,
+} from './dto';
 import { AuthGroupService } from './group.service';
 
 @Controller('admin/auth.group')
 export class AuthGroupController {
-  constructor(private authGroupService: AuthGroupService, private authService: AuthService) { }
+  constructor(
+    private authGroupService: AuthGroupService,
+    private authService: AuthService,
+  ) {}
   // 增删改查
   @Post('add')
   async postAdd(@Body() body: AuthGroupAddDto) {
@@ -39,6 +55,6 @@ export class AuthGroupController {
       remark: await this.authService.getRouteRemark(),
       group: await this.authService.getAdminGroupIds(),
       list: await this.authGroupService.getGroups(query),
-    }
+    };
   }
 }

@@ -1,10 +1,11 @@
 import * as bcrypt from 'bcrypt';
-import { HttpStatus, Injectable, Inject, forwardRef, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
 import { pick } from 'lodash';
 import { BaAuth } from '../../extend/ba/Auth';
+import { BaAdmin, Prisma } from '@prisma/client';
 // shared
 import { ApiResponse, extractTokenFromRequest } from '../../shared';
 // core
@@ -51,8 +52,8 @@ export class LoginService extends BaAuth {
 
   /**
    * 检查请求是否登录，token检查专用，用于账密登录前的token检查
-   * @param req 
-   * @returns 
+   * @param req
+   * @returns
    */
   public async isLogin(req: Request) {
     try {
@@ -86,7 +87,7 @@ export class LoginService extends BaAuth {
 
   async loginWithRequest(req: Request, username: string, password: string) {
     // 需要先将 Request 转换为 any 类型来访问 body 属性
-    return this.login(username, password, (req as any).body?.keep, req.ip);
+    return this.login(username, password, req.body?.keep, req.ip);
   }
   // 校验用户，并返回用户信息
   async login(username: string, password: string, keep: boolean, ip: string) {
@@ -103,11 +104,16 @@ export class LoginService extends BaAuth {
       throw ApiResponse.error(tCommon('Account disabled'));
     }
     const lastLoginTime = admin.last_login_time?.getTime();
-    const adminLoginRetry = this.configService.get('buildadmin.admin_login_retry');
+    const adminLoginRetry = this.configService.get(
+      'buildadmin.admin_login_retry',
+    );
 
     if (adminLoginRetry && lastLoginTime) {
       // 重置失败次数
-      if (admin.login_failure > 0 && Math.floor(Date.now() / 1000) - Number(lastLoginTime) >= 86400) {
+      if (
+        admin.login_failure > 0 &&
+        Math.floor(Date.now() / 1000) - Number(lastLoginTime) >= 86400
+      ) {
         this.prisma.baAdmin.update({
           where: {
             id: admin.id,
@@ -119,7 +125,7 @@ export class LoginService extends BaAuth {
       }
 
       if (admin.login_failure >= adminLoginRetry) {
-        throw ApiResponse.error(('Please try again after 1 day'));
+        throw ApiResponse.error('Please try again after 1 day');
       }
     }
 
@@ -157,24 +163,24 @@ export class LoginService extends BaAuth {
    * 管理员登录失败
    * @return bool
    */
-  async loginFailed(admin: any, ip: string) {
+  async loginFailed(admin: BaAdmin, ip: string) {
     await this.prisma.baAdmin.update({
       where: { id: admin.id },
       data: {
         login_failure: admin.login_failure + 1,
         last_login_time: new Date(),
-        last_login_ip: ip
+        last_login_ip: ip,
       },
     });
   }
 
-  async loginSuccessful(admin: any, ip: string, token: string) {
+  async loginSuccessful(admin: BaAdmin, ip: string, token: string) {
     await this.prisma.baAdmin.update({
       where: { id: admin.id },
       data: {
-        login_failure: 0,          // 重置登录失败次数
+        login_failure: 0, // 重置登录失败次数
         last_login_time: new Date(),
-        last_login_ip: ip
+        last_login_ip: ip,
       },
     });
     await this.prisma.baToken.create({
@@ -183,13 +189,13 @@ export class LoginService extends BaAuth {
         type: this.TOKEN_TYPE,
         user_id: admin.id,
         // create_time: Math.floor(Date.now() / 1000),
-        expire_time: new Date(Date.now() + this.configService.get('buildadmin.admin_token_keep_time') * 1000),
+        expire_time: new Date(
+          Date.now() +
+            this.configService.get('buildadmin.admin_token_keep_time') * 1000,
+        ),
       },
     });
   }
-
-
-
 
   /**
    * 获取拥有 `所有权限` 的分组
@@ -199,13 +205,17 @@ export class LoginService extends BaAuth {
    * @return array 分组数组
    * @throws Throwable
    */
-  async getAllAuthGroups(uid: number, dataLimit: string, groupQueryWhere: any = { status: 1 }): Promise<number[]> {
+  async getAllAuthGroups(
+    uid: number,
+    dataLimit: string,
+    groupQueryWhere: Prisma.BaAdminGroupWhereInput = { status: 1 },
+  ): Promise<number[]> {
     // 当前管理员拥有的权限
     const rules = await this.getRuleIds(uid);
     const allAuthGroups: number[] = [];
 
     const groups = await this.prisma.baAdminGroup.findMany({
-      where: groupQueryWhere
+      where: groupQueryWhere,
     });
 
     for (const group of groups) {
@@ -224,9 +234,11 @@ export class LoginService extends BaAuth {
       }
 
       if (all) {
-        if (dataLimit === 'allAuth' ||
+        if (
+          dataLimit === 'allAuth' ||
           (dataLimit === 'allAuthAndOthers' &&
-            rules.filter(rule => !groupRules.includes(rule)).length > 0)) {
+            rules.filter((rule) => !groupRules.includes(rule)).length > 0)
+        ) {
           allAuthGroups.push(group.id);
         }
       }
@@ -244,10 +256,7 @@ export class LoginService extends BaAuth {
     return rules.includes('*');
   }
 
-
   getMenus(uid: number) {
     return super.getMenus(uid);
   }
-
-
 }

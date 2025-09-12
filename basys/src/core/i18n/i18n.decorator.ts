@@ -18,13 +18,24 @@ export const I18nLang = createParamDecorator(
  * 使用方式: @I18nTranslate() t: I18nTranslator 或 @I18nTranslate('common') t: I18nTranslator
  * 返回的函数会自动使用当前请求的语言
  */
+// 定义翻译函数的类型
+export type I18nTranslateFunction = (
+  key: string,
+  args?: (string | Record<string, string>)[],
+  lang?: string,
+) => string;
+
 export const I18nTranslate = createParamDecorator(
-  (namespace: I18nNamespace, ctx: ExecutionContext) => {
+  (namespace: I18nNamespace, ctx: ExecutionContext): I18nTranslateFunction => {
     const i18n = I18nContext.current(ctx);
     const currentLang = i18n?.lang || 'zh-cn';
-    
+
     // 返回一个自动使用当前语言的翻译函数
-    return (key: string, args?: Record<string, any>, lang?: string) => {
+    return (
+      key: string,
+      args?: (string | Record<string, string>)[],
+      lang?: string,
+    ) => {
       if (!i18n?.service?.t || !key) return key;
       // 如果namespace存在，添加命名空间前缀
       const spaceKey = namespace ? `${namespace}.${key}` : key;

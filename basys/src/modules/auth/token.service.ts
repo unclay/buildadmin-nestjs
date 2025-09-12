@@ -1,8 +1,8 @@
-import { HttpStatus, Inject, Injectable, Scope } from "@nestjs/common";
-import { JwtService } from "@nestjs/jwt";
-import { ConfigService } from "@nestjs/config";
-import { ApiResponse } from "../../shared/api";
-import { PrismaService } from "../../core/database";
+import { HttpStatus, Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { ApiResponse } from '../../shared/api';
+import { PrismaService } from '../../core/database';
 
 @Injectable()
 export class TokenService {
@@ -37,7 +37,6 @@ export class TokenService {
       },
     });
   }
-
 
   private tokenExpirationCheck(expireTime: number) {
     if (expireTime && expireTime <= Math.floor(Date.now() / 1000)) {
