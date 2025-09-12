@@ -1,23 +1,50 @@
-import { IsEnum, IsNotEmpty, IsNumber } from "class-validator"
+import { IsNotEmpty, ValidateIf } from "class-validator"
 // core
-import { TransformToNumber } from "../../../../core";
+import { i18nValidationNamespace } from "../../../../core";
 
 export class RoutineConfigAddDto {
-    @IsEnum(['tab', 'link', 'iframe'], { message: 'type 必须是 tab,link,iframe 之一' })
-    type: string
+  @IsNotEmpty({
+    message: '名称不能为空',
+    context: {
+      i18n: i18nValidationNamespace
+    }
+  })
+  name: string;
 
-    @IsEnum([0, 1], { message: "keepalive 必须是0或1" })
-    @TransformToNumber()
-    keepalive: 0 | 1
+  @IsNotEmpty({
+    message: '分组不能为空',
+    context: {
+      i18n: i18nValidationNamespace
+    }
+  })
+  group: string;
 
-    @IsEnum([0, 1], { message: "status 必须是0或1" })
-    @TransformToNumber()
-    status: 0 | 1
+  @IsNotEmpty({
+    message: '标题不能为空',
+    context: {
+      i18n: i18nValidationNamespace
+    }
+  })
+  title: string;
 
-    @IsNumber({}, { message: 'pid必须是数字' })
-    @TransformToNumber()
-    pid: number
+  tip: string;
 
-    @IsNotEmpty({ message: 'title 不能为空' })
-    title: string
+  @IsNotEmpty({
+    message: '类型不能为空',
+    context: {
+      i18n: i18nValidationNamespace
+    }
+  })
+  type: string;
+
+  @ValidateIf((o) => o.value !== undefined)
+  value?: string;
+
+  @ValidateIf((o) => o.content !== undefined)
+  content?: string;
+
+  rule: string;
+  extend: string;
+  allow_del: number;
+  weigh: number;
 }

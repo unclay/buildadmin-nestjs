@@ -20,6 +20,7 @@ export class RoutineConfigService extends CoreApiService {
     webAdminBase: 'web/src/router/static/adminBase.ts',
     backendEntranceStub: 'app/admin/library/stubs/backendEntrance.stub',
   };
+  protected preExcludeFields = []
   constructor(
     @Inject(REQUEST) public readonly req: RequestDto,
     public prisma: PrismaService,
@@ -34,17 +35,19 @@ export class RoutineConfigService extends CoreApiService {
   t(key: string, ...args: any[]) {
     return this.i18n.t('routine.config', key, ...args);
   }
-  add(body: RoutineConfigAddDto) {
-    return {
-      method: 'add',
-      body,
-    };
+  tCommon(key: string, ...args: any[]) {
+    return this.i18n.t('common', key, ...args);
+  }
+  async add(body: RoutineConfigAddDto) {
+    const data = this.excludeFields(body);
+    const result = await this.crudService.create(data);
+    if (result) {
+      return ApiResponse.success(this.tCommon('Added successfully'));
+    }
+    throw ApiResponse.error(this.tCommon('No rows were added'));
   }
   del(query: RoutineConfigDelDto) {
-    return {
-      method: 'del',
-      query
-    };
+    return this.crudService.del(query.ids);
   }
   getEdit(id: number) {
     return {

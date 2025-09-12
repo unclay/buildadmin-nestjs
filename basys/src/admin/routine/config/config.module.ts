@@ -10,4 +10,4 @@ import { AuthModule } from '../../../modules';
   controllers: [RoutineConfigController],
   providers: [RoutineConfigCrudService, RoutineConfigService]
 })
-export class RoutineConfigModule {}
+export class RoutineConfigModule { }
