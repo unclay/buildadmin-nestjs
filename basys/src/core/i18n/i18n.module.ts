@@ -6,14 +6,28 @@ import {
   HeaderResolver,
 } from 'nestjs-i18n';
 import * as path from 'path';
+import * as fs from 'fs';
 import { CoreI18nService } from './i18n.service';
+
+// 动态确定 i18n 文件路径
+function getI18nPath(): string {
+  const cwd = process.cwd();
+  const distPath = path.join(cwd, 'dist/i18n/');
+  const srcPath = path.join(cwd, 'src/i18n/');
+  
+  // 优先使用 dist 路径（生产环境），如果不存在则使用 src 路径（开发环境）
+  if (fs.existsSync(distPath)) {
+    return distPath;
+  }
+  return srcPath;
+}
 
 @Module({
   imports: [
     I18nModule.forRoot({
       fallbackLanguage: 'zh-cn',
       loaderOptions: {
-        path: path.join(process.cwd(), 'src/i18n/'),
+        path: getI18nPath(),
         watch: true,
       },
       resolvers: [
