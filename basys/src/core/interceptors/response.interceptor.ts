@@ -29,6 +29,9 @@ export class ResponseInterceptor implements NestInterceptor {
     // return next.handle();
     return next.handle().pipe(
       map((data) => {
+        if (response.statusCode === 204) {
+          return data;
+        }
         const apiData = ApiResponse.from(data);
         // 已封装的统一数据格式
         const {
