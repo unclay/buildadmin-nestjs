@@ -37,6 +37,6 @@ async function bootstrap() {
 
   // 全局守卫
   app.useGlobalGuards(new AuthGuard(app.get(Reflector)));
-  await app.listen(process.env.PORT ?? 18000, '0.0.0.0');
+  await app.listen(process.env.PORT ?? 18000, process.env.HOST ?? '0.0.0.0');
 }
 bootstrap();
