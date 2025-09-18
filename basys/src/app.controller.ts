@@ -14,8 +14,7 @@ export class AppController {
 
   @Get('/health')
   @Public()
-  @HttpCode(204)
-  getHealth(): void {
-    // 健康检查接口，返回 204 状态码
+  getHealth(): string {
+    return 'ok';
   }
 }

@@ -17,3 +17,20 @@ refactor: 用于重构代码，例如修改代码结构、变量名、函数名�
 perf: 用于优化性能，例如提升代码的性能、减少内存占用等；
 test: 用于修改测试用例，例如添加、删除、修改代码的测试用例等。
 ```
+
+
+## 命令集合
+
+```bash
+npx prisma migrate reset
+npx prisma migrate dev --name init_admin
+npx prisma generate
+npm run seed
+# 查看数据库
+npx prisma studio
+# docker
+docker-compose down && docker-compose build --no-cache && docker-compose up -d
+docker-compose up -d --build
+docker-compose ps
+docker-compose inspect [id/name]
+```
