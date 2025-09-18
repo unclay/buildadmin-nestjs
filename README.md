@@ -6,42 +6,36 @@
 
 前端采用buildadmin，后端采用nestjs自写
 
+## 功能实现
+
+- 底层功能
+    - [x] nestjs
+    - [x] prisma + postgresql 数据库
+    - [x] config 公共配置模块
+    - [x] api 统一返回格式
+    - [x] dto 参数校验
+    - [x] 授权登录（JWT）
+    - [x] 国际化
+    - [x] dockerfile + docker-compose 部署
+    - [ ] redis 缓存
+    - [ ] CICD持续集成
+- 业务功能
+    - [x] 角色组管理
+    - [x] 管理员管理
+    - [x] 菜单规则管理
+    - [x] 管理员日志管理
+    - [x] 系统配置
+    - [ ] 个人资料
+    - [ ] 控制台
+    - [ ] 会员管理
+    - [ ] 会员分组管理
+    - [ ] 会员规则管理
+    - [ ] 会员余额管理
+    - [ ] 会员积分管理
+    - [ ] CRUD模块
+
+
 ## 开发引导
-
-### 数据库更新
-
-```bash
-# 迁移数据库
-npx prisma migrate dev --name [operate_name]
-# 生成客户端
-pnpm prisma generate
-```
-
-### 目录说明
-
-- core
-    - 被继承的类，显式访问修饰符：public protected private
-    - 依赖 nestjs 模块，如 controller service
-    - 数据库操作
-- common
-    - 不依赖 nestjs 模块
-    - 非业务逻辑处理
-    - 纯数据逻辑处理
-    - 接口返回值格式化
-
-### 模块说明
-
-#### CoreApiService 与 BaApi
-
-- CoreApiService
-    - 依赖 nestjs 模块
-    - 依赖 prisma 模块，数据库操作
-    - 依赖 request 对象，网络请求
-    - 例如：获取登录用户信息、操作权限判断
-- BaApi
-    - 可依赖 lodash、dayjs 等非业务模块
-    - 不依赖任何业务模块（如 request 对象、数据库操作等）
-    - 纯逻辑处理
 
 ### 接口规范
 
@@ -72,8 +66,7 @@ export class AuthAdminController {
 }
 ```
 
-### nestjs 学习
-
+### nestjs 模块流向
 
 ```graph
 graph LR
@@ -94,33 +87,26 @@ src/
 ├── app.module.ts              # 根模块，导入CoreModule和特性模块
 ├── main.ts                    # 入口文件
 │
+├── admin/                     # 接口路由
+├── api/                       # 接口路由
+│
+├── config/                    # 公共配置模块
+├── i18n/                      # 国际化
+│
 ├── core/                      # 【核心】应用基础设施，全局单例
 │   ├── core.module.ts         # 注册所有全局核心提供者，并被AppModule导入
-│   ├── filters/               # 全局异常过滤器
-│   ├── interceptors/          # 全局拦截器（如日志、超时、响应转换）
-│   ├── guards/                # 全局守卫（如RBAC权限守卫）
-│   ├── decorators/            # 全局通用的装饰器（如@CurrentUser）
-│   ├── middleware/            # 全局中间件
-│   ├── services/              # 全局单例服务（如ConfigService, AppLogger）
-│   └── database/              # 数据库连接（TypeORM/Prisma连接池）
+│   ├── filters/               # 全局异常过滤器（异常api格式化）
+│   ├── interceptors/          # 全局拦截器（如操作日志、日期时间转换、正常api格式化）
+│   ├── decorators/            # 全局通用的装饰器（如@RouteTitle、@[DTO]装饰器）
+│   ├── middleware/            # 全局中间件（如路由信息处理、访问时间）
+│   ├── services/              # 全局单例服务（如crud、api、auth、sys-config）
+│   └── database/              # 数据库连接（Prisma连接池/redis缓存）
 │
 ├── shared/                    # 【共享】可重用的功能模块库（按需导入）
-│   ├── database/              # 数据库抽象模块（提供Repository等）
-│   │   ├── database.module.ts
-│   │   └── ...
-│   ├── cache/                 # 缓存模块
-│   ├── mail/                  # 邮件发送模块
-│   ├── upload/                # 文件上传模块
-│   └── utils/                 # 纯工具函数
+│   ├── api                    # 接口相关的工具，例如返回值格式
+│   └── utils/                 # 纯工具函数，
 │
-├── modules/                   # 业务特性模块
-│   ├── auth/
-│   ├── user/
-│   ├── order/
-│   └── product/
-│
-└── common/                    # （可选）真正的通用类型、常量、DTO基类
-    ├── dtos/
-    ├── constants/
-    └── types/
+└── modules/                   # 业务特性模块
+    ├── auth/                  # 授权登录
+    └── log/                   # 管理员操作日志
 ```
