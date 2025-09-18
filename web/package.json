@@ -7,6 +7,7 @@
         "dev": "esno ./src/utils/build.ts && vite --force",
         "build": "vite build && esno ./src/utils/build.ts",
         "build:localdocker": "vite build --mode localdocker && esno ./src/utils/build.ts",
+        "build:nas": "vite build --mode nas && esno ./src/utils/build.ts",
         "lint": "eslint .",
         "lint-fix": "eslint --fix .",
         "format": "npx prettier --write .",

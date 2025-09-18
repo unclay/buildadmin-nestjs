@@ -1,0 +1,42 @@
+FROM node:22-alpine AS builder_dev_deps
+WORKDIR /app
+COPY package*.json pnpm-lock.yaml ./
+RUN corepack enable
+RUN pnpm config set store-dir /root/pnpm-store
+RUN --mount=type=cache,id=pnpm-store,target=/root/pnpm-store \
+    pnpm install --frozen-lockfile
+
+# 第二阶段：构建应用
+FROM builder_dev_deps AS builder_app
+COPY . .
+RUN pnpm run build:nas
+
+# 第三阶段：生产环境 - 使用 nginx 服务静态文件
+FROM nginx:alpine AS app
+
+# 复制构建产物到 nginx 默认目录
+COPY --from=builder_app /app/dist /usr/share/nginx/html
+
+# 创建 nginx 配置文件
+RUN echo 'server {' > /etc/nginx/conf.d/default.conf && \
+    echo '    listen 80;' >> /etc/nginx/conf.d/default.conf && \
+    echo '    server_name localhost;' >> /etc/nginx/conf.d/default.conf && \
+    echo '    root /usr/share/nginx/html;' >> /etc/nginx/conf.d/default.conf && \
+    echo '    index index.html;' >> /etc/nginx/conf.d/default.conf && \
+    echo '    location / {' >> /etc/nginx/conf.d/default.conf && \
+    echo '        try_files $uri $uri/ /index.html;' >> /etc/nginx/conf.d/default.conf && \
+    echo '    }' >> /etc/nginx/conf.d/default.conf && \
+    echo '    # 静态资源缓存配置' >> /etc/nginx/conf.d/default.conf && \
+    echo '    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {' >> /etc/nginx/conf.d/default.conf && \
+    echo '        expires 1y;' >> /etc/nginx/conf.d/default.conf && \
+    echo '        add_header Cache-Control "public, immutable";' >> /etc/nginx/conf.d/default.conf && \
+    echo '    }' >> /etc/nginx/conf.d/default.conf && \
+    echo '}' >> /etc/nginx/conf.d/default.conf
+
+# 暴露端口
+EXPOSE 80
+
+# 启动 nginx
+CMD ["nginx", "-g", "daemon off;"]
+
+
