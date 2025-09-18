@@ -14,7 +14,7 @@
     - [x] config 公共配置模块
     - [x] api 统一返回格式
     - [x] dto 参数校验
-    - [x] 授权登录（JWT）
+    - [x] 授权登录（JWT策略）
     - [x] 国际化
     - [x] dockerfile + docker-compose 部署
     - [ ] redis 缓存
@@ -36,6 +36,15 @@
 
 
 ## 开发引导
+
+### 授权逻辑
+
+本地登录策略 + JWT认证策略
+
+- LoginLocalStrategy : 处理用户名密码登录
+- LoginJwtStrategy : 处理 Token 验证
+- AuthGuard : 全局守卫控制路由访问
+- @Public() 装饰器标记公共路由
 
 ### 接口规范
 
