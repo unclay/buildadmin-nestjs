@@ -5,7 +5,7 @@ export default registerAs(
   'buildadmin',
   (): BuildAdminConfig => ({
     // 允许跨域访问的域名
-    cors_request_domain: 'localhost:1818,127.0.0.1:1818,192.168.21.25:11818',
+    cors_request_domain: '192.168.21.25:11818,localhost:1818,127.0.0.1:1818',
     // 是否开启会员登录验证码
     user_login_captcha: true,
     // 是否开启管理员登录验证码
