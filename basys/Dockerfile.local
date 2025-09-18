@@ -1,8 +1,9 @@
 # 第一阶段：构建依赖（打包环境）
 FROM node:22-alpine AS builder_dev_deps
 WORKDIR /app
-RUN corepack enable
-RUN pnpm config set store-dir /root/pnpm-store
+RUN corepack enable && \
+    pnpm config set store-dir /root/pnpm-store && \
+    pnpm config set registry https://registry.npmmirror.com/
 COPY package*.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/root/pnpm-store \
     pnpm install --frozen-lockfile
@@ -10,8 +11,9 @@ RUN --mount=type=cache,id=pnpm-store,target=/root/pnpm-store \
 # 第一阶段：构建依赖（生产环境）
 FROM node:22-alpine AS builder_prod_deps
 WORKDIR /app
-RUN corepack enable
-RUN pnpm config set store-dir /root/pnpm-store
+RUN corepack enable && \
+    pnpm config set store-dir /root/pnpm-store && \
+    pnpm config set registry https://registry.npmmirror.com/
 COPY package*.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/root/pnpm-store \
     pnpm install --frozen-lockfile --prod
