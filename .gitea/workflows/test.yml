@@ -1,0 +1,43 @@
+name: 'test'
+
+# 复用工作流：只能被其他工作流调用，不能通过事件调用
+on: workflow_call
+
+permissions:
+  contents: read # to fetch code (actions/checkout)
+
+jobs:
+  basys-test:
+    # 镜像：ubuntu-latest -> catthehacker/ubuntu:act-latest
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./basys
+    steps:
+      - uses: actions/checkout@v5
+
+      # 解决github访问问题
+      - name: Update github hosts
+        run: |
+          echo "140.82.113.3 github.com" >> /etc/hosts
+          echo "14.19.52.225 raw.githubusercontent.com" >> /etc/hosts
+
+      - name: Install pnpm action setup
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.16.1
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          # 版本控制
+          node-version-file: '.node-version'
+          cache: 'pnpm'
+          cache-dependency-path: './basys/pnpm-lock.yaml'
+
+      - run: pnpm install
+
+      - name: Run lint tests
+        run: pnpm run test:lint
+
+# 参考文献：https://github.com/vuejs/core/blob/main/.github/workflows/test.yml

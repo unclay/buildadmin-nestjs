@@ -18,20 +18,23 @@ import { I18nValidationPipe } from 'nestjs-i18n';
 async function bootstrap() {
   // 中间件 → 守卫 → 拦截器 → 控制器
   const app = await NestFactory.create(AppModule);
-  
+
   // 获取配置服务
   const configService = app.get(ConfigService);
-  
+
   // 从配置中读取CORS域名
-  const corsRequestDomain = configService.get<string>('buildadmin.cors_request_domain', 'localhost,127.0.0.1');
-  const allowedOrigins = corsRequestDomain.split(',').map(domain => {
+  const corsRequestDomain = configService.get<string>(
+    'buildadmin.cors_request_domain',
+    'localhost,127.0.0.1',
+  );
+  const allowedOrigins = corsRequestDomain.split(',').map((domain) => {
     // 如果域名不包含协议，则添加http://前缀
     if (!domain.includes('://')) {
       return `http://${domain.trim()}`;
     }
     return domain.trim();
   });
-  
+
   // 跨域配置
   app.enableCors({
     origin: allowedOrigins,

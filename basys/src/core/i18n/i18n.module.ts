@@ -14,7 +14,7 @@ function getI18nPath(): string {
   const cwd = process.cwd();
   const distPath = path.join(cwd, 'dist/i18n/');
   const srcPath = path.join(cwd, 'src/i18n/');
-  
+
   // 优先使用 dist 路径（生产环境），如果不存在则使用 src 路径（开发环境）
   if (fs.existsSync(distPath)) {
     return distPath;
