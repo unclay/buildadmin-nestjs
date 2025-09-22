@@ -124,4 +124,20 @@ export abstract class BaseCrudService implements OnModuleInit {
     }
     return row;
   }
+
+  /**
+   * 更新
+   * @param id 主键id
+   * @param data 更新数据
+   * @returns 
+   */
+  public async update(id: number, data: Record<string, any>): Promise<any> {
+    const model = this.model as any;
+    return await model.update({
+      where: {
+        [this.pk]: id,
+      },
+      data,
+    });
+  }
 }

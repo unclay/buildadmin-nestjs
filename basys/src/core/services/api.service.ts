@@ -81,8 +81,8 @@ export abstract class CoreApiService extends BaApi {
   /**
    * 从 request 读取用户的属性值
    */
-  getUser(key: string) {
-    return this.req.user[key];
+  getUser(key?: string) {
+    return this.coreAuthService.getUser(key);
   }
   /**
    * 从 request 设置用户的属性值

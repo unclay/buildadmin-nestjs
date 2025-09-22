@@ -21,7 +21,8 @@ export class AuthService extends BaAuth {
   /**
    * 从 request 读取用户的属性值
    */
-  getUser(userField: string) {
+  getUser(userField?: string) {
+    if (!userField) return this.req.user;
     return this.req.user[userField];
   }
   /**

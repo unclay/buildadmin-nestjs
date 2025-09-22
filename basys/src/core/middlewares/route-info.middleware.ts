@@ -6,9 +6,10 @@ import { RequestDto } from '../dtos/request.dto';
 export class RouteInfoMiddleware implements NestMiddleware {
   use(req: RequestDto, res: Response, next: NextFunction) {
     // 解析路由信息
-    const pathStr = req.baseUrl.toLowerCase();
+    const pathStr = req.baseUrl;
     const pathParts = pathStr.split('/').filter(Boolean);
-    const [module = '', controller = '', action = ''] = pathParts;
+    const [module = '', controllerRaw = '', action = ''] = pathParts;
+    const controller = controllerRaw.replace(/\.[A-Z]/, (match) => match.toLowerCase());
 
     // 挂载到req对象
     req.routeInfo = {
