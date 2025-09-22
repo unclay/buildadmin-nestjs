@@ -1,0 +1,12 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - '**'
+    tags:
+      - '!**'
+
+jobs:
+  test:
+    uses: ./.gitea/workflows/test.yml
