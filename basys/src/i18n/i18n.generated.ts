@@ -36,6 +36,11 @@ export type I18nTranslations = {
             "operationFailed": string;
         };
     };
+    "admininfo": {
+        "Please input correct username": string;
+        "Please input correct password": string;
+        "Avatar modified successfully!": string;
+    };
     "api": {
         "errors": {
             "notFound": string;
